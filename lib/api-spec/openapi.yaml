@@ -1,22 +1,37 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Cricket Stats Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: matches
+    description: Match operations
+  - name: batting
+    description: Batting statistics
+  - name: bowling
+    description: Bowling statistics
+  - name: fielding
+    description: Fielding statistics
+  - name: reports
+    description: Match reports
+  - name: photos
+    description: Match photos
+  - name: coaching
+    description: Coaching tips
+  - name: stats
+    description: Aggregated statistics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +39,449 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List all matches
+      responses:
+        "200":
+          description: List of matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Match"
+    post:
+      operationId: createMatch
+      tags: [matches]
+      summary: Create a new match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+
+  /matches/{matchId}:
+    get:
+      operationId: getMatch
+      tags: [matches]
+      summary: Get a match by ID
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMatch
+      tags: [matches]
+      summary: Update a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchUpdate"
+      responses:
+        "200":
+          description: Updated match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Match"
+    delete:
+      operationId: deleteMatch
+      tags: [matches]
+      summary: Delete a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /matches/{matchId}/batting:
+    get:
+      operationId: getBattingStats
+      tags: [batting]
+      summary: Get batting stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Batting stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BattingStats"
+    post:
+      operationId: createBattingStats
+      tags: [batting]
+      summary: Create batting stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BattingStatsInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BattingStats"
+    patch:
+      operationId: updateBattingStats
+      tags: [batting]
+      summary: Update batting stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BattingStatsUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BattingStats"
+
+  /matches/{matchId}/bowling:
+    get:
+      operationId: getBowlingStats
+      tags: [bowling]
+      summary: Get bowling stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bowling stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BowlingStats"
+    post:
+      operationId: createBowlingStats
+      tags: [bowling]
+      summary: Create bowling stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BowlingStatsInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BowlingStats"
+    patch:
+      operationId: updateBowlingStats
+      tags: [bowling]
+      summary: Update bowling stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BowlingStatsUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BowlingStats"
+
+  /matches/{matchId}/fielding:
+    get:
+      operationId: getFieldingStats
+      tags: [fielding]
+      summary: Get fielding stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fielding stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldingStats"
+    post:
+      operationId: createFieldingStats
+      tags: [fielding]
+      summary: Create fielding stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldingStatsInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldingStats"
+    patch:
+      operationId: updateFieldingStats
+      tags: [fielding]
+      summary: Update fielding stats for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldingStatsUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldingStats"
+
+  /matches/{matchId}/report:
+    get:
+      operationId: getMatchReport
+      tags: [reports]
+      summary: Get match report
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Match report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchReport"
+    post:
+      operationId: createMatchReport
+      tags: [reports]
+      summary: Create match report
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchReportInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchReport"
+    patch:
+      operationId: updateMatchReport
+      tags: [reports]
+      summary: Update match report
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchReportUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchReport"
+
+  /matches/{matchId}/photos:
+    get:
+      operationId: listMatchPhotos
+      tags: [photos]
+      summary: List photos for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
+    post:
+      operationId: addMatchPhoto
+      tags: [photos]
+      summary: Add a photo to a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+
+  /photos/{photoId}:
+    delete:
+      operationId: deletePhoto
+      tags: [photos]
+      summary: Delete a photo
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /coaching-tips:
+    get:
+      operationId: listCoachingTips
+      tags: [coaching]
+      summary: List coaching tips
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Coaching tips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CoachingTip"
+
+  /stats/summary:
+    get:
+      operationId: getStatsSummary
+      tags: [stats]
+      summary: Get overall stats summary across all matches
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +492,363 @@ components:
       required:
         - status
 
+    Match:
+      type: object
+      required: [id, date, opponent, matchType, createdAt]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        opponent:
+          type: string
+        venue:
+          type: ["string", "null"]
+        matchType:
+          type: string
+          enum: [T20, ODI, Test, Club, Friendly, Other]
+        result:
+          type: ["string", "null"]
+          enum: [Win, Loss, Draw, "No Result", null]
+        createdAt:
+          type: string
+
+    MatchInput:
+      type: object
+      required: [date, opponent, matchType]
+      properties:
+        date:
+          type: string
+        opponent:
+          type: string
+        venue:
+          type: string
+        matchType:
+          type: string
+          enum: [T20, ODI, Test, Club, Friendly, Other]
+        result:
+          type: string
+          enum: [Win, Loss, Draw, "No Result"]
+
+    MatchUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+        opponent:
+          type: string
+        venue:
+          type: string
+        matchType:
+          type: string
+          enum: [T20, ODI, Test, Club, Friendly, Other]
+        result:
+          type: string
+          enum: [Win, Loss, Draw, "No Result"]
+
+    BattingStats:
+      type: object
+      required: [id, matchId, runs, ballsFaced, fours, sixes, strikeRate]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        runs:
+          type: integer
+        ballsFaced:
+          type: integer
+        fours:
+          type: integer
+        sixes:
+          type: integer
+        strikeRate:
+          type: number
+        battingPosition:
+          type: ["integer", "null"]
+        howOut:
+          type: ["string", "null"]
+          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired, null]
+
+    BattingStatsInput:
+      type: object
+      required: [runs, ballsFaced, fours, sixes]
+      properties:
+        runs:
+          type: integer
+          minimum: 0
+        ballsFaced:
+          type: integer
+          minimum: 0
+        fours:
+          type: integer
+          minimum: 0
+        sixes:
+          type: integer
+          minimum: 0
+        battingPosition:
+          type: integer
+          minimum: 1
+        howOut:
+          type: string
+          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+
+    BattingStatsUpdate:
+      type: object
+      properties:
+        runs:
+          type: integer
+          minimum: 0
+        ballsFaced:
+          type: integer
+          minimum: 0
+        fours:
+          type: integer
+          minimum: 0
+        sixes:
+          type: integer
+          minimum: 0
+        battingPosition:
+          type: integer
+          minimum: 1
+        howOut:
+          type: string
+          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+
+    BowlingStats:
+      type: object
+      required: [id, matchId, overs, maidens, runsConceded, wickets, economyRate]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        overs:
+          type: number
+        maidens:
+          type: integer
+        runsConceded:
+          type: integer
+        wickets:
+          type: integer
+        economyRate:
+          type: number
+        noBalls:
+          type: integer
+        wides:
+          type: integer
+
+    BowlingStatsInput:
+      type: object
+      required: [overs, maidens, runsConceded, wickets]
+      properties:
+        overs:
+          type: number
+          minimum: 0
+        maidens:
+          type: integer
+          minimum: 0
+        runsConceded:
+          type: integer
+          minimum: 0
+        wickets:
+          type: integer
+          minimum: 0
+        noBalls:
+          type: integer
+          minimum: 0
+        wides:
+          type: integer
+          minimum: 0
+
+    BowlingStatsUpdate:
+      type: object
+      properties:
+        overs:
+          type: number
+          minimum: 0
+        maidens:
+          type: integer
+          minimum: 0
+        runsConceded:
+          type: integer
+          minimum: 0
+        wickets:
+          type: integer
+          minimum: 0
+        noBalls:
+          type: integer
+          minimum: 0
+        wides:
+          type: integer
+          minimum: 0
+
+    FieldingStats:
+      type: object
+      required: [id, matchId, catches, droppedCatches]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        catches:
+          type: integer
+        droppedCatches:
+          type: integer
+        runOuts:
+          type: integer
+        stumpings:
+          type: integer
+
+    FieldingStatsInput:
+      type: object
+      required: [catches, droppedCatches]
+      properties:
+        catches:
+          type: integer
+          minimum: 0
+        droppedCatches:
+          type: integer
+          minimum: 0
+        runOuts:
+          type: integer
+          minimum: 0
+        stumpings:
+          type: integer
+          minimum: 0
+
+    FieldingStatsUpdate:
+      type: object
+      properties:
+        catches:
+          type: integer
+          minimum: 0
+        droppedCatches:
+          type: integer
+          minimum: 0
+        runOuts:
+          type: integer
+          minimum: 0
+        stumpings:
+          type: integer
+          minimum: 0
+
+    MatchReport:
+      type: object
+      required: [id, matchId]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        notes:
+          type: ["string", "null"]
+        areasToImprove:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+
+    MatchReportInput:
+      type: object
+      properties:
+        notes:
+          type: string
+        areasToImprove:
+          type: string
+
+    MatchReportUpdate:
+      type: object
+      properties:
+        notes:
+          type: string
+        areasToImprove:
+          type: string
+
+    Photo:
+      type: object
+      required: [id, matchId, url, createdAt]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        url:
+          type: string
+        caption:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    PhotoInput:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        caption:
+          type: string
+
+    CoachingTip:
+      type: object
+      required: [id, category, tip]
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: [Batting, Bowling, Fielding, Fitness, Mental]
+        tip:
+          type: string
+        detail:
+          type: ["string", "null"]
+
+    StatsSummary:
+      type: object
+      required: [totalMatches, batting, bowling, fielding]
+      properties:
+        totalMatches:
+          type: integer
+        batting:
+          type: object
+          required: [totalRuns, totalBallsFaced, averageStrikeRate, highScore, totalFours, totalSixes, innings]
+          properties:
+            totalRuns:
+              type: integer
+            totalBallsFaced:
+              type: integer
+            averageStrikeRate:
+              type: number
+            highScore:
+              type: integer
+            totalFours:
+              type: integer
+            totalSixes:
+              type: integer
+            innings:
+              type: integer
+        bowling:
+          type: object
+          required: [totalWickets, totalOvers, totalRunsConceded, averageEconomyRate, bestFigures, innings]
+          properties:
+            totalWickets:
+              type: integer
+            totalOvers:
+              type: number
+            totalRunsConceded:
+              type: integer
+            averageEconomyRate:
+              type: number
+            bestFigures:
+              type: string
+            innings:
+              type: integer
+        fielding:
+          type: object
+          required: [totalCatches, totalDroppedCatches, totalRunOuts]
+          properties:
+            totalCatches:
+              type: integer
+            totalDroppedCatches:
+              type: integer
+            totalRunOuts:
+              type: integer
