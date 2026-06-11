@@ -14,7 +14,6 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Bar,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,22 +21,35 @@ import {
   Legend,
 } from "recharts";
 
-function PerformanceChart({ data }: { data: any[] }) {
-  if (data.length === 0) return null;
+type PerMatchStat = {
+  matchId: number;
+  date: string;
+  opponent: string;
+  matchType: string;
+  runs?: number | null;
+  ballsFaced?: number | null;
+  strikeRate?: number | null;
+  wickets?: number | null;
+  runsConceded?: number | null;
+  economyRate?: number | null;
+  catches?: number | null;
+  stumpings?: number | null;
+};
 
+function PerformanceChart({ data }: { data: PerMatchStat[] }) {
   const chartData = data.map((d) => ({
     label: `vs ${d.opponent}`,
-    date: d.date,
     Runs: d.runs ?? 0,
     Wickets: d.wickets ?? 0,
-    "Strike Rate": d.strikeRate ? Number(d.strikeRate.toFixed(1)) : null,
   }));
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle>Performance Over Time</CardTitle>
-        <p className="text-sm text-muted-foreground">Runs and wickets across all logged matches.</p>
+        <p className="text-sm text-muted-foreground">
+          Runs and wickets across all logged matches.
+        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={260}>
@@ -59,7 +71,13 @@ function PerformanceChart({ data }: { data: any[] }) {
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
               tickLine={false}
               axisLine={false}
-              label={{ value: "Runs", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }}
+              label={{
+                value: "Runs",
+                angle: -90,
+                position: "insideLeft",
+                offset: 12,
+                style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+              }}
             />
             <YAxis
               yAxisId="wickets"
@@ -69,7 +87,13 @@ function PerformanceChart({ data }: { data: any[] }) {
               axisLine={false}
               allowDecimals={false}
               domain={[0, "auto"]}
-              label={{ value: "Wickets", angle: 90, position: "insideRight", offset: 12, style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } }}
+              label={{
+                value: "Wickets",
+                angle: 90,
+                position: "insideRight",
+                offset: 12,
+                style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+              }}
             />
             <Tooltip
               contentStyle={{
@@ -79,13 +103,16 @@ function PerformanceChart({ data }: { data: any[] }) {
                 fontSize: 12,
                 color: "hsl(var(--foreground))",
               }}
-              formatter={(value: any, name: string) => {
-                if (value === null || value === undefined) return ["—", name];
-                return [value, name];
-              }}
+              formatter={(value: any, name: string) =>
+                value === null || value === undefined ? ["—", name] : [value, name]
+              }
             />
             <Legend
-              wrapperStyle={{ fontSize: 12, color: "hsl(var(--muted-foreground))", paddingTop: 8 }}
+              wrapperStyle={{
+                fontSize: 12,
+                color: "hsl(var(--muted-foreground))",
+                paddingTop: 8,
+              }}
             />
             <Bar
               yAxisId="runs"
@@ -105,6 +132,102 @@ function PerformanceChart({ data }: { data: any[] }) {
         </ResponsiveContainer>
       </CardContent>
     </Card>
+  );
+}
+
+function PersonalBests({ data }: { data: PerMatchStat[] }) {
+  // Highest score
+  const batting = data.filter((d) => d.runs !== null && d.runs !== undefined);
+  const highScoreMatch = batting.reduce<PerMatchStat | null>(
+    (best, d) => (best === null || (d.runs ?? 0) > (best.runs ?? 0) ? d : best),
+    null
+  );
+
+  // Best bowling (most wickets; fewest runs on tie)
+  const bowling = data.filter((d) => d.wickets !== null && d.wickets !== undefined);
+  const bestBowlingMatch = bowling.reduce<PerMatchStat | null>((best, d) => {
+    if (!best) return d;
+    if ((d.wickets ?? 0) > (best.wickets ?? 0)) return d;
+    if ((d.wickets ?? 0) === (best.wickets ?? 0) && (d.runsConceded ?? 999) < (best.runsConceded ?? 999)) return d;
+    return best;
+  }, null);
+
+  // Most dismissals (catches + stumpings)
+  const fielding = data.filter(
+    (d) => (d.catches !== null && d.catches !== undefined) || (d.stumpings !== null && d.stumpings !== undefined)
+  );
+  const bestFieldingMatch = fielding.reduce<PerMatchStat | null>((best, d) => {
+    const total = (d.catches ?? 0) + (d.stumpings ?? 0);
+    const bestTotal = best ? (best.catches ?? 0) + (best.stumpings ?? 0) : -1;
+    return total > bestTotal ? d : best;
+  }, null);
+
+  const bests = [
+    highScoreMatch && {
+      title: "Highest Score",
+      value: `${highScoreMatch.runs}`,
+      sub: highScoreMatch.strikeRate != null ? `SR ${Number(highScoreMatch.strikeRate).toFixed(1)}` : null,
+      opponent: highScoreMatch.opponent,
+      matchId: highScoreMatch.matchId,
+      date: highScoreMatch.date,
+    },
+    bestBowlingMatch && {
+      title: "Best Bowling",
+      value: `${bestBowlingMatch.wickets}/${bestBowlingMatch.runsConceded}`,
+      sub: bestBowlingMatch.economyRate != null ? `Econ ${Number(bestBowlingMatch.economyRate).toFixed(2)}` : null,
+      opponent: bestBowlingMatch.opponent,
+      matchId: bestBowlingMatch.matchId,
+      date: bestBowlingMatch.date,
+    },
+    bestFieldingMatch && (bestFieldingMatch.catches ?? 0) + (bestFieldingMatch.stumpings ?? 0) > 0 && {
+      title: "Best Fielding",
+      value: `${(bestFieldingMatch.catches ?? 0) + (bestFieldingMatch.stumpings ?? 0)} dismissals`,
+      sub: [
+        (bestFieldingMatch.catches ?? 0) > 0 && `${bestFieldingMatch.catches}c`,
+        (bestFieldingMatch.stumpings ?? 0) > 0 && `${bestFieldingMatch.stumpings}st`,
+      ]
+        .filter(Boolean)
+        .join(" "),
+      opponent: bestFieldingMatch.opponent,
+      matchId: bestFieldingMatch.matchId,
+      date: bestFieldingMatch.date,
+    },
+  ].filter(Boolean) as {
+    title: string;
+    value: string;
+    sub: string | null | false;
+    opponent: string;
+    matchId: number;
+    date: string;
+  }[];
+
+  if (bests.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold tracking-tight mb-4">Personal Bests</h2>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {bests.map((b) => (
+          <Link key={b.title} href={`/matches/${b.matchId}`}>
+            <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
+              <CardHeader className="pb-1">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{b.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="text-3xl font-bold text-foreground">{b.value}</div>
+                {b.sub && <p className="text-xs text-muted-foreground">{b.sub}</p>}
+                <div className="pt-1 border-t border-border mt-2">
+                  <p className="text-sm font-medium text-foreground">vs {b.opponent}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(b.date), "MMM d, yyyy")}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -192,6 +315,18 @@ export default function Dashboard() {
         <PerformanceChart data={perMatch} />
       ) : null}
 
+      {/* Personal bests */}
+      {chartLoading ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Skeleton className="h-36 rounded-xl" />
+          <Skeleton className="h-36 rounded-xl" />
+          <Skeleton className="h-36 rounded-xl" />
+        </div>
+      ) : hasMatchData ? (
+        <PersonalBests data={perMatch} />
+      ) : null}
+
+      {/* Recent matches */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold tracking-tight">Recent Matches</h2>

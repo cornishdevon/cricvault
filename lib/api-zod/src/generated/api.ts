@@ -470,7 +470,9 @@ export const GetPerMatchStatsResponseItem = zod.object({
   "strikeRate": zod.number().nullish(),
   "wickets": zod.number().nullish(),
   "runsConceded": zod.number().nullish(),
-  "economyRate": zod.number().nullish()
+  "economyRate": zod.number().nullish(),
+  "catches": zod.number().nullish(),
+  "stumpings": zod.number().nullish()
 })
 export const GetPerMatchStatsResponse = zod.array(GetPerMatchStatsResponseItem)
 

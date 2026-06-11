@@ -342,6 +342,10 @@ router.get("/stats/per-match", async (req, res) => {
         .select()
         .from(bowlingStatsTable)
         .where(eq(bowlingStatsTable.matchId, m.id));
+      const [fielding] = await db
+        .select()
+        .from(fieldingStatsTable)
+        .where(eq(fieldingStatsTable.matchId, m.id));
       return {
         matchId: m.id,
         date: m.date,
@@ -353,6 +357,8 @@ router.get("/stats/per-match", async (req, res) => {
         wickets: bowling ? bowling.wickets : null,
         runsConceded: bowling ? bowling.runsConceded : null,
         economyRate: bowling ? Number(bowling.economyRate) : null,
+        catches: fielding ? fielding.catches : null,
+        stumpings: fielding ? fielding.stumpings : null,
       };
     })
   );

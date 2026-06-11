@@ -23,4 +23,8 @@ export interface PerMatchStat {
   runsConceded?: number | null;
   /** @nullable */
   economyRate?: number | null;
+  /** @nullable */
+  catches?: number | null;
+  /** @nullable */
+  stumpings?: number | null;
 }

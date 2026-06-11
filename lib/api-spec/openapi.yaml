@@ -841,6 +841,10 @@ components:
           type: ["integer", "null"]
         economyRate:
           type: ["number", "null"]
+        catches:
+          type: ["integer", "null"]
+        stumpings:
+          type: ["integer", "null"]
 
     StatsSummary:
       type: object
