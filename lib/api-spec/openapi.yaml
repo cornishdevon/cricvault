@@ -845,6 +845,8 @@ components:
           type: ["integer", "null"]
         stumpings:
           type: ["integer", "null"]
+        result:
+          type: ["string", "null"]
 
     StatsSummary:
       type: object

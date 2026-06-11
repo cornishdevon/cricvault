@@ -472,7 +472,8 @@ export const GetPerMatchStatsResponseItem = zod.object({
   "runsConceded": zod.number().nullish(),
   "economyRate": zod.number().nullish(),
   "catches": zod.number().nullish(),
-  "stumpings": zod.number().nullish()
+  "stumpings": zod.number().nullish(),
+  "result": zod.string().nullish()
 })
 export const GetPerMatchStatsResponse = zod.array(GetPerMatchStatsResponseItem)
 

@@ -359,6 +359,7 @@ router.get("/stats/per-match", async (req, res) => {
         economyRate: bowling ? Number(bowling.economyRate) : null,
         catches: fielding ? fielding.catches : null,
         stumpings: fielding ? fielding.stumpings : null,
+        result: m.result ?? null,
       };
     })
   );

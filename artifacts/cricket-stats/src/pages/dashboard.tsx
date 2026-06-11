@@ -7,6 +7,7 @@ import {
   getGetPerMatchStatsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -34,7 +35,10 @@ type PerMatchStat = {
   economyRate?: number | null;
   catches?: number | null;
   stumpings?: number | null;
+  result?: string | null;
 };
+
+// ── Performance Chart ─────────────────────────────────────────────────────────
 
 function PerformanceChart({ data }: { data: PerMatchStat[] }) {
   const chartData = data.map((d) => ({
@@ -108,26 +112,10 @@ function PerformanceChart({ data }: { data: PerMatchStat[] }) {
               }
             />
             <Legend
-              wrapperStyle={{
-                fontSize: 12,
-                color: "hsl(var(--muted-foreground))",
-                paddingTop: 8,
-              }}
+              wrapperStyle={{ fontSize: 12, color: "hsl(var(--muted-foreground))", paddingTop: 8 }}
             />
-            <Bar
-              yAxisId="runs"
-              dataKey="Runs"
-              fill="hsl(var(--primary))"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={40}
-            />
-            <Bar
-              yAxisId="wickets"
-              dataKey="Wickets"
-              fill="hsl(var(--secondary))"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={40}
-            />
+            <Bar yAxisId="runs" dataKey="Runs" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+            <Bar yAxisId="wickets" dataKey="Wickets" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
           </ComposedChart>
         </ResponsiveContainer>
       </CardContent>
@@ -135,15 +123,15 @@ function PerformanceChart({ data }: { data: PerMatchStat[] }) {
   );
 }
 
+// ── Personal Bests ────────────────────────────────────────────────────────────
+
 function PersonalBests({ data }: { data: PerMatchStat[] }) {
-  // Highest score
   const batting = data.filter((d) => d.runs !== null && d.runs !== undefined);
   const highScoreMatch = batting.reduce<PerMatchStat | null>(
-    (best, d) => (best === null || (d.runs ?? 0) > (best.runs ?? 0) ? d : best),
+    (best, d) => (!best || (d.runs ?? 0) > (best.runs ?? 0) ? d : best),
     null
   );
 
-  // Best bowling (most wickets; fewest runs on tie)
   const bowling = data.filter((d) => d.wickets !== null && d.wickets !== undefined);
   const bestBowlingMatch = bowling.reduce<PerMatchStat | null>((best, d) => {
     if (!best) return d;
@@ -152,9 +140,8 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
     return best;
   }, null);
 
-  // Most dismissals (catches + stumpings)
   const fielding = data.filter(
-    (d) => (d.catches !== null && d.catches !== undefined) || (d.stumpings !== null && d.stumpings !== undefined)
+    (d) => (d.catches ?? 0) + (d.stumpings ?? 0) > 0
   );
   const bestFieldingMatch = fielding.reduce<PerMatchStat | null>((best, d) => {
     const total = (d.catches ?? 0) + (d.stumpings ?? 0);
@@ -179,26 +166,20 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
       matchId: bestBowlingMatch.matchId,
       date: bestBowlingMatch.date,
     },
-    bestFieldingMatch && (bestFieldingMatch.catches ?? 0) + (bestFieldingMatch.stumpings ?? 0) > 0 && {
+    bestFieldingMatch && {
       title: "Best Fielding",
       value: `${(bestFieldingMatch.catches ?? 0) + (bestFieldingMatch.stumpings ?? 0)} dismissals`,
       sub: [
         (bestFieldingMatch.catches ?? 0) > 0 && `${bestFieldingMatch.catches}c`,
         (bestFieldingMatch.stumpings ?? 0) > 0 && `${bestFieldingMatch.stumpings}st`,
-      ]
-        .filter(Boolean)
-        .join(" "),
+      ].filter(Boolean).join(" ") || null,
       opponent: bestFieldingMatch.opponent,
       matchId: bestFieldingMatch.matchId,
       date: bestFieldingMatch.date,
     },
   ].filter(Boolean) as {
-    title: string;
-    value: string;
-    sub: string | null | false;
-    opponent: string;
-    matchId: number;
-    date: string;
+    title: string; value: string; sub: string | null;
+    opponent: string; matchId: number; date: string;
   }[];
 
   if (bests.length === 0) return null;
@@ -216,11 +197,9 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
               <CardContent className="space-y-1">
                 <div className="text-3xl font-bold text-foreground">{b.value}</div>
                 {b.sub && <p className="text-xs text-muted-foreground">{b.sub}</p>}
-                <div className="pt-1 border-t border-border mt-2">
+                <div className="pt-2 border-t border-border">
                   <p className="text-sm font-medium text-foreground">vs {b.opponent}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(b.date), "MMM d, yyyy")}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{format(new Date(b.date), "MMM d, yyyy")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -230,6 +209,133 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
     </div>
   );
 }
+
+// ── Head-to-Head ──────────────────────────────────────────────────────────────
+
+type H2HRecord = {
+  opponent: string;
+  played: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  noResult: number;
+  avgRuns: number | null;
+  avgWickets: number | null;
+  matchIds: number[];
+};
+
+function HeadToHead({ data }: { data: PerMatchStat[] }) {
+  const map = new Map<string, H2HRecord>();
+
+  for (const d of data) {
+    if (!map.has(d.opponent)) {
+      map.set(d.opponent, {
+        opponent: d.opponent,
+        played: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        noResult: 0,
+        avgRuns: null,
+        avgWickets: null,
+        matchIds: [],
+      });
+    }
+    const rec = map.get(d.opponent)!;
+    rec.played++;
+    rec.matchIds.push(d.matchId);
+    if (d.result === "Win") rec.wins++;
+    else if (d.result === "Loss") rec.losses++;
+    else if (d.result === "Draw") rec.draws++;
+    else if (d.result === "No Result") rec.noResult++;
+  }
+
+  // Compute averages per opponent
+  for (const [opp, rec] of map.entries()) {
+    const matches = data.filter((d) => d.opponent === opp);
+    const runsInnings = matches.filter((d) => d.runs !== null && d.runs !== undefined);
+    const wicketsInnings = matches.filter((d) => d.wickets !== null && d.wickets !== undefined);
+    rec.avgRuns = runsInnings.length > 0
+      ? Math.round(runsInnings.reduce((s, d) => s + (d.runs ?? 0), 0) / runsInnings.length)
+      : null;
+    rec.avgWickets = wicketsInnings.length > 0
+      ? parseFloat((wicketsInnings.reduce((s, d) => s + (d.wickets ?? 0), 0) / wicketsInnings.length).toFixed(1))
+      : null;
+  }
+
+  const records = Array.from(map.values()).sort((a, b) => b.played - a.played);
+
+  if (records.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold tracking-tight mb-4">Head-to-Head</h2>
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Opponent</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">P</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">W</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">L</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">D</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">Avg Runs</th>
+                  <th className="text-center px-3 py-3 font-medium text-muted-foreground">Avg Wkts</th>
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">Record</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((rec, i) => {
+                  const winPct = rec.played > 0 ? (rec.wins / rec.played) * 100 : 0;
+                  return (
+                    <tr
+                      key={rec.opponent}
+                      className={`border-b border-border last:border-0 hover:bg-muted/40 transition-colors animate-in fade-in`}
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <td className="px-4 py-3 font-medium text-foreground">{rec.opponent}</td>
+                      <td className="px-3 py-3 text-center text-muted-foreground">{rec.played}</td>
+                      <td className="px-3 py-3 text-center font-semibold text-primary">{rec.wins}</td>
+                      <td className="px-3 py-3 text-center font-semibold text-destructive">{rec.losses}</td>
+                      <td className="px-3 py-3 text-center text-muted-foreground">{rec.draws + rec.noResult}</td>
+                      <td className="px-3 py-3 text-center text-foreground">
+                        {rec.avgRuns !== null ? rec.avgRuns : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="px-3 py-3 text-center text-foreground">
+                        {rec.avgWickets !== null ? rec.avgWickets : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Badge
+                          variant="outline"
+                          className={
+                            winPct >= 60
+                              ? "bg-primary/10 text-primary border-primary/20"
+                              : winPct >= 40
+                              ? "bg-accent text-accent-foreground"
+                              : rec.wins === 0 && rec.losses > 0
+                              ? "bg-destructive/10 text-destructive border-destructive/20"
+                              : "bg-muted text-muted-foreground"
+                          }
+                        >
+                          {rec.wins}W–{rec.losses}L
+                          {rec.draws + rec.noResult > 0 ? `–${rec.draws + rec.noResult}D` : ""}
+                        </Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = useGetStatsSummary({
@@ -251,6 +357,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-2">Your overall performance across all matches.</p>
       </div>
 
+      {/* Summary cards */}
       {summaryLoading ? (
         <div className="grid gap-4 md:grid-cols-3">
           <Skeleton className="h-32 rounded-xl" />
@@ -326,6 +433,13 @@ export default function Dashboard() {
         <PersonalBests data={perMatch} />
       ) : null}
 
+      {/* Head-to-head */}
+      {chartLoading ? (
+        <Skeleton className="h-48 rounded-xl" />
+      ) : hasMatchData ? (
+        <HeadToHead data={perMatch} />
+      ) : null}
+
       {/* Recent matches */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -365,9 +479,7 @@ export default function Dashboard() {
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-lg text-foreground">
-                        vs {match.opponent}
-                      </div>
+                      <div className="font-semibold text-lg text-foreground">vs {match.opponent}</div>
                       <div className="text-sm text-muted-foreground">
                         {format(new Date(match.date), "MMM d, yyyy")} • {match.matchType}
                         {match.venue ? ` • ${match.venue}` : ""}

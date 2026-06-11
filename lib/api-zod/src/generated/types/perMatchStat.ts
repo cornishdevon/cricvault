@@ -27,4 +27,6 @@ export interface PerMatchStat {
   catches?: number | null;
   /** @nullable */
   stumpings?: number | null;
+  /** @nullable */
+  result?: string | null;
 }
