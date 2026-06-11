@@ -70,6 +70,15 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   // Boundary Getter — 10+ fours in one innings
   const boundaryMatch = sorted.find((d) => (d.fours ?? 0) >= 10);
 
+  // TFC (Thanks For Coming) — match with <10 runs AND 0 wickets AND 0 catches
+  const tfcMatch = sorted.find(
+    (d) =>
+      d.runs !== null && d.runs !== undefined &&
+      (d.runs ?? 10) < 10 &&
+      (d.wickets ?? 0) === 0 &&
+      (d.catches ?? 0) === 0
+  );
+
   // Trophy — personal best beaten (at least 2 batting innings, run score improved)
   let trophyEarned = false;
   let trophyMatch: PerMatchStat | undefined;
@@ -181,6 +190,16 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       matchId: boundaryMatch?.matchId,
       opponent: boundaryMatch?.opponent,
       date: boundaryMatch?.date,
+    },
+    {
+      id: "tfc",
+      label: "Thanks For Coming",
+      description: "<10 runs, 0 wickets & 0 catches in a match",
+      icon: "🚌",
+      earned: !!tfcMatch,
+      matchId: tfcMatch?.matchId,
+      opponent: tfcMatch?.opponent,
+      date: tfcMatch?.date,
     },
   ];
 
