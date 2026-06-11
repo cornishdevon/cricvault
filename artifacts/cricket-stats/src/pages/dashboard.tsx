@@ -7,6 +7,7 @@ import {
   getGetPerMatchStatsQueryKey,
 } from "@workspace/api-client-react";
 import { Achievements } from "@/components/achievements";
+import { FormGuide } from "@/components/form-guide";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -421,6 +422,13 @@ export default function Dashboard() {
         <Skeleton className="h-64 rounded-xl" />
       ) : hasMatchData ? (
         <PerformanceChart data={perMatch} />
+      ) : null}
+
+      {/* Form guide */}
+      {chartLoading ? (
+        <Skeleton className="h-48 rounded-xl" />
+      ) : hasMatchData ? (
+        <FormGuide data={perMatch} />
       ) : null}
 
       {/* Personal bests */}
