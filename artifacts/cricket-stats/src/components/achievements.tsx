@@ -31,6 +31,7 @@ type Badge = {
   opponent?: string;
   date?: string;
   count?: number;
+  detail?: string;
 };
 
 function computeBadges(data: PerMatchStat[]): Badge[] {
@@ -78,6 +79,39 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       (d.wickets ?? 0) === 0 &&
       (d.catches ?? 0) === 0
   );
+
+  // Consistent — 5 consecutive batting innings all scoring 25+
+  let consistentEarned = false;
+  let consistentStreak = 0;
+  for (const d of battingInnings) {
+    if ((d.runs ?? 0) >= 25) {
+      consistentStreak++;
+      if (consistentStreak >= 5) { consistentEarned = true; break; }
+    } else {
+      consistentStreak = 0;
+    }
+  }
+
+  // Raise the Bat — 5+ fifties (50+) in any single calendar year/season
+  const fiftiesBySeason: Record<string, number> = {};
+  for (const d of battingInnings) {
+    if ((d.runs ?? 0) >= 50) {
+      const year = d.date.slice(0, 4);
+      fiftiesBySeason[year] = (fiftiesBySeason[year] ?? 0) + 1;
+    }
+  }
+  const raiseTheBatEarned = Object.values(fiftiesBySeason).some((c) => c >= 5);
+  const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
+
+  // Doff Your Helmet — 3+ centuries career
+  const careerHundreds = battingInnings.filter((d) => (d.runs ?? 0) >= 100);
+  const doffEarned = careerHundreds.length >= 3;
+
+  // Career run milestones
+  const careerRuns = battingInnings.reduce((s, d) => s + (d.runs ?? 0), 0);
+  const strokeMakerEarned = careerRuns >= 500;
+  const runMachineEarned  = careerRuns >= 750;
+  const proEarned         = careerRuns >= 1000;
 
   // Trophy — personal best beaten (at least 2 batting innings, run score improved)
   let trophyEarned = false;
@@ -201,6 +235,53 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       opponent: tfcMatch?.opponent,
       date: tfcMatch?.date,
     },
+    {
+      id: "consistent",
+      label: "Consistent",
+      description: "5 consecutive innings scoring 25 or more",
+      icon: "📈",
+      earned: consistentEarned,
+    },
+    {
+      id: "raisethebat",
+      label: "Raise the Bat",
+      description: "5 fifties or more in a single season",
+      icon: "🏏",
+      earned: raiseTheBatEarned,
+      detail: raiseTheBatSeason ? `${raiseTheBatSeason} season` : undefined,
+    },
+    {
+      id: "doffhelmet",
+      label: "Doff Your Helmet",
+      description: "3 centuries in your career",
+      icon: "⛑️",
+      earned: doffEarned,
+      detail: doffEarned ? `${careerHundreds.length} hundreds` : undefined,
+    },
+    {
+      id: "strokemaker",
+      label: "Stroke Maker",
+      description: "500 career runs",
+      icon: "✨",
+      earned: strokeMakerEarned,
+      detail: strokeMakerEarned ? `${careerRuns} career runs` : undefined,
+    },
+    {
+      id: "runmachine",
+      label: "Run Machine",
+      description: "750 career runs",
+      icon: "⚙️",
+      earned: runMachineEarned,
+      detail: runMachineEarned ? `${careerRuns} career runs` : undefined,
+    },
+    {
+      id: "pro",
+      label: "Pro",
+      description: "1,000 career runs",
+      icon: "🌟",
+      earned: proEarned,
+      detail: proEarned ? `${careerRuns} career runs` : undefined,
+    },
   ];
 
   return badges;
@@ -239,7 +320,12 @@ function BadgeCard({ badge }: { badge: Badge }) {
           vs {badge.opponent}
         </p>
       )}
-      {badge.earned && badge.count !== undefined && (
+      {badge.earned && badge.detail && (
+        <p className="text-xs text-primary font-medium mt-auto">
+          {badge.detail}
+        </p>
+      )}
+      {badge.earned && !badge.detail && badge.count !== undefined && (
         <p className="text-xs text-primary font-medium mt-auto">
           {badge.count} total
         </p>

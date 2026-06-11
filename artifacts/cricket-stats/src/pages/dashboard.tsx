@@ -9,6 +9,7 @@ import {
 import { Achievements } from "@/components/achievements";
 import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
+import { StreakTracker } from "@/components/streak-tracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -437,6 +438,13 @@ export default function Dashboard() {
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
         <BowlingForm data={perMatch} />
+      ) : null}
+
+      {/* Streak tracker */}
+      {chartLoading ? (
+        <Skeleton className="h-36 rounded-xl" />
+      ) : hasMatchData ? (
+        <StreakTracker data={perMatch} />
       ) : null}
 
       {/* Personal bests */}
