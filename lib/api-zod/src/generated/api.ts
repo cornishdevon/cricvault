@@ -458,6 +458,24 @@ export const ListCoachingTipsResponse = zod.array(ListCoachingTipsResponseItem)
 
 
 /**
+ * @summary Get per-match batting and bowling stats for charting
+ */
+export const GetPerMatchStatsResponseItem = zod.object({
+  "matchId": zod.number(),
+  "date": zod.string(),
+  "opponent": zod.string(),
+  "matchType": zod.string(),
+  "runs": zod.number().nullish(),
+  "ballsFaced": zod.number().nullish(),
+  "strikeRate": zod.number().nullish(),
+  "wickets": zod.number().nullish(),
+  "runsConceded": zod.number().nullish(),
+  "economyRate": zod.number().nullish()
+})
+export const GetPerMatchStatsResponse = zod.array(GetPerMatchStatsResponseItem)
+
+
+/**
  * @summary Get overall stats summary across all matches
  */
 export const GetStatsSummaryResponse = zod.object({

@@ -397,7 +397,7 @@ function FieldingTab({ matchId }: { matchId: number }) {
               <StatBadge label="Catches" value={stats.catches} />
               <StatBadge label="Dropped" value={stats.droppedCatches} />
               <StatBadge label="Run Outs" value={stats.runOuts} />
-              {stats.stumpings > 0 && <StatBadge label="Stumpings" value={stats.stumpings} />}
+              <StatBadge label="Stumpings" value={stats.stumpings} />
             </div>
           </CardContent>
         </Card>

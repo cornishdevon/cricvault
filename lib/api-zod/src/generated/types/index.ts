@@ -34,6 +34,7 @@ export * from './matchResult';
 export * from './matchUpdate';
 export * from './matchUpdateMatchType';
 export * from './matchUpdateResult';
+export * from './perMatchStat';
 export * from './photo';
 export * from './photoInput';
 export * from './statsSummary';

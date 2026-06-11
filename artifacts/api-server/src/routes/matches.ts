@@ -324,6 +324,42 @@ router.get("/coaching-tips", async (req, res) => {
   res.json(rows);
 });
 
+// ── Per-Match Stats (for charting) ────────────────────────────────────────────
+
+router.get("/stats/per-match", async (req, res) => {
+  const matches = await db
+    .select()
+    .from(matchesTable)
+    .orderBy(matchesTable.date);
+
+  const results = await Promise.all(
+    matches.map(async (m) => {
+      const [batting] = await db
+        .select()
+        .from(battingStatsTable)
+        .where(eq(battingStatsTable.matchId, m.id));
+      const [bowling] = await db
+        .select()
+        .from(bowlingStatsTable)
+        .where(eq(bowlingStatsTable.matchId, m.id));
+      return {
+        matchId: m.id,
+        date: m.date,
+        opponent: m.opponent,
+        matchType: m.matchType,
+        runs: batting ? batting.runs : null,
+        ballsFaced: batting ? batting.ballsFaced : null,
+        strikeRate: batting ? Number(batting.strikeRate) : null,
+        wickets: bowling ? bowling.wickets : null,
+        runsConceded: bowling ? bowling.runsConceded : null,
+        economyRate: bowling ? Number(bowling.economyRate) : null,
+      };
+    })
+  );
+
+  res.json(results);
+});
+
 // ── Stats Summary ─────────────────────────────────────────────────────────────
 
 router.get("/stats/summary", async (req, res) => {

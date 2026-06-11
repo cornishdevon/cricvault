@@ -38,6 +38,7 @@ import type {
   MatchReportInput,
   MatchReportUpdate,
   MatchUpdate,
+  PerMatchStat,
   Photo,
   PhotoInput,
   StatsSummary
@@ -1674,6 +1675,83 @@ export function useListCoachingTips<TData = Awaited<ReturnType<typeof listCoachi
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListCoachingTipsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetPerMatchStatsUrl = () => {
+
+
+
+
+  return `/api/stats/per-match`
+}
+
+/**
+ * @summary Get per-match batting and bowling stats for charting
+ */
+export const getPerMatchStats = async ( options?: RequestInit): Promise<PerMatchStat[]> => {
+
+  return customFetch<PerMatchStat[]>(getGetPerMatchStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPerMatchStatsQueryKey = () => {
+    return [
+    `/api/stats/per-match`
+    ] as const;
+    }
+
+
+export const getGetPerMatchStatsQueryOptions = <TData = Awaited<ReturnType<typeof getPerMatchStats>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPerMatchStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPerMatchStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPerMatchStats>>> = ({ signal }) => getPerMatchStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPerMatchStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPerMatchStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getPerMatchStats>>>
+export type GetPerMatchStatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get per-match batting and bowling stats for charting
+ */
+
+export function useGetPerMatchStats<TData = Awaited<ReturnType<typeof getPerMatchStats>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPerMatchStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPerMatchStatsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

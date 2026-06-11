@@ -319,6 +319,25 @@ export interface CoachingTip {
   detail?: string | null;
 }
 
+export interface PerMatchStat {
+  matchId: number;
+  date: string;
+  opponent: string;
+  matchType: string;
+  /** @nullable */
+  runs?: number | null;
+  /** @nullable */
+  ballsFaced?: number | null;
+  /** @nullable */
+  strikeRate?: number | null;
+  /** @nullable */
+  wickets?: number | null;
+  /** @nullable */
+  runsConceded?: number | null;
+  /** @nullable */
+  economyRate?: number | null;
+}
+
 export type StatsSummaryBatting = {
   totalRuns: number;
   totalBallsFaced: number;

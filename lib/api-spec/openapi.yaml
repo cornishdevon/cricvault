@@ -469,6 +469,21 @@ paths:
                 items:
                   $ref: "#/components/schemas/CoachingTip"
 
+  /stats/per-match:
+    get:
+      operationId: getPerMatchStats
+      tags: [stats]
+      summary: Get per-match batting and bowling stats for charting
+      responses:
+        "200":
+          description: Per-match stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerMatchStat"
+
   /stats/summary:
     get:
       operationId: getStatsSummary
@@ -801,6 +816,31 @@ components:
           type: string
         detail:
           type: ["string", "null"]
+
+    PerMatchStat:
+      type: object
+      required: [matchId, date, opponent, matchType]
+      properties:
+        matchId:
+          type: integer
+        date:
+          type: string
+        opponent:
+          type: string
+        matchType:
+          type: string
+        runs:
+          type: ["integer", "null"]
+        ballsFaced:
+          type: ["integer", "null"]
+        strikeRate:
+          type: ["number", "null"]
+        wickets:
+          type: ["integer", "null"]
+        runsConceded:
+          type: ["integer", "null"]
+        economyRate:
+          type: ["number", "null"]
 
     StatsSummary:
       type: object
