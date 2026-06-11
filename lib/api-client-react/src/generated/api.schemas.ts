@@ -203,6 +203,7 @@ export interface BowlingStats {
   economyRate: number;
   noBalls?: number;
   wides?: number;
+  hatTrick?: boolean;
 }
 
 export interface BowlingStatsInput {
@@ -218,6 +219,7 @@ export interface BowlingStatsInput {
   noBalls?: number;
   /** @minimum 0 */
   wides?: number;
+  hatTrick?: boolean;
 }
 
 export interface BowlingStatsUpdate {
@@ -233,6 +235,7 @@ export interface BowlingStatsUpdate {
   noBalls?: number;
   /** @minimum 0 */
   wides?: number;
+  hatTrick?: boolean;
 }
 
 export interface FieldingStats {
@@ -336,6 +339,14 @@ export interface PerMatchStat {
   runsConceded?: number | null;
   /** @nullable */
   economyRate?: number | null;
+  /** @nullable */
+  fours?: number | null;
+  /** @nullable */
+  sixes?: number | null;
+  /** @nullable */
+  howOut?: string | null;
+  /** @nullable */
+  hatTrick?: boolean | null;
   /** @nullable */
   catches?: number | null;
   /** @nullable */

@@ -6,6 +6,7 @@ import {
   getListMatchesQueryKey,
   getGetPerMatchStatsQueryKey,
 } from "@workspace/api-client-react";
+import { Achievements } from "@/components/achievements";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -431,6 +432,13 @@ export default function Dashboard() {
         </div>
       ) : hasMatchData ? (
         <PersonalBests data={perMatch} />
+      ) : null}
+
+      {/* Achievements & milestones */}
+      {chartLoading ? (
+        <Skeleton className="h-48 rounded-xl" />
+      ) : hasMatchData ? (
+        <Achievements data={perMatch} />
       ) : null}
 
       {/* Head-to-head */}

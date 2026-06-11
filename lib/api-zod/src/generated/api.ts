@@ -199,7 +199,8 @@ export const GetBowlingStatsResponse = zod.object({
   "wickets": zod.number(),
   "economyRate": zod.number(),
   "noBalls": zod.number().optional(),
-  "wides": zod.number().optional()
+  "wides": zod.number().optional(),
+  "hatTrick": zod.boolean().optional()
 })
 
 
@@ -230,7 +231,8 @@ export const CreateBowlingStatsBody = zod.object({
   "runsConceded": zod.number().min(createBowlingStatsBodyRunsConcededMin),
   "wickets": zod.number().min(createBowlingStatsBodyWicketsMin),
   "noBalls": zod.number().min(createBowlingStatsBodyNoBallsMin).optional(),
-  "wides": zod.number().min(createBowlingStatsBodyWidesMin).optional()
+  "wides": zod.number().min(createBowlingStatsBodyWidesMin).optional(),
+  "hatTrick": zod.boolean().optional()
 })
 
 
@@ -261,7 +263,8 @@ export const UpdateBowlingStatsBody = zod.object({
   "runsConceded": zod.number().min(updateBowlingStatsBodyRunsConcededMin).optional(),
   "wickets": zod.number().min(updateBowlingStatsBodyWicketsMin).optional(),
   "noBalls": zod.number().min(updateBowlingStatsBodyNoBallsMin).optional(),
-  "wides": zod.number().min(updateBowlingStatsBodyWidesMin).optional()
+  "wides": zod.number().min(updateBowlingStatsBodyWidesMin).optional(),
+  "hatTrick": zod.boolean().optional()
 })
 
 export const UpdateBowlingStatsResponse = zod.object({
@@ -273,7 +276,8 @@ export const UpdateBowlingStatsResponse = zod.object({
   "wickets": zod.number(),
   "economyRate": zod.number(),
   "noBalls": zod.number().optional(),
-  "wides": zod.number().optional()
+  "wides": zod.number().optional(),
+  "hatTrick": zod.boolean().optional()
 })
 
 
@@ -471,6 +475,10 @@ export const GetPerMatchStatsResponseItem = zod.object({
   "wickets": zod.number().nullish(),
   "runsConceded": zod.number().nullish(),
   "economyRate": zod.number().nullish(),
+  "fours": zod.number().nullish(),
+  "sixes": zod.number().nullish(),
+  "howOut": zod.string().nullish(),
+  "hatTrick": zod.boolean().nullish(),
   "catches": zod.number().nullish(),
   "stumpings": zod.number().nullish(),
   "result": zod.string().nullish()

@@ -42,6 +42,7 @@ export const bowlingStatsTable = pgTable("bowling_stats", {
   economyRate: numeric("economy_rate", { precision: 6, scale: 2 }).notNull().default("0"),
   noBalls: integer("no_balls").notNull().default(0),
   wides: integer("wides").notNull().default(0),
+  hatTrick: integer("hat_trick").notNull().default(0),
 });
 
 export const insertBowlingStatsSchema = createInsertSchema(bowlingStatsTable).omit({ id: true });

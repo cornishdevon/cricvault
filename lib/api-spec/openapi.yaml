@@ -652,6 +652,8 @@ components:
           type: integer
         wides:
           type: integer
+        hatTrick:
+          type: boolean
 
     BowlingStatsInput:
       type: object
@@ -675,6 +677,8 @@ components:
         wides:
           type: integer
           minimum: 0
+        hatTrick:
+          type: boolean
 
     BowlingStatsUpdate:
       type: object
@@ -697,6 +701,8 @@ components:
         wides:
           type: integer
           minimum: 0
+        hatTrick:
+          type: boolean
 
     FieldingStats:
       type: object
@@ -841,6 +847,14 @@ components:
           type: ["integer", "null"]
         economyRate:
           type: ["number", "null"]
+        fours:
+          type: ["integer", "null"]
+        sixes:
+          type: ["integer", "null"]
+        howOut:
+          type: ["string", "null"]
+        hatTrick:
+          type: ["boolean", "null"]
         catches:
           type: ["integer", "null"]
         stumpings:

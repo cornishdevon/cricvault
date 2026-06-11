@@ -19,4 +19,5 @@ export interface BowlingStatsUpdate {
   noBalls?: number;
   /** @minimum 0 */
   wides?: number;
+  hatTrick?: boolean;
 }

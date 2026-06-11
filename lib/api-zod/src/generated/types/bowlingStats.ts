@@ -16,4 +16,5 @@ export interface BowlingStats {
   economyRate: number;
   noBalls?: number;
   wides?: number;
+  hatTrick?: boolean;
 }

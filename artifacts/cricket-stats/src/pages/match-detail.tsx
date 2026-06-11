@@ -232,7 +232,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
   const createBowling = useCreateBowlingStats();
   const updateBowling = useUpdateBowlingStats();
 
-  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "" });
+  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false });
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
@@ -246,6 +246,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
         wickets: String(stats.wickets),
         noBalls: String(stats.noBalls),
         wides: String(stats.wides),
+        hatTrick: !!(stats as any).hatTrick,
       });
     }
     setEditing(true);
@@ -259,6 +260,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
       wickets: Number(form.wickets) || 0,
       noBalls: Number(form.noBalls) || 0,
       wides: Number(form.wides) || 0,
+      hatTrick: form.hatTrick,
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
@@ -291,6 +293,12 @@ function BowlingTab({ matchId }: { matchId: number }) {
               <StatBadge label="Economy" value={economy} />
               {stats.wides > 0 && <StatBadge label="Wides" value={stats.wides} />}
               {stats.noBalls > 0 && <StatBadge label="No Balls" value={stats.noBalls} />}
+              {(stats as any).hatTrick && (
+                <div className="flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2">
+                  <span className="text-base">🪄</span>
+                  <span className="text-xs font-semibold text-primary">Hat Trick</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -313,12 +321,25 @@ function BowlingTab({ matchId }: { matchId: number }) {
                     id={id}
                     type="number"
                     min="0"
-                    value={form[id as keyof typeof form]}
+                    value={form[id as keyof typeof form] as string}
                     onChange={(e) => setForm({ ...form, [id]: e.target.value })}
                     placeholder="0"
                   />
                 </div>
               ))}
+              <div className="col-span-2 sm:col-span-3 flex items-center gap-3 pt-1">
+                <input
+                  id="hatTrick"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                  checked={form.hatTrick}
+                  onChange={(e) => setForm({ ...form, hatTrick: e.target.checked })}
+                />
+                <Label htmlFor="hatTrick" className="cursor-pointer flex items-center gap-1.5">
+                  <span>Hat Trick taken this spell</span>
+                  <span>🪄</span>
+                </Label>
+              </div>
             </div>
             {form.overs && form.runsConceded && Number(form.overs) > 0 && (
               <p className="text-sm text-muted-foreground">

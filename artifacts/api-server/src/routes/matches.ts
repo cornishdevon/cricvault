@@ -153,7 +153,7 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
 
 router.post("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick } = req.body;
   const economyRate = calcEconomy(runsConceded, overs);
   const [row] = await db
     .insert(bowlingStatsTable)
@@ -166,14 +166,15 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
       economyRate: String(economyRate),
       noBalls: noBalls ?? 0,
       wides: wides ?? 0,
+      hatTrick: hatTrick ? 1 : 0,
     })
     .returning();
-  res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate) });
+  res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
 });
 
 router.patch("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick } = req.body;
   const [existing] = await db
     .select()
     .from(bowlingStatsTable)
@@ -186,6 +187,7 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
   if (wickets !== undefined) updates.wickets = wickets;
   if (noBalls !== undefined) updates.noBalls = noBalls;
   if (wides !== undefined) updates.wides = wides;
+  if (hatTrick !== undefined) updates.hatTrick = hatTrick ? 1 : 0;
   const newRuns = runsConceded ?? existing.runsConceded;
   const newOvers = overs ?? Number(existing.overs);
   updates.economyRate = String(calcEconomy(newRuns, newOvers));
@@ -194,7 +196,7 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
     .set(updates)
     .where(eq(bowlingStatsTable.matchId, matchId))
     .returning();
-  res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate) });
+  res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
 });
 
 // ── Fielding ──────────────────────────────────────────────────────────────────
@@ -357,6 +359,10 @@ router.get("/stats/per-match", async (req, res) => {
         wickets: bowling ? bowling.wickets : null,
         runsConceded: bowling ? bowling.runsConceded : null,
         economyRate: bowling ? Number(bowling.economyRate) : null,
+        fours: batting ? batting.fours : null,
+        sixes: batting ? batting.sixes : null,
+        howOut: batting ? batting.howOut ?? null : null,
+        hatTrick: bowling ? !!bowling.hatTrick : null,
         catches: fielding ? fielding.catches : null,
         stumpings: fielding ? fielding.stumpings : null,
         result: m.result ?? null,

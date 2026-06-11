@@ -24,6 +24,14 @@ export interface PerMatchStat {
   /** @nullable */
   economyRate?: number | null;
   /** @nullable */
+  fours?: number | null;
+  /** @nullable */
+  sixes?: number | null;
+  /** @nullable */
+  howOut?: string | null;
+  /** @nullable */
+  hatTrick?: boolean | null;
+  /** @nullable */
   catches?: number | null;
   /** @nullable */
   stumpings?: number | null;
