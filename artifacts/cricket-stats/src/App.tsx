@@ -2,6 +2,7 @@ import { Layout } from "./components/layout";
 import Dashboard from "./pages/dashboard";
 import NewMatch from "./pages/new-match";
 import MatchDetail from "./pages/match-detail";
+import MatchReport from "./pages/match-report";
 import Coaching from "./pages/coaching";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/matches/new" component={NewMatch} />
+      <Route path="/matches/:matchId/report" component={MatchReport} />
       <Route path="/matches/:matchId" component={MatchDetail} />
       <Route path="/coaching" component={Coaching} />
       <Route component={NotFound} />

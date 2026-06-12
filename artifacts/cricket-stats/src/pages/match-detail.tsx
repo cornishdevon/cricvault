@@ -724,13 +724,18 @@ export default function MatchDetail() {
             {match.venue ? ` • ${match.venue}` : ""}
           </p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="text-muted-foreground hover:text-destructive transition-colors mt-1"
-          title="Delete match"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2 mt-1">
+          <Link href={`/matches/${match.id}/report`} className="text-muted-foreground hover:text-foreground transition-colors" title="View printable report">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </Link>
+          <button
+            onClick={handleDelete}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+            title="Delete match"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <Tabs defaultValue="batting" className="w-full">
