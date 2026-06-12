@@ -12,6 +12,7 @@ import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
 import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,13 +38,67 @@ type PerMatchStat = {
   runs?: number | null;
   ballsFaced?: number | null;
   strikeRate?: number | null;
+  fours?: number | null;
+  sixes?: number | null;
+  howOut?: string | null;
   wickets?: number | null;
+  overs?: number | null;
   runsConceded?: number | null;
   economyRate?: number | null;
+  bowledWickets?: number | null;
+  lbwWickets?: number | null;
   catches?: number | null;
   stumpings?: number | null;
+  droppedCatches?: number | null;
+  missedStumpings?: number | null;
+  hatTrick?: boolean | null;
   result?: string | null;
 };
+
+function exportCSV(data: PerMatchStat[], season: string) {
+  const headers = [
+    "Date", "Opponent", "Match Type", "Result",
+    "Runs", "Balls Faced", "Strike Rate", "Fours", "Sixes", "How Out",
+    "Wickets", "Overs", "Runs Conceded", "Economy Rate", "Bowled Wkts", "LBW Wkts",
+    "Catches", "Stumpings", "Dropped Catches", "Missed Stumpings", "Hat Trick",
+  ];
+
+  const rows = data.map((m) => [
+    m.date,
+    m.opponent,
+    m.matchType,
+    m.result ?? "",
+    m.runs ?? "",
+    m.ballsFaced ?? "",
+    m.strikeRate != null ? m.strikeRate.toFixed(1) : "",
+    m.fours ?? "",
+    m.sixes ?? "",
+    m.howOut ?? "",
+    m.wickets ?? "",
+    m.overs ?? "",
+    m.runsConceded ?? "",
+    m.economyRate != null ? m.economyRate.toFixed(2) : "",
+    m.bowledWickets ?? "",
+    m.lbwWickets ?? "",
+    m.catches ?? "",
+    m.stumpings ?? "",
+    m.droppedCatches ?? "",
+    m.missedStumpings ?? "",
+    m.hatTrick ? "Yes" : "",
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = season === "all" ? "cricket-log-career.csv" : `cricket-log-${season}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 // ── Performance Chart ─────────────────────────────────────────────────────────
 
@@ -384,19 +439,32 @@ export default function Dashboard() {
               : `Showing stats for the ${selectedSeason} season.`}
           </p>
         </div>
-        {seasons.length > 0 && (
-          <Select value={selectedSeason} onValueChange={setSelectedSeason}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="Season" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All time</SelectItem>
-              {seasons.map((y) => (
-                <SelectItem key={y} value={y}>{y} season</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <div className="flex items-center gap-2">
+          {filteredData.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-sm"
+              onClick={() => exportCSV(filteredData, selectedSeason)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </Button>
+          )}
+          {seasons.length > 0 && (
+            <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Season" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All time</SelectItem>
+                {seasons.map((y) => (
+                  <SelectItem key={y} value={y}>{y} season</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {/* Summary cards */}
