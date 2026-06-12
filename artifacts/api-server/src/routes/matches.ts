@@ -153,7 +153,7 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
 
 router.post("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets } = req.body;
   const economyRate = calcEconomy(runsConceded, overs);
   const [row] = await db
     .insert(bowlingStatsTable)
@@ -167,6 +167,8 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
       noBalls: noBalls ?? 0,
       wides: wides ?? 0,
       hatTrick: hatTrick ? 1 : 0,
+      bowledWickets: bowledWickets ?? 0,
+      lbwWickets: lbwWickets ?? 0,
     })
     .returning();
   res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
@@ -174,7 +176,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
 
 router.patch("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets } = req.body;
   const [existing] = await db
     .select()
     .from(bowlingStatsTable)
@@ -188,6 +190,8 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
   if (noBalls !== undefined) updates.noBalls = noBalls;
   if (wides !== undefined) updates.wides = wides;
   if (hatTrick !== undefined) updates.hatTrick = hatTrick ? 1 : 0;
+  if (bowledWickets !== undefined) updates.bowledWickets = bowledWickets;
+  if (lbwWickets !== undefined) updates.lbwWickets = lbwWickets;
   const newRuns = runsConceded ?? existing.runsConceded;
   const newOvers = overs ?? Number(existing.overs);
   updates.economyRate = String(calcEconomy(newRuns, newOvers));
@@ -213,7 +217,7 @@ router.get("/matches/:matchId/fielding", async (req, res) => {
 
 router.post("/matches/:matchId/fielding", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { catches, droppedCatches, runOuts, stumpings } = req.body;
+  const { catches, droppedCatches, runOuts, stumpings, missedStumpings } = req.body;
   const [row] = await db
     .insert(fieldingStatsTable)
     .values({
@@ -222,6 +226,7 @@ router.post("/matches/:matchId/fielding", async (req, res) => {
       droppedCatches,
       runOuts: runOuts ?? 0,
       stumpings: stumpings ?? 0,
+      missedStumpings: missedStumpings ?? 0,
     })
     .returning();
   res.status(201).json(row);
@@ -229,12 +234,13 @@ router.post("/matches/:matchId/fielding", async (req, res) => {
 
 router.patch("/matches/:matchId/fielding", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { catches, droppedCatches, runOuts, stumpings } = req.body;
+  const { catches, droppedCatches, runOuts, stumpings, missedStumpings } = req.body;
   const updates: Record<string, unknown> = {};
   if (catches !== undefined) updates.catches = catches;
   if (droppedCatches !== undefined) updates.droppedCatches = droppedCatches;
   if (runOuts !== undefined) updates.runOuts = runOuts;
   if (stumpings !== undefined) updates.stumpings = stumpings;
+  if (missedStumpings !== undefined) updates.missedStumpings = missedStumpings;
   const [row] = await db
     .update(fieldingStatsTable)
     .set(updates)
@@ -359,12 +365,17 @@ router.get("/stats/per-match", async (req, res) => {
         wickets: bowling ? bowling.wickets : null,
         runsConceded: bowling ? bowling.runsConceded : null,
         economyRate: bowling ? Number(bowling.economyRate) : null,
+        overs: bowling ? Number(bowling.overs) : null,
         fours: batting ? batting.fours : null,
         sixes: batting ? batting.sixes : null,
         howOut: batting ? batting.howOut ?? null : null,
         hatTrick: bowling ? !!bowling.hatTrick : null,
+        bowledWickets: bowling ? bowling.bowledWickets : null,
+        lbwWickets: bowling ? bowling.lbwWickets : null,
         catches: fielding ? fielding.catches : null,
         stumpings: fielding ? fielding.stumpings : null,
+        droppedCatches: fielding ? fielding.droppedCatches : null,
+        missedStumpings: fielding ? fielding.missedStumpings : null,
         result: m.result ?? null,
       };
     })

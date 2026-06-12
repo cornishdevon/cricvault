@@ -15,9 +15,14 @@ type PerMatchStat = {
   wickets?: number | null;
   runsConceded?: number | null;
   economyRate?: number | null;
+  overs?: number | null;
   hatTrick?: boolean | null;
+  bowledWickets?: number | null;
+  lbwWickets?: number | null;
   catches?: number | null;
   stumpings?: number | null;
+  droppedCatches?: number | null;
+  missedStumpings?: number | null;
   result?: string | null;
 };
 
@@ -30,105 +35,119 @@ type Badge = {
   matchId?: number;
   opponent?: string;
   date?: string;
-  count?: number;
   detail?: string;
+  isNegative?: boolean;
 };
 
 function computeBadges(data: PerMatchStat[]): Badge[] {
   const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
 
-  // batting innings with data
   const battingInnings = sorted.filter((d) => d.runs !== null && d.runs !== undefined);
   const bowlingInnings = sorted.filter((d) => d.wickets !== null && d.wickets !== undefined);
 
-  // First 50
-  const first50 = battingInnings.find((d) => (d.runs ?? 0) >= 50 && (d.runs ?? 0) < 100);
-  const first50any = battingInnings.find((d) => (d.runs ?? 0) >= 50);
+  // ── Career totals ──────────────────────────────────────────────────────────
+  const careerRuns    = battingInnings.reduce((s, d) => s + (d.runs ?? 0), 0);
+  const careerWickets = bowlingInnings.reduce((s, d) => s + (d.wickets ?? 0), 0);
+  const totalOvers    = bowlingInnings.reduce((s, d) => s + (d.overs ?? 0), 0);
+  const totalRunsConceded = bowlingInnings.reduce((s, d) => s + (d.runsConceded ?? 0), 0);
+  const careerEconomy = totalOvers > 0 ? totalRunsConceded / totalOvers : Infinity;
 
-  // First 100
-  const first100 = battingInnings.find((d) => (d.runs ?? 0) >= 100);
+  const careerBowledWickets = bowlingInnings.reduce((s, d) => s + (d.bowledWickets ?? 0), 0);
+  const careerLbwWickets    = bowlingInnings.reduce((s, d) => s + (d.lbwWickets ?? 0), 0);
+  const careerDropped        = sorted.reduce((s, d) => s + (d.droppedCatches ?? 0), 0);
+  const careerMissedSt       = sorted.reduce((s, d) => s + (d.missedStumpings ?? 0), 0);
+  const careerStumpings      = sorted.reduce((s, d) => s + (d.stumpings ?? 0), 0);
+  const careerHundreds       = battingInnings.filter((d) => (d.runs ?? 0) >= 100);
 
-  // First 5-wicket haul
-  const first5wkt = bowlingInnings.find((d) => (d.wickets ?? 0) >= 5);
-
-  // Red Ink — 5 not outs
-  const notOuts = sorted.filter((d) => d.howOut === "Not Out");
-  const redInkEarned = notOuts.length >= 5;
-
-  // Bucket Hands — 3 catches in one match (as fielder)
-  const bucketHandsMatch = sorted.find((d) => (d.catches ?? 0) >= 3);
-
-  // Magician — hat trick
-  const magicianMatch = sorted.find((d) => d.hatTrick === true);
-
-  // Safe Gloves — 5+ career stumpings
-  const totalStumpings = sorted.reduce((s, d) => s + (d.stumpings ?? 0), 0);
-  const safeGlovesEarned = totalStumpings >= 5;
-
-  // Big Hitter — 5+ sixes in one innings
-  const bigHitterMatch = sorted.find((d) => (d.sixes ?? 0) >= 5);
-
-  // Boundary Getter — 10+ fours in one innings
-  const boundaryMatch = sorted.find((d) => (d.fours ?? 0) >= 10);
-
-  // TFC (Thanks For Coming) — match with <10 runs AND 0 wickets AND 0 catches
-  const tfcMatch = sorted.find(
-    (d) =>
-      d.runs !== null && d.runs !== undefined &&
-      (d.runs ?? 10) < 10 &&
-      (d.wickets ?? 0) === 0 &&
-      (d.catches ?? 0) === 0
-  );
-
-  // Consistent — 5 consecutive batting innings all scoring 25+
-  let consistentEarned = false;
-  let consistentStreak = 0;
+  // ── Per-season run totals ──────────────────────────────────────────────────
+  const runsBySeason: Record<string, number> = {};
   for (const d of battingInnings) {
-    if ((d.runs ?? 0) >= 25) {
-      consistentStreak++;
-      if (consistentStreak >= 5) { consistentEarned = true; break; }
-    } else {
-      consistentStreak = 0;
-    }
+    const y = d.date.slice(0, 4);
+    runsBySeason[y] = (runsBySeason[y] ?? 0) + (d.runs ?? 0);
   }
+  const bestSeasonRuns = Math.max(0, ...Object.values(runsBySeason));
+  const bestRunsSeason = Object.entries(runsBySeason).find(([, v]) => v === bestSeasonRuns)?.[0];
 
-  // Raise the Bat — 5+ fifties (50+) in any single calendar year/season
+  const strokeMakerEarned = Object.values(runsBySeason).some((v) => v >= 500);
+  const strokeMakerSeason = Object.entries(runsBySeason).find(([, v]) => v >= 500)?.[0];
+  const runMachineEarned  = Object.values(runsBySeason).some((v) => v >= 750);
+  const runMachineSeason  = Object.entries(runsBySeason).find(([, v]) => v >= 750)?.[0];
+  const proEarned         = Object.values(runsBySeason).some((v) => v >= 1000);
+  const proSeason         = Object.entries(runsBySeason).find(([, v]) => v >= 1000)?.[0];
+
+  // ── Per-season fifty counts ────────────────────────────────────────────────
   const fiftiesBySeason: Record<string, number> = {};
   for (const d of battingInnings) {
     if ((d.runs ?? 0) >= 50) {
-      const year = d.date.slice(0, 4);
-      fiftiesBySeason[year] = (fiftiesBySeason[year] ?? 0) + 1;
+      const y = d.date.slice(0, 4);
+      fiftiesBySeason[y] = (fiftiesBySeason[y] ?? 0) + 1;
     }
   }
   const raiseTheBatEarned = Object.values(fiftiesBySeason).some((c) => c >= 5);
   const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
 
-  // Doff Your Helmet — 3+ centuries career
-  const careerHundreds = battingInnings.filter((d) => (d.runs ?? 0) >= 100);
-  const doffEarned = careerHundreds.length >= 3;
+  // ── Batting milestones ─────────────────────────────────────────────────────
+  const first50any = battingInnings.find((d) => (d.runs ?? 0) >= 50);
+  const first100   = battingInnings.find((d) => (d.runs ?? 0) >= 100);
 
-  // Career run milestones
-  const careerRuns = battingInnings.reduce((s, d) => s + (d.runs ?? 0), 0);
-  const strokeMakerEarned = careerRuns >= 500;
-  const runMachineEarned  = careerRuns >= 750;
-  const proEarned         = careerRuns >= 1000;
+  // ── Five-for ───────────────────────────────────────────────────────────────
+  const first5wkt = bowlingInnings.find((d) => (d.wickets ?? 0) >= 5);
 
-  // Trophy — personal best beaten (at least 2 batting innings, run score improved)
+  // ── Not outs ──────────────────────────────────────────────────────────────
+  const notOuts = sorted.filter((d) => d.howOut === "Not Out");
+  const redInkEarned = notOuts.length >= 5;
+
+  // ── Fielding feats ────────────────────────────────────────────────────────
+  const bucketHandsMatch = sorted.find((d) => (d.catches ?? 0) >= 3);
+  const safeGlovesEarned = careerStumpings >= 5;
+
+  // ── Bowling feats ─────────────────────────────────────────────────────────
+  const magicianMatch = sorted.find((d) => d.hatTrick === true);
+  const bigHitterMatch = sorted.find((d) => (d.sixes ?? 0) >= 5);
+  const boundaryMatch  = sorted.find((d) => (d.fours ?? 0) >= 10);
+
+  // ── Personal best ─────────────────────────────────────────────────────────
   let trophyEarned = false;
   let trophyMatch: PerMatchStat | undefined;
   if (battingInnings.length >= 2) {
     let runningBest = battingInnings[0].runs ?? 0;
     for (let i = 1; i < battingInnings.length; i++) {
       const r = battingInnings[i].runs ?? 0;
-      if (r > runningBest) {
-        trophyEarned = true;
-        trophyMatch = battingInnings[i];
-        runningBest = r;
-      }
+      if (r > runningBest) { trophyEarned = true; trophyMatch = battingInnings[i]; runningBest = r; }
     }
   }
 
+  // ── Consistent — 5 consecutive 25+ innings ────────────────────────────────
+  let consistentEarned = false;
+  let streak = 0;
+  for (const d of battingInnings) {
+    if ((d.runs ?? 0) >= 25) { streak++; if (streak >= 5) { consistentEarned = true; break; } }
+    else streak = 0;
+  }
+
+  // ── TFC ───────────────────────────────────────────────────────────────────
+  const tfcMatch = sorted.find(
+    (d) => d.runs !== null && d.runs !== undefined &&
+      (d.runs ?? 10) < 10 && (d.wickets ?? 0) === 0 && (d.catches ?? 0) === 0
+  );
+
+  // ── Batting dismissal counts ──────────────────────────────────────────────
+  const lbwOuts    = battingInnings.filter((d) => d.howOut?.toLowerCase() === "lbw").length;
+  const bowledOuts = battingInnings.filter((d) => d.howOut?.toLowerCase() === "bowled").length;
+  const caughtOuts = battingInnings.filter((d) => (d.howOut?.toLowerCase() ?? "").includes("caught")).length;
+  const runOutOuts = battingInnings.filter((d) => d.howOut?.toLowerCase() === "run out").length;
+
+  // ── Pinch Hitter — 50 runs in < 20 balls ─────────────────────────────────
+  const pinchHitterMatch = battingInnings.find(
+    (d) => (d.runs ?? 0) >= 50 && (d.ballsFaced ?? 999) < 20 && (d.ballsFaced ?? 0) > 0
+  );
+
+  // ── Line and Length — career econ < 3, 40+ overs ─────────────────────────
+  const lineAndLengthEarned = totalOvers >= 40 && careerEconomy < 3;
+
+  // ── Build badge list ──────────────────────────────────────────────────────
   const badges: Badge[] = [
+    // ─ Batting milestones ─
     {
       id: "first50",
       label: "Half-Century",
@@ -137,7 +156,6 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first50any,
       matchId: first50any?.matchId,
       opponent: first50any?.opponent,
-      date: first50any?.date,
     },
     {
       id: "first100",
@@ -147,105 +165,28 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first100,
       matchId: first100?.matchId,
       opponent: first100?.opponent,
-      date: first100?.date,
     },
     {
-      id: "fivewkt",
-      label: "Five-For",
-      description: "Took 5 wickets in a bowling spell",
+      id: "pinchHitter",
+      label: "Pinch Hitter",
+      description: "50 runs in fewer than 20 balls",
       icon: "⚡",
-      earned: !!first5wkt,
-      matchId: first5wkt?.matchId,
-      opponent: first5wkt?.opponent,
-      date: first5wkt?.date,
-    },
-    {
-      id: "redink",
-      label: "Red Ink",
-      description: "Recorded 5 or more not outs",
-      icon: "🛡️",
-      earned: redInkEarned,
-      count: notOuts.length,
-    },
-    {
-      id: "buckethands",
-      label: "Bucket Hands",
-      description: "Took 3 catches in a single match",
-      icon: "🧤",
-      earned: !!bucketHandsMatch,
-      matchId: bucketHandsMatch?.matchId,
-      opponent: bucketHandsMatch?.opponent,
-      date: bucketHandsMatch?.date,
-    },
-    {
-      id: "magician",
-      label: "Magician",
-      description: "Took a hat trick in a match",
-      icon: "🪄",
-      earned: !!magicianMatch,
-      matchId: magicianMatch?.matchId,
-      opponent: magicianMatch?.opponent,
-      date: magicianMatch?.date,
-    },
-    {
-      id: "safegloves",
-      label: "Safe Gloves",
-      description: "5 career stumpings as wicketkeeper",
-      icon: "🧤",
-      earned: safeGlovesEarned,
-      count: totalStumpings,
-    },
-    {
-      id: "bighitter",
-      label: "Big Hitter",
-      description: "Hit 5 or more sixes in one innings",
-      icon: "💥",
-      earned: !!bigHitterMatch,
-      matchId: bigHitterMatch?.matchId,
-      opponent: bigHitterMatch?.opponent,
-      date: bigHitterMatch?.date,
-    },
-    {
-      id: "trophy",
-      label: "Personal Best",
-      description: "Beat your own batting high score",
-      icon: "🏆",
-      earned: trophyEarned,
-      matchId: trophyMatch?.matchId,
-      opponent: trophyMatch?.opponent,
-      date: trophyMatch?.date,
-    },
-    {
-      id: "boundary",
-      label: "Boundary Getter",
-      description: "Hit 10 or more fours in one innings",
-      icon: "🔥",
-      earned: !!boundaryMatch,
-      matchId: boundaryMatch?.matchId,
-      opponent: boundaryMatch?.opponent,
-      date: boundaryMatch?.date,
-    },
-    {
-      id: "tfc",
-      label: "Thanks For Coming",
-      description: "<10 runs, 0 wickets & 0 catches in a match",
-      icon: "🚌",
-      earned: !!tfcMatch,
-      matchId: tfcMatch?.matchId,
-      opponent: tfcMatch?.opponent,
-      date: tfcMatch?.date,
+      earned: !!pinchHitterMatch,
+      matchId: pinchHitterMatch?.matchId,
+      opponent: pinchHitterMatch?.opponent,
+      detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined,
     },
     {
       id: "consistent",
       label: "Consistent",
-      description: "5 consecutive innings scoring 25 or more",
+      description: "5 consecutive innings scoring 25+",
       icon: "📈",
       earned: consistentEarned,
     },
     {
       id: "raisethebat",
       label: "Raise the Bat",
-      description: "5 fifties or more in a single season",
+      description: "5 fifties in a single season",
       icon: "🏏",
       earned: raiseTheBatEarned,
       detail: raiseTheBatSeason ? `${raiseTheBatSeason} season` : undefined,
@@ -255,32 +196,222 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Doff Your Helmet",
       description: "3 centuries in your career",
       icon: "⛑️",
-      earned: doffEarned,
-      detail: doffEarned ? `${careerHundreds.length} hundreds` : undefined,
+      earned: careerHundreds.length >= 3,
+      detail: careerHundreds.length >= 3 ? `${careerHundreds.length} hundreds` : undefined,
     },
+
+    // ─ Season run targets ─
     {
       id: "strokemaker",
       label: "Stroke Maker",
-      description: "500 career runs",
+      description: "500 runs in a season",
       icon: "✨",
       earned: strokeMakerEarned,
-      detail: strokeMakerEarned ? `${careerRuns} career runs` : undefined,
+      detail: strokeMakerSeason ? `${strokeMakerSeason} season` : undefined,
     },
     {
       id: "runmachine",
       label: "Run Machine",
-      description: "750 career runs",
+      description: "750 runs in a season",
       icon: "⚙️",
       earned: runMachineEarned,
-      detail: runMachineEarned ? `${careerRuns} career runs` : undefined,
+      detail: runMachineSeason ? `${runMachineSeason} season` : undefined,
     },
     {
       id: "pro",
       label: "Pro",
-      description: "1,000 career runs",
+      description: "1,000 runs in a season",
       icon: "🌟",
       earned: proEarned,
-      detail: proEarned ? `${careerRuns} career runs` : undefined,
+      detail: proSeason ? `${proSeason} season` : undefined,
+    },
+
+    // ─ Big career targets ─
+    {
+      id: "career2000",
+      label: "2,000 Club",
+      description: "2,000 career runs",
+      icon: "🏆",
+      earned: careerRuns >= 2000,
+      detail: careerRuns >= 2000 ? `${careerRuns} career runs` : undefined,
+    },
+    {
+      id: "career100wkt",
+      label: "100 Wickets",
+      description: "100 career wickets",
+      icon: "🎳",
+      earned: careerWickets >= 100,
+      detail: careerWickets >= 100 ? `${careerWickets} wickets` : undefined,
+    },
+
+    // ─ Bowling feats ─
+    {
+      id: "fivewkt",
+      label: "Five-For",
+      description: "Took 5 wickets in a spell",
+      icon: "🔥",
+      earned: !!first5wkt,
+      matchId: first5wkt?.matchId,
+      opponent: first5wkt?.opponent,
+    },
+    {
+      id: "magician",
+      label: "Magician",
+      description: "Hat trick in a match",
+      icon: "🪄",
+      earned: !!magicianMatch,
+      matchId: magicianMatch?.matchId,
+      opponent: magicianMatch?.opponent,
+    },
+    {
+      id: "deadEye",
+      label: "Dead Eye",
+      description: "10 career wickets taken bowled",
+      icon: "🎯",
+      earned: careerBowledWickets >= 10,
+      detail: careerBowledWickets >= 10 ? `${careerBowledWickets} bowled` : undefined,
+    },
+    {
+      id: "hitThosePads",
+      label: "Hit Those Pads",
+      description: "10 career LBW wickets taken",
+      icon: "🦵",
+      earned: careerLbwWickets >= 10,
+      detail: careerLbwWickets >= 10 ? `${careerLbwWickets} LBWs` : undefined,
+    },
+    {
+      id: "lineLength",
+      label: "Line and Length",
+      description: "Economy < 3 over 40+ career overs",
+      icon: "📏",
+      earned: lineAndLengthEarned,
+      detail: lineAndLengthEarned ? `Econ ${careerEconomy.toFixed(2)} / ${totalOvers.toFixed(1)} ovs` : undefined,
+    },
+
+    // ─ Fielding feats ─
+    {
+      id: "buckethands",
+      label: "Bucket Hands",
+      description: "3 catches in a single match",
+      icon: "🧤",
+      earned: !!bucketHandsMatch,
+      matchId: bucketHandsMatch?.matchId,
+      opponent: bucketHandsMatch?.opponent,
+    },
+    {
+      id: "safegloves",
+      label: "Safe Gloves",
+      description: "5 career stumpings as keeper",
+      icon: "🥅",
+      earned: safeGlovesEarned,
+      detail: safeGlovesEarned ? `${careerStumpings} stumpings` : undefined,
+    },
+
+    // ─ Batting feats ─
+    {
+      id: "bighitter",
+      label: "Big Hitter",
+      description: "5+ sixes in one innings",
+      icon: "💥",
+      earned: !!bigHitterMatch,
+      matchId: bigHitterMatch?.matchId,
+      opponent: bigHitterMatch?.opponent,
+    },
+    {
+      id: "boundary",
+      label: "Boundary Getter",
+      description: "10+ fours in one innings",
+      icon: "🏅",
+      earned: !!boundaryMatch,
+      matchId: boundaryMatch?.matchId,
+      opponent: boundaryMatch?.opponent,
+    },
+    {
+      id: "redink",
+      label: "Red Ink",
+      description: "5 or more career not outs",
+      icon: "🛡️",
+      earned: redInkEarned,
+      detail: redInkEarned ? `${notOuts.length} not outs` : undefined,
+    },
+    {
+      id: "trophy",
+      label: "Personal Best",
+      description: "Beat your own batting high score",
+      icon: "🏆",
+      earned: trophyEarned,
+      matchId: trophyMatch?.matchId,
+      opponent: trophyMatch?.opponent,
+    },
+
+    // ─ Batting mishaps ─
+    {
+      id: "billyBigPads",
+      label: "Billy Big Pads",
+      description: "Out LBW 5 times",
+      icon: "😬",
+      earned: lbwOuts >= 5,
+      detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined,
+      isNegative: true,
+    },
+    {
+      id: "gardenGate",
+      label: "Garden Gate",
+      description: "Out bowled 5 times",
+      icon: "🚪",
+      earned: bowledOuts >= 5,
+      detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined,
+      isNegative: true,
+    },
+    {
+      id: "catchingPractice",
+      label: "Catching Practice",
+      description: "Out caught 10 times",
+      icon: "🙈",
+      earned: caughtOuts >= 10,
+      detail: caughtOuts >= 10 ? `${caughtOuts}× caught` : undefined,
+      isNegative: true,
+    },
+    {
+      id: "keepOnRunning",
+      label: "Keep on Running",
+      description: "Run out 3 times",
+      icon: "🏃",
+      earned: runOutOuts >= 3,
+      detail: runOutOuts >= 3 ? `${runOutOuts}× run out` : undefined,
+      isNegative: true,
+    },
+
+    // ─ Fielding mishaps ─
+    {
+      id: "butterFingers",
+      label: "Butter Fingers",
+      description: "Dropped a catch in the field",
+      icon: "🧈",
+      earned: careerDropped > 0,
+      detail: careerDropped > 0 ? `${careerDropped} dropped` : undefined,
+      isNegative: true,
+    },
+    {
+      id: "dontSnatch",
+      label: "Don't Snatch",
+      description: "Missed a stumping",
+      icon: "🙅",
+      earned: careerMissedSt > 0,
+      detail: careerMissedSt > 0 ? `${careerMissedSt} missed` : undefined,
+      isNegative: true,
+    },
+
+    // ─ Shame badge ─
+    {
+      id: "tfc",
+      label: "Thanks For Coming",
+      description: "<10 runs, 0 wickets & 0 catches",
+      icon: "🚌",
+      earned: !!tfcMatch,
+      matchId: tfcMatch?.matchId,
+      opponent: tfcMatch?.opponent,
+      isNegative: true,
     },
   ];
 
@@ -291,8 +422,8 @@ function computeMilestones(data: PerMatchStat[]) {
   const innings = data.filter((d) => d.runs !== null && d.runs !== undefined);
   return {
     twentyFives: innings.filter((d) => (d.runs ?? 0) >= 25).length,
-    fifties: innings.filter((d) => (d.runs ?? 0) >= 50).length,
-    hundreds: innings.filter((d) => (d.runs ?? 0) >= 100).length,
+    fifties:     innings.filter((d) => (d.runs ?? 0) >= 50).length,
+    hundreds:    innings.filter((d) => (d.runs ?? 0) >= 100).length,
     totalInnings: innings.length,
   };
 }
@@ -300,34 +431,31 @@ function computeMilestones(data: PerMatchStat[]) {
 function BadgeCard({ badge }: { badge: Badge }) {
   const inner = (
     <div
-      className={`rounded-xl border p-4 flex flex-col items-center text-center gap-2 transition-all duration-200 h-full ${
+      className={`rounded-xl border p-3 flex flex-col items-center text-center gap-1.5 transition-all duration-200 h-full ${
         badge.earned
-          ? "bg-card border-primary/30 shadow-sm hover:border-primary/60 hover:shadow-md"
-          : "bg-muted/40 border-border opacity-50 grayscale"
+          ? badge.isNegative
+            ? "bg-destructive/5 border-destructive/30 shadow-sm hover:border-destructive/60 hover:shadow-md"
+            : "bg-card border-primary/30 shadow-sm hover:border-primary/60 hover:shadow-md"
+          : "bg-muted/40 border-border opacity-40 grayscale"
       }`}
     >
-      <span className="text-3xl" role="img" aria-label={badge.label}>
+      <span className="text-2xl" role="img" aria-label={badge.label}>
         {badge.earned ? badge.icon : "🔒"}
       </span>
       <div>
-        <p className={`font-semibold text-sm ${badge.earned ? "text-foreground" : "text-muted-foreground"}`}>
+        <p className={`font-semibold text-xs leading-tight ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-muted-foreground"}`}>
           {badge.label}
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{badge.description}</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{badge.description}</p>
       </div>
-      {badge.earned && badge.opponent && badge.date && (
-        <p className="text-xs text-primary font-medium mt-auto">
-          vs {badge.opponent}
-        </p>
-      )}
       {badge.earned && badge.detail && (
-        <p className="text-xs text-primary font-medium mt-auto">
+        <p className={`text-[11px] font-medium mt-auto ${badge.isNegative ? "text-destructive/80" : "text-primary"}`}>
           {badge.detail}
         </p>
       )}
-      {badge.earned && !badge.detail && badge.count !== undefined && (
-        <p className="text-xs text-primary font-medium mt-auto">
-          {badge.count} total
+      {badge.earned && !badge.detail && badge.opponent && (
+        <p className="text-[11px] text-primary font-medium mt-auto truncate w-full">
+          vs {badge.opponent}
         </p>
       )}
     </div>
@@ -340,7 +468,6 @@ function BadgeCard({ badge }: { badge: Badge }) {
       </Link>
     );
   }
-
   return <div className="h-full">{inner}</div>;
 }
 
@@ -348,9 +475,8 @@ function MilestonesBar({ milestones }: { milestones: ReturnType<typeof computeMi
   const items = [
     { label: "25+", count: milestones.twentyFives, color: "bg-chart-3" },
     { label: "50+", count: milestones.fifties, color: "bg-primary" },
-    { label: "100+", count: milestones.hundreds, color: "bg-secondary" },
+    { label: "100+", count: milestones.hundreds, color: "bg-amber-400" },
   ];
-
   return (
     <div className="flex gap-4 flex-wrap">
       {items.map((item) => (
@@ -368,9 +494,11 @@ function MilestonesBar({ milestones }: { milestones: ReturnType<typeof computeMi
 }
 
 export function Achievements({ data }: { data: PerMatchStat[] }) {
-  const badges = computeBadges(data);
+  const badges   = computeBadges(data);
   const milestones = computeMilestones(data);
-  const earned = badges.filter((b) => b.earned).length;
+  const positive  = badges.filter((b) => !b.isNegative);
+  const negative  = badges.filter((b) => b.isNegative);
+  const earned    = badges.filter((b) => b.earned).length;
 
   return (
     <div className="space-y-6">
@@ -388,17 +516,34 @@ export function Achievements({ data }: { data: PerMatchStat[] }) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {badges.map((badge, i) => (
+      <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+        {positive.map((badge, i) => (
           <div
             key={badge.id}
             className="animate-in fade-in slide-in-from-bottom-2"
-            style={{ animationDelay: `${i * 40}ms` }}
+            style={{ animationDelay: `${i * 30}ms` }}
           >
             <BadgeCard badge={badge} />
           </div>
         ))}
       </div>
+
+      {negative.some((b) => b.earned) && (
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-2">Hall of shame</p>
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+            {negative.filter((b) => b.earned).map((badge, i) => (
+              <div
+                key={badge.id}
+                className="animate-in fade-in slide-in-from-bottom-2"
+                style={{ animationDelay: `${i * 30}ms` }}
+              >
+                <BadgeCard badge={badge} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

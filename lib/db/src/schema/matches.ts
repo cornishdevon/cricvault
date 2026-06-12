@@ -43,6 +43,8 @@ export const bowlingStatsTable = pgTable("bowling_stats", {
   noBalls: integer("no_balls").notNull().default(0),
   wides: integer("wides").notNull().default(0),
   hatTrick: integer("hat_trick").notNull().default(0),
+  bowledWickets: integer("bowled_wickets").notNull().default(0),
+  lbwWickets: integer("lbw_wickets").notNull().default(0),
 });
 
 export const insertBowlingStatsSchema = createInsertSchema(bowlingStatsTable).omit({ id: true });
@@ -56,6 +58,7 @@ export const fieldingStatsTable = pgTable("fielding_stats", {
   droppedCatches: integer("dropped_catches").notNull().default(0),
   runOuts: integer("run_outs").notNull().default(0),
   stumpings: integer("stumpings").notNull().default(0),
+  missedStumpings: integer("missed_stumpings").notNull().default(0),
 });
 
 export const insertFieldingStatsSchema = createInsertSchema(fieldingStatsTable).omit({ id: true });

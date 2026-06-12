@@ -232,7 +232,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
   const createBowling = useCreateBowlingStats();
   const updateBowling = useUpdateBowlingStats();
 
-  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false });
+  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false, bowledWickets: "", lbwWickets: "" });
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
@@ -247,6 +247,8 @@ function BowlingTab({ matchId }: { matchId: number }) {
         noBalls: String(stats.noBalls),
         wides: String(stats.wides),
         hatTrick: !!(stats as any).hatTrick,
+        bowledWickets: String((stats as any).bowledWickets ?? 0),
+        lbwWickets: String((stats as any).lbwWickets ?? 0),
       });
     }
     setEditing(true);
@@ -261,6 +263,8 @@ function BowlingTab({ matchId }: { matchId: number }) {
       noBalls: Number(form.noBalls) || 0,
       wides: Number(form.wides) || 0,
       hatTrick: form.hatTrick,
+      bowledWickets: Number(form.bowledWickets) || 0,
+      lbwWickets: Number(form.lbwWickets) || 0,
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
@@ -314,6 +318,8 @@ function BowlingTab({ matchId }: { matchId: number }) {
                 { id: "wickets", label: "Wickets" },
                 { id: "noBalls", label: "No Balls" },
                 { id: "wides", label: "Wides" },
+                { id: "bowledWickets", label: "Bowled (wkts)" },
+                { id: "lbwWickets", label: "LBW (wkts)" },
               ].map(({ id, label }) => (
                 <div key={id} className="space-y-1.5">
                   <Label htmlFor={id}>{label}</Label>
@@ -378,20 +384,20 @@ function FieldingTab({ matchId }: { matchId: number }) {
   const createFielding = useCreateFieldingStats();
   const updateFielding = useUpdateFieldingStats();
 
-  const [form, setForm] = useState({ catches: "", droppedCatches: "", runOuts: "", stumpings: "" });
+  const [form, setForm] = useState({ catches: "", droppedCatches: "", runOuts: "", stumpings: "", missedStumpings: "" });
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
 
   const handleEdit = () => {
     if (hasStats) {
-      setForm({ catches: String(stats.catches), droppedCatches: String(stats.droppedCatches), runOuts: String(stats.runOuts), stumpings: String(stats.stumpings) });
+      setForm({ catches: String(stats.catches), droppedCatches: String(stats.droppedCatches), runOuts: String(stats.runOuts), stumpings: String(stats.stumpings), missedStumpings: String((stats as any).missedStumpings ?? 0) });
     }
     setEditing(true);
   };
 
   const handleSave = () => {
-    const payload = { catches: Number(form.catches) || 0, droppedCatches: Number(form.droppedCatches) || 0, runOuts: Number(form.runOuts) || 0, stumpings: Number(form.stumpings) || 0 };
+    const payload = { catches: Number(form.catches) || 0, droppedCatches: Number(form.droppedCatches) || 0, runOuts: Number(form.runOuts) || 0, stumpings: Number(form.stumpings) || 0, missedStumpings: Number(form.missedStumpings) || 0 };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetFieldingStatsQueryKey(matchId) });
       qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
@@ -419,6 +425,7 @@ function FieldingTab({ matchId }: { matchId: number }) {
               <StatBadge label="Dropped" value={stats.droppedCatches} />
               <StatBadge label="Run Outs" value={stats.runOuts} />
               <StatBadge label="Stumpings" value={stats.stumpings} />
+              {(stats as any).missedStumpings > 0 && <StatBadge label="Missed St." value={(stats as any).missedStumpings} />}
             </div>
           </CardContent>
         </Card>
@@ -432,6 +439,7 @@ function FieldingTab({ matchId }: { matchId: number }) {
                 { id: "droppedCatches", label: "Dropped" },
                 { id: "runOuts", label: "Run Outs" },
                 { id: "stumpings", label: "Stumpings" },
+                { id: "missedStumpings", label: "Missed St." },
               ].map(({ id, label }) => (
                 <div key={id} className="space-y-1.5">
                   <Label htmlFor={id}>{label}</Label>

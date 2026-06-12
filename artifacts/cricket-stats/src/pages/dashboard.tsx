@@ -10,9 +10,11 @@ import { Achievements } from "@/components/achievements";
 import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import {
@@ -342,6 +344,8 @@ function HeadToHead({ data }: { data: PerMatchStat[] }) {
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const [selectedSeason, setSelectedSeason] = useState("all");
+
   const { data: summary, isLoading: summaryLoading } = useGetStatsSummary({
     query: { queryKey: getGetStatsSummaryQueryKey() },
   });
@@ -352,13 +356,46 @@ export default function Dashboard() {
     query: { queryKey: getGetPerMatchStatsQueryKey() },
   });
 
-  const hasMatchData = perMatch && perMatch.length > 0;
+  const seasons = useMemo(() => {
+    if (!perMatch) return [];
+    const years = [...new Set(perMatch.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a));
+    return years;
+  }, [perMatch]);
+
+  const filteredData = useMemo(() => {
+    if (!perMatch) return [];
+    if (selectedSeason === "all") return perMatch;
+    return perMatch.filter((d) => d.date.startsWith(selectedSeason));
+  }, [perMatch, selectedSeason]);
+
+  const hasMatchData = filteredData.length > 0;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Career Summary</h1>
-        <p className="text-muted-foreground mt-2">Your overall performance across all matches.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {selectedSeason === "all" ? "Career Summary" : `${selectedSeason} Season`}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {selectedSeason === "all"
+              ? "Your overall performance across all matches."
+              : `Showing stats for the ${selectedSeason} season.`}
+          </p>
+        </div>
+        {seasons.length > 0 && (
+          <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Season" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All time</SelectItem>
+              {seasons.map((y) => (
+                <SelectItem key={y} value={y}>{y} season</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Summary cards */}
@@ -423,28 +460,28 @@ export default function Dashboard() {
       {chartLoading ? (
         <Skeleton className="h-64 rounded-xl" />
       ) : hasMatchData ? (
-        <PerformanceChart data={perMatch} />
+        <PerformanceChart data={filteredData} />
       ) : null}
 
       {/* Form guide */}
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
-        <FormGuide data={perMatch} />
+        <FormGuide data={filteredData} />
       ) : null}
 
       {/* Bowling form guide */}
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
-        <BowlingForm data={perMatch} />
+        <BowlingForm data={filteredData} />
       ) : null}
 
       {/* Streak tracker */}
       {chartLoading ? (
         <Skeleton className="h-36 rounded-xl" />
       ) : hasMatchData ? (
-        <StreakTracker data={perMatch} />
+        <StreakTracker data={filteredData} />
       ) : null}
 
       {/* Personal bests */}
@@ -455,13 +492,13 @@ export default function Dashboard() {
           <Skeleton className="h-36 rounded-xl" />
         </div>
       ) : hasMatchData ? (
-        <PersonalBests data={perMatch} />
+        <PersonalBests data={filteredData} />
       ) : null}
 
-      {/* Achievements & milestones */}
+      {/* Achievements & milestones — always career-wide */}
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
-      ) : hasMatchData ? (
+      ) : (perMatch && perMatch.length > 0) ? (
         <Achievements data={perMatch} />
       ) : null}
 
@@ -469,7 +506,7 @@ export default function Dashboard() {
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
-        <HeadToHead data={perMatch} />
+        <HeadToHead data={filteredData} />
       ) : null}
 
       {/* Recent matches */}
@@ -503,7 +540,10 @@ export default function Dashboard() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {matches?.map((match, i) => (
+            {(selectedSeason === "all"
+              ? matches
+              : matches?.filter((m) => m.date.startsWith(selectedSeason))
+            )?.map((match, i) => (
               <Link key={match.id} href={`/matches/${match.id}`} className="block">
                 <Card
                   className="hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-2"
