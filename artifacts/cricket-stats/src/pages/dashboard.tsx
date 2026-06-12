@@ -7,6 +7,7 @@ import {
   getGetPerMatchStatsQueryKey,
 } from "@workspace/api-client-react";
 import { Achievements } from "@/components/achievements";
+import { EncouragementBanner } from "@/components/encouragement-banner";
 import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
@@ -454,6 +455,11 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Encouragement banner — shown when bad form detected */}
+      {!chartLoading && hasMatchData && (
+        <EncouragementBanner data={filteredData} />
       )}
 
       {/* Performance chart */}
