@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, numeric, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -9,6 +9,7 @@ export const matchesTable = pgTable("matches", {
   venue: text("venue"),
   matchType: text("match_type").notNull().default("Club"),
   result: text("result"),
+  playerOfTheMatch: boolean("player_of_the_match").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -725,6 +725,24 @@ export default function MatchDetail() {
           </p>
         </div>
         <div className="flex items-center gap-2 mt-1">
+          {/* Player of the Match toggle */}
+          <button
+            title={(match as any).playerOfTheMatch ? "Remove Player of the Match" : "Mark as Player of the Match"}
+            onClick={() => {
+              updateMatch.mutate(
+                { matchId: match.id, data: { playerOfTheMatch: !(match as any).playerOfTheMatch } as any },
+                {
+                  onSuccess: () => {
+                    qc.invalidateQueries({ queryKey: getGetMatchQueryKey(match.id) });
+                    toast({ title: (match as any).playerOfTheMatch ? "POTM removed" : "⭐ Marked as Player of the Match!" });
+                  },
+                }
+              );
+            }}
+            className={`transition-colors ${(match as any).playerOfTheMatch ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground hover:text-amber-400"}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill={(match as any).playerOfTheMatch ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
           <Link href={`/matches/${match.id}/report`} className="text-muted-foreground hover:text-foreground transition-colors" title="View printable report">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </Link>

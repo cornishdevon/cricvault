@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { format } from "date-fns";
 
 type PerMatchStat = {
   matchId: number;
@@ -24,6 +23,7 @@ type PerMatchStat = {
   droppedCatches?: number | null;
   missedStumpings?: number | null;
   result?: string | null;
+  playerOfTheMatch?: boolean | null;
 };
 
 type Badge = {
@@ -44,20 +44,21 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
 
   const battingInnings = sorted.filter((d) => d.runs !== null && d.runs !== undefined);
   const bowlingInnings = sorted.filter((d) => d.wickets !== null && d.wickets !== undefined);
+  const bowlingSpells  = sorted.filter((d) => d.overs != null && (d.overs as number) > 0);
 
   // ── Career totals ──────────────────────────────────────────────────────────
   const careerRuns    = battingInnings.reduce((s, d) => s + (d.runs ?? 0), 0);
   const careerWickets = bowlingInnings.reduce((s, d) => s + (d.wickets ?? 0), 0);
-  const totalOvers    = bowlingInnings.reduce((s, d) => s + (d.overs ?? 0), 0);
-  const totalRunsConceded = bowlingInnings.reduce((s, d) => s + (d.runsConceded ?? 0), 0);
+  const totalOvers    = bowlingSpells.reduce((s, d) => s + (d.overs ?? 0), 0);
+  const totalRunsConceded = bowlingSpells.reduce((s, d) => s + (d.runsConceded ?? 0), 0);
   const careerEconomy = totalOvers > 0 ? totalRunsConceded / totalOvers : Infinity;
 
   const careerBowledWickets = bowlingInnings.reduce((s, d) => s + (d.bowledWickets ?? 0), 0);
   const careerLbwWickets    = bowlingInnings.reduce((s, d) => s + (d.lbwWickets ?? 0), 0);
-  const careerDropped        = sorted.reduce((s, d) => s + (d.droppedCatches ?? 0), 0);
-  const careerMissedSt       = sorted.reduce((s, d) => s + (d.missedStumpings ?? 0), 0);
-  const careerStumpings      = sorted.reduce((s, d) => s + (d.stumpings ?? 0), 0);
-  const careerHundreds       = battingInnings.filter((d) => (d.runs ?? 0) >= 100);
+  const careerDropped       = sorted.reduce((s, d) => s + (d.droppedCatches ?? 0), 0);
+  const careerMissedSt      = sorted.reduce((s, d) => s + (d.missedStumpings ?? 0), 0);
+  const careerStumpings     = sorted.reduce((s, d) => s + (d.stumpings ?? 0), 0);
+  const careerHundreds      = battingInnings.filter((d) => (d.runs ?? 0) >= 100);
 
   // ── Per-season run totals ──────────────────────────────────────────────────
   const runsBySeason: Record<string, number> = {};
@@ -65,9 +66,6 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
     const y = d.date.slice(0, 4);
     runsBySeason[y] = (runsBySeason[y] ?? 0) + (d.runs ?? 0);
   }
-  const bestSeasonRuns = Math.max(0, ...Object.values(runsBySeason));
-  const bestRunsSeason = Object.entries(runsBySeason).find(([, v]) => v === bestSeasonRuns)?.[0];
-
   const strokeMakerEarned = Object.values(runsBySeason).some((v) => v >= 500);
   const strokeMakerSeason = Object.entries(runsBySeason).find(([, v]) => v >= 500)?.[0];
   const runMachineEarned  = Object.values(runsBySeason).some((v) => v >= 750);
@@ -102,7 +100,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const safeGlovesEarned = careerStumpings >= 5;
 
   // ── Bowling feats ─────────────────────────────────────────────────────────
-  const magicianMatch = sorted.find((d) => d.hatTrick === true);
+  const magicianMatch  = sorted.find((d) => d.hatTrick === true);
   const bigHitterMatch = sorted.find((d) => (d.sixes ?? 0) >= 5);
   const boundaryMatch  = sorted.find((d) => (d.fours ?? 0) >= 10);
 
@@ -137,16 +135,95 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const caughtOuts = battingInnings.filter((d) => (d.howOut?.toLowerCase() ?? "").includes("caught")).length;
   const runOutOuts = battingInnings.filter((d) => d.howOut?.toLowerCase() === "run out").length;
 
-  // ── Pinch Hitter — 50 runs in < 20 balls ─────────────────────────────────
+  // ── Pinch Hitter ─────────────────────────────────────────────────────────
   const pinchHitterMatch = battingInnings.find(
     (d) => (d.runs ?? 0) >= 50 && (d.ballsFaced ?? 999) < 20 && (d.ballsFaced ?? 0) > 0
   );
 
-  // ── Line and Length — career econ < 3, 40+ overs ─────────────────────────
+  // ── Line and Length ───────────────────────────────────────────────────────
   const lineAndLengthEarned = totalOvers >= 40 && careerEconomy < 3;
+
+  // ── NEW: Debut — first ever match logged ─────────────────────────────────
+  const debutMatch = sorted[0];
+  const debutEarned = sorted.length >= 1;
+
+  // ── NEW: Smell of Cut Grass — 10+ matches played ─────────────────────────
+  const smellGrassEarned = sorted.length >= 10;
+
+  // ── NEW: Welcome to New Season — matches in 2+ calendar years ────────────
+  const years = [...new Set(sorted.map((d) => d.date.slice(0, 4)))].sort();
+  const newSeasonEarned = years.length >= 2;
+  const newSeasonYear = years.length >= 2 ? years[years.length - 1] : undefined;
+
+  // ── NEW: Leather on Willow — avg 40+ over 10+ innings ────────────────────
+  const lwEarned =
+    battingInnings.length >= 10 &&
+    careerRuns / battingInnings.length >= 40;
+  const lwAvg = battingInnings.length > 0 ? (careerRuns / battingInnings.length).toFixed(1) : "0";
+
+  // ── NEW: Wicket Taker — 20 wickets over 10+ bowling appearances ──────────
+  const wtEarned = bowlingSpells.length >= 10 && careerWickets >= 20;
+
+  // ── NEW: Match Winner — 8 wins in any 10-match window ────────────────────
+  let matchWinnerEarned = false;
+  let matchWinnerDetail = "";
+  const withResults = sorted.filter((m) => m.result && m.result !== "");
+  if (withResults.length >= 10) {
+    for (let i = 0; i <= withResults.length - 10; i++) {
+      const window = withResults.slice(i, i + 10);
+      const wins = window.filter((m) => m.result?.toLowerCase() === "win").length;
+      if (wins >= 8) {
+        matchWinnerEarned = true;
+        matchWinnerDetail = `${wins}/10 wins`;
+        break;
+      }
+    }
+  }
+
+  // ── NEW: Player of the Match ──────────────────────────────────────────────
+  const potmMatches = sorted.filter((d) => d.playerOfTheMatch === true);
+  const potmEarned  = potmMatches.length > 0;
+  const potmFirst   = potmMatches[0];
+
+  // ── NEW: All Rounder — 30 runs AND 3 wickets OR 3 keeper catches in one game
+  const allRounderMatch = sorted.find(
+    (d) =>
+      (d.runs ?? 0) >= 30 &&
+      ((d.wickets ?? 0) >= 3 || (d.catches ?? 0) + (d.stumpings ?? 0) >= 3)
+  );
+
+  // ── NEW: Teflon (shame) — drops 2+ catches in one game ───────────────────
+  const teflonMatch = sorted.find((d) => (d.droppedCatches ?? 0) >= 2);
 
   // ── Build badge list ──────────────────────────────────────────────────────
   const badges: Badge[] = [
+    // ─ First steps ─
+    {
+      id: "debut",
+      label: "Debut",
+      description: "First match logged in Cricket Log",
+      icon: "🎖️",
+      earned: debutEarned,
+      matchId: debutMatch?.matchId,
+      opponent: debutMatch?.opponent,
+    },
+    {
+      id: "smellGrass",
+      label: "Smell of Cut Grass",
+      description: "10 matches played — you're a regular",
+      icon: "🌿",
+      earned: smellGrassEarned,
+      detail: smellGrassEarned ? `${sorted.length} matches` : undefined,
+    },
+    {
+      id: "newSeason",
+      label: "Welcome to the New Season",
+      description: "First stats logged in a brand new season",
+      icon: "🌱",
+      earned: newSeasonEarned,
+      detail: newSeasonYear ? `${newSeasonYear} season` : undefined,
+    },
+
     // ─ Batting milestones ─
     {
       id: "first50",
@@ -175,6 +252,14 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       matchId: pinchHitterMatch?.matchId,
       opponent: pinchHitterMatch?.opponent,
       detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined,
+    },
+    {
+      id: "leatherOnWillow",
+      label: "Leather on Willow",
+      description: "Batting average of 40+ over 10 games",
+      icon: "🪵",
+      earned: lwEarned,
+      detail: lwEarned ? `Avg ${lwAvg}` : undefined,
     },
     {
       id: "consistent",
@@ -253,6 +338,14 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first5wkt,
       matchId: first5wkt?.matchId,
       opponent: first5wkt?.opponent,
+    },
+    {
+      id: "wicketTaker",
+      label: "Wicket Taker",
+      description: "20 wickets over 10+ bowling appearances",
+      icon: "🎯",
+      earned: wtEarned,
+      detail: wtEarned ? `${careerWickets} wickets` : undefined,
     },
     {
       id: "magician",
@@ -344,6 +437,38 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       opponent: trophyMatch?.opponent,
     },
 
+    // ─ Team achievements ─
+    {
+      id: "matchWinner",
+      label: "Match Winner",
+      description: "8 wins in any 10-match window",
+      icon: "🥇",
+      earned: matchWinnerEarned,
+      detail: matchWinnerDetail || undefined,
+    },
+    {
+      id: "potm",
+      label: "Player of the Match",
+      description: "Awarded Player of the Match",
+      icon: "⭐",
+      earned: potmEarned,
+      matchId: potmFirst?.matchId,
+      opponent: potmFirst?.opponent,
+      detail: potmMatches.length > 1 ? `${potmMatches.length}× POTM` : undefined,
+    },
+    {
+      id: "allRounder",
+      label: "All Rounder",
+      description: "30 runs & 3 wickets (or 3 keeper takes) in one game",
+      icon: "🌟",
+      earned: !!allRounderMatch,
+      matchId: allRounderMatch?.matchId,
+      opponent: allRounderMatch?.opponent,
+      detail: allRounderMatch
+        ? `${allRounderMatch.runs}r / ${allRounderMatch.wickets ?? 0}wkt`
+        : undefined,
+    },
+
     // ─ Batting mishaps ─
     {
       id: "billyBigPads",
@@ -399,6 +524,17 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       icon: "🙅",
       earned: careerMissedSt > 0,
       detail: careerMissedSt > 0 ? `${careerMissedSt} missed` : undefined,
+      isNegative: true,
+    },
+    {
+      id: "teflon",
+      label: "Teflon",
+      description: "Dropped 2+ catches in a single game as keeper",
+      icon: "🫳",
+      earned: !!teflonMatch,
+      matchId: teflonMatch?.matchId,
+      opponent: teflonMatch?.opponent,
+      detail: teflonMatch ? `${teflonMatch.droppedCatches} drops` : undefined,
       isNegative: true,
     },
 
@@ -494,7 +630,7 @@ function MilestonesBar({ milestones }: { milestones: ReturnType<typeof computeMi
 }
 
 export function Achievements({ data }: { data: PerMatchStat[] }) {
-  const badges   = computeBadges(data);
+  const badges    = computeBadges(data);
   const milestones = computeMilestones(data);
   const positive  = badges.filter((b) => !b.isNegative);
   const negative  = badges.filter((b) => b.isNegative);
