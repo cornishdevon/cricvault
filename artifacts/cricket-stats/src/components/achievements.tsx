@@ -88,9 +88,10 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
 
   // ── Batting milestones ─────────────────────────────────────────────────────
-  // Escalation: Half-Century only fires for 50–99 runs. Century (100+) supersedes it.
+  // Escalation: Half-Century fires for 50–99, Century for 100–149, 150 Club for 150+.
   const first50any = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 50 && r < 100; });
-  const first100   = battingInnings.find((d) => (d.runs ?? 0) >= 100);
+  const first100   = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 100 && r < 150; });
+  const first150   = battingInnings.find((d) => (d.runs ?? 0) >= 150);
 
   // ── Five-for ───────────────────────────────────────────────────────────────
   const first5wkt = bowlingInnings.find((d) => (d.wickets ?? 0) >= 5);
@@ -280,11 +281,21 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
     {
       id: "first100",
       label: "Century",
-      description: "Scored 100+ runs in an innings",
+      description: "Scored 100–149 runs in an innings",
       icon: "💯",
       earned: !!first100,
       matchId: first100?.matchId,
       opponent: first100?.opponent,
+    },
+    {
+      id: "first150",
+      label: "150 Club",
+      description: "Scored 150+ runs in an innings",
+      icon: "💎",
+      earned: !!first150,
+      matchId: first150?.matchId,
+      opponent: first150?.opponent,
+      detail: first150 ? `${first150.runs} runs` : undefined,
     },
     {
       id: "pinchHitter",

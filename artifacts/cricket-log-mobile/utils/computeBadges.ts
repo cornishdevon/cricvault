@@ -76,10 +76,10 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const raiseTheBatEarned = Object.values(fiftiesBySeason).some((c) => c >= 5);
   const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
 
-  // Escalation: Half-Century only fires for innings strictly 50–99.
-  // Century supersedes it, so scoring 100+ does NOT also award Half-Century.
+  // Escalation: Half-Century fires for 50–99, Century for 100–149, 150 Club for 150+.
   const first50  = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 50 && r < 100; });
-  const first100 = battingInnings.find((d) => (d.runs ?? 0) >= 100);
+  const first100 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 100 && r < 150; });
+  const first150 = battingInnings.find((d) => (d.runs ?? 0) >= 150);
   const first5wkt = bowlingInnings.find((d) => (d.wickets ?? 0) >= 5);
 
   const notOuts = sorted.filter((d) => d.howOut === "Not Out");
@@ -165,8 +165,9 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "smellGrass", label: "Smell of Cut Grass", description: "10 matches played",             icon: "🌿", earned: sorted.length >= 10, detail: sorted.length >= 10 ? `${sorted.length} matches` : undefined },
     { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 
-    { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",      icon: "🏏", earned: !!first50, detail: first50 ? `${first50.runs} vs ${first50.opponent}` : undefined },
-    { id: "first100",      label: "Century",         description: "100+ runs in an innings",       icon: "💯", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
+    { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",       icon: "🏏", earned: !!first50,  detail: first50  ? `${first50.runs} vs ${first50.opponent}` : undefined },
+    { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
+    { id: "first150",      label: "150 Club",        description: "150+ runs in an innings",        icon: "💎", earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined },
     { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
     { id: "oneShort",      label: "One Short",       description: "Out on 49, 99, 149…",           icon: "1️⃣", earned: oneShortCount >= 1, detail: oneShortCount > 1 ? `${oneShortCount} times` : undefined },
