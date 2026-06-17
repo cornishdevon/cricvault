@@ -25,6 +25,7 @@ type PerMatchStat = {
   result?: string | null;
   playerOfTheMatch?: boolean | null;
   badUmpireDecision?: boolean | null;
+  wouldHaveReferred?: boolean | null;
 };
 
 type Badge = {
@@ -193,10 +194,15 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       ((d.wickets ?? 0) >= 3 || (d.catches ?? 0) + (d.stumpings ?? 0) >= 3)
   );
 
-  // ── NEW: Triggered — umpire gave a bad decision (LBW or caught behind) ──
+  // ── Triggered — bad umpire decision (batting, LBW or caught behind) ──────
   const triggeredMatches = sorted.filter((d) => d.badUmpireDecision === true);
-  const triggeredEarned  = triggeredMatches.length > 0;
+  const triggeredCount   = triggeredMatches.length;
   const triggeredFirst   = triggeredMatches[0];
+
+  // ── DRS — would have referred a not-out while bowling ────────────────────
+  const drsMatches = sorted.filter((d) => d.wouldHaveReferred === true);
+  const drsCount   = drsMatches.length;
+  const drsFirst   = drsMatches[0];
 
   // ── NEW: Teflon (shame) — drops 2+ catches in one game ───────────────────
   const teflonMatch = sorted.find((d) => (d.droppedCatches ?? 0) >= 2);
@@ -475,18 +481,39 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
         : undefined,
     },
 
-    // ─ Umpire decisions ─
-    {
-      id: "triggered",
-      label: "Triggered",
-      description: "Given out on a bad umpire decision (LBW or caught behind)",
+    // ─ Triggered milestones (batting bad umpire decisions) ─
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `triggered_${milestone}`,
+      label: milestone === 1 ? "Triggered" : `Triggered ×${milestone}`,
+      description: milestone === 1
+        ? "Given out on a bad umpire decision (LBW or caught behind)"
+        : `Robbed by the umpire ${milestone} times`,
       icon: "😤",
-      earned: triggeredEarned,
-      matchId: triggeredFirst?.matchId,
-      opponent: triggeredFirst?.opponent,
-      detail: triggeredMatches.length > 1 ? `${triggeredMatches.length}× robbed` : undefined,
+      earned: triggeredCount >= milestone,
+      matchId: milestone === 1 ? triggeredFirst?.matchId : undefined,
+      opponent: milestone === 1 ? triggeredFirst?.opponent : undefined,
+      detail: triggeredCount >= milestone && triggeredCount > milestone
+        ? `${triggeredCount} times total`
+        : undefined,
       isNegative: true,
-    },
+    })),
+
+    // ─ DRS milestones (bowling not-out referrals) ─
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `drs_${milestone}`,
+      label: milestone === 1 ? "DRS" : `DRS ×${milestone}`,
+      description: milestone === 1
+        ? "Would have referred a not-out decision while bowling"
+        : `Would have referred ${milestone} not-out decisions`,
+      icon: "📺",
+      earned: drsCount >= milestone,
+      matchId: milestone === 1 ? drsFirst?.matchId : undefined,
+      opponent: milestone === 1 ? drsFirst?.opponent : undefined,
+      detail: drsCount >= milestone && drsCount > milestone
+        ? `${drsCount} times total`
+        : undefined,
+      isNegative: true,
+    })),
 
     // ─ Batting mishaps ─
     {

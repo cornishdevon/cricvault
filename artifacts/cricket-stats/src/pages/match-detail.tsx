@@ -271,7 +271,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
   const createBowling = useCreateBowlingStats();
   const updateBowling = useUpdateBowlingStats();
 
-  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false, bowledWickets: "", lbwWickets: "" });
+  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false, bowledWickets: "", lbwWickets: "", wouldHaveReferred: "" as "" | "yes" | "no" });
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
@@ -288,6 +288,10 @@ function BowlingTab({ matchId }: { matchId: number }) {
         hatTrick: !!(stats as any).hatTrick,
         bowledWickets: String((stats as any).bowledWickets ?? 0),
         lbwWickets: String((stats as any).lbwWickets ?? 0),
+        wouldHaveReferred:
+          (stats as any).wouldHaveReferred === true ? "yes"
+          : (stats as any).wouldHaveReferred === false ? "no"
+          : "",
       });
     }
     setEditing(true);
@@ -304,6 +308,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
       hatTrick: form.hatTrick,
       bowledWickets: Number(form.bowledWickets) || 0,
       lbwWickets: Number(form.lbwWickets) || 0,
+      wouldHaveReferred: form.wouldHaveReferred !== "" ? form.wouldHaveReferred === "yes" : undefined,
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
@@ -343,6 +348,19 @@ function BowlingTab({ matchId }: { matchId: number }) {
                 </div>
               )}
             </div>
+            {(stats as any).wouldHaveReferred != null && (
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
+                <span className="text-sm text-muted-foreground">DRS:</span>
+                <Badge
+                  variant="outline"
+                  className={(stats as any).wouldHaveReferred
+                    ? "border-red-300 text-red-600 bg-red-50"
+                    : "border-muted text-muted-foreground"}
+                >
+                  {(stats as any).wouldHaveReferred ? "📺 Would have referred" : "✓ Happy with decision"}
+                </Badge>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : editing ? (
@@ -385,6 +403,21 @@ function BowlingTab({ matchId }: { matchId: number }) {
                   <span>🪄</span>
                 </Label>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Would you have referred a not-out decision by the umpire?</Label>
+              <Select
+                value={form.wouldHaveReferred}
+                onValueChange={(v) => setForm({ ...form, wouldHaveReferred: v as "" | "yes" | "no" })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No — happy with the decision</SelectItem>
+                  <SelectItem value="yes">Yes — would have referred it 📺</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {form.overs && form.runsConceded && Number(form.overs) > 0 && (
               <p className="text-sm text-muted-foreground">

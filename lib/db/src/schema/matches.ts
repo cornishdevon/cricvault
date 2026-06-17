@@ -47,6 +47,7 @@ export const bowlingStatsTable = pgTable("bowling_stats", {
   hatTrick: integer("hat_trick").notNull().default(0),
   bowledWickets: integer("bowled_wickets").notNull().default(0),
   lbwWickets: integer("lbw_wickets").notNull().default(0),
+  wouldHaveReferred: boolean("would_have_referred"),
 });
 
 export const insertBowlingStatsSchema = createInsertSchema(bowlingStatsTable).omit({ id: true });

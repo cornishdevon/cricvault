@@ -156,7 +156,7 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
 
 router.post("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
   const economyRate = calcEconomy(runsConceded, overs);
   const [row] = await db
     .insert(bowlingStatsTable)
@@ -172,6 +172,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
       hatTrick: hatTrick ? 1 : 0,
       bowledWickets: bowledWickets ?? 0,
       lbwWickets: lbwWickets ?? 0,
+      wouldHaveReferred: wouldHaveReferred ?? null,
     })
     .returning();
   res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
@@ -179,7 +180,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
 
 router.patch("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
   const [existing] = await db
     .select()
     .from(bowlingStatsTable)
@@ -195,6 +196,7 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
   if (hatTrick !== undefined) updates.hatTrick = hatTrick ? 1 : 0;
   if (bowledWickets !== undefined) updates.bowledWickets = bowledWickets;
   if (lbwWickets !== undefined) updates.lbwWickets = lbwWickets;
+  if (wouldHaveReferred !== undefined) updates.wouldHaveReferred = wouldHaveReferred;
   const newRuns = runsConceded ?? existing.runsConceded;
   const newOvers = overs ?? Number(existing.overs);
   updates.economyRate = String(calcEconomy(newRuns, newOvers));
@@ -376,6 +378,7 @@ router.get("/stats/per-match", async (req, res) => {
         hatTrick: bowling ? !!bowling.hatTrick : null,
         bowledWickets: bowling ? bowling.bowledWickets : null,
         lbwWickets: bowling ? bowling.lbwWickets : null,
+        wouldHaveReferred: bowling ? bowling.wouldHaveReferred ?? null : null,
         catches: fielding ? fielding.catches : null,
         stumpings: fielding ? fielding.stumpings : null,
         droppedCatches: fielding ? fielding.droppedCatches : null,
