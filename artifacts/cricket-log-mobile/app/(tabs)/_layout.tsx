@@ -20,13 +20,13 @@ function NativeTabLayout() {
         <Icon sf={{ default: "list.bullet", selected: "list.bullet" }} />
         <Label>Matches</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="log">
-        <Icon sf={{ default: "plus.circle", selected: "plus.circle.fill" }} />
-        <Label>Log Match</Label>
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="achievements">
         <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
         <Label>Achievements</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="log">
+        <Icon sf={{ default: "plus.circle", selected: "plus.circle.fill" }} />
+        <Label>Log Match</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -96,18 +96,6 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="log"
-        options={{
-          title: "Log Match",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="plus.circle.fill" tintColor={color} size={22} />
-            ) : (
-              <Feather name="plus-circle" size={22} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
         name="achievements"
         options={{
           title: "Achievements",
@@ -116,6 +104,18 @@ function ClassicTabLayout() {
               <SymbolView name="trophy.fill" tintColor={color} size={22} />
             ) : (
               <Feather name="award" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="log"
+        options={{
+          title: "Log Match",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="plus.circle.fill" tintColor={color} size={22} />
+            ) : (
+              <Feather name="plus-circle" size={22} color={color} />
             ),
         }}
       />
