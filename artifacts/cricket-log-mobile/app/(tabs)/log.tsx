@@ -63,7 +63,6 @@ type FieldingForm = {
   missedStumpings: string;
 };
 
-const MATCH_TYPES = ["Club", "T20", "ODI", "Test", "Friendly", "Tournament"];
 const HOW_OUT_OPTIONS = [
   "Not Out",
   "Caught",
@@ -210,7 +209,7 @@ const defaultMatch: MatchForm = {
   date: new Date().toISOString().split("T")[0],
   opponent: "",
   venue: "",
-  matchType: "Club",
+  matchType: "",
   result: "",
   playerOfTheMatch: false,
 };
@@ -436,10 +435,10 @@ export default function LogMatchScreen() {
             </Field>
 
             <Field label="Match Type">
-              <ChipGroup
-                options={MATCH_TYPES}
-                selected={matchForm.matchType}
-                onSelect={(v) => updateMatch("matchType", v)}
+              <Input
+                value={matchForm.matchType}
+                onChangeText={(v) => updateMatch("matchType", v)}
+                placeholder="e.g. Backyard, Cup Match, Club…"
               />
             </Field>
 
