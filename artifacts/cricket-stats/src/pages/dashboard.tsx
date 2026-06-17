@@ -23,11 +23,12 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  ReferenceLine,
 } from "recharts";
 
 type PerMatchStat = {
@@ -100,84 +101,159 @@ function exportCSV(data: PerMatchStat[], season: string) {
   URL.revokeObjectURL(url);
 }
 
-// ── Performance Chart ─────────────────────────────────────────────────────────
+// ── Shared chart helpers ───────────────────────────────────────────────────────
 
-function PerformanceChart({ data }: { data: PerMatchStat[] }) {
-  const chartData = data.map((d) => ({
+const TOOLTIP_STYLE = {
+  background: "hsl(var(--card))",
+  border: "1px solid hsl(var(--border))",
+  borderRadius: "8px",
+  fontSize: 12,
+  color: "hsl(var(--foreground))",
+};
+
+function xAxisProps(len: number) {
+  return {
+    tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } as const,
+    tickLine: false as const,
+    axisLine: false as const,
+    interval: 0 as const,
+    angle: len > 6 ? -35 : 0,
+    textAnchor: (len > 6 ? "end" : "middle") as "end" | "middle",
+    height: len > 6 ? 60 : 28,
+  };
+}
+
+function yAxisProps() {
+  return {
+    tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" } as const,
+    tickLine: false as const,
+    axisLine: false as const,
+    width: 32,
+  };
+}
+
+function rollingAvg(arr: number[], window = 3): (number | null)[] {
+  return arr.map((_, i) => {
+    const slice = arr.slice(Math.max(0, i - window + 1), i + 1).filter((v) => v != null);
+    if (slice.length === 0) return null;
+    return parseFloat((slice.reduce((s, v) => s + v, 0) / slice.length).toFixed(1));
+  });
+}
+
+// ── Runs Chart ─────────────────────────────────────────────────────────────────
+
+function RunsChart({ data }: { data: PerMatchStat[] }) {
+  const innings = data.filter((d) => d.runs != null);
+  if (innings.length === 0) return null;
+
+  const avg = rollingAvg(innings.map((d) => d.runs ?? 0));
+  const overallAvg =
+    Math.round(innings.reduce((s, d) => s + (d.runs ?? 0), 0) / innings.length);
+
+  const chartData = innings.map((d, i) => ({
     label: `vs ${d.opponent}`,
     Runs: d.runs ?? 0,
-    Wickets: d.wickets ?? 0,
+    Avg: avg[i],
   }));
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle>Performance Over Time</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Runs and wickets across all logged matches.
-        </p>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <CardTitle>Runs Scored</CardTitle>
+            <p className="text-sm text-muted-foreground mt-0.5">Per innings · {innings.length} logged</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">{overallAvg}</p>
+            <p className="text-xs text-muted-foreground">avg per innings</p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={260}>
-          <ComposedChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              angle={chartData.length > 5 ? -30 : 0}
-              textAnchor={chartData.length > 5 ? "end" : "middle"}
-              height={chartData.length > 5 ? 56 : 32}
-            />
-            <YAxis
-              yAxisId="runs"
-              orientation="left"
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickLine={false}
-              axisLine={false}
-              label={{
-                value: "Runs",
-                angle: -90,
-                position: "insideLeft",
-                offset: 12,
-                style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
-              }}
-            />
-            <YAxis
-              yAxisId="wickets"
-              orientation="right"
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickLine={false}
-              axisLine={false}
-              allowDecimals={false}
-              domain={[0, "auto"]}
-              label={{
-                value: "Wickets",
-                angle: 90,
-                position: "insideRight",
-                offset: 12,
-                style: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
-              }}
-            />
+        <ResponsiveContainer width="100%" height={240}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="label" {...xAxisProps(chartData.length)} />
+            <YAxis {...yAxisProps()} />
+            <ReferenceLine y={overallAvg} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeOpacity={0.4} />
             <Tooltip
-              contentStyle={{
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
-                fontSize: 12,
-                color: "hsl(var(--foreground))",
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(value: any, name: string) => {
+                if (name === "Avg") return [`${value} (3-match avg)`, "Trend"];
+                return [value, name];
               }}
-              formatter={(value: any, name: string) =>
-                value === null || value === undefined ? ["—", name] : [value, name]
-              }
             />
-            <Legend
-              wrapperStyle={{ fontSize: 12, color: "hsl(var(--muted-foreground))", paddingTop: 8 }}
+            <Bar dataKey="Runs" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={44} opacity={0.85} />
+            <Line
+              dataKey="Avg"
+              type="monotone"
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+              dot={false}
+              strokeOpacity={0.7}
             />
-            <Bar yAxisId="runs" dataKey="Runs" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
-            <Bar yAxisId="wickets" dataKey="Wickets" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Wickets Chart ──────────────────────────────────────────────────────────────
+
+function WicketsChart({ data }: { data: PerMatchStat[] }) {
+  const innings = data.filter((d) => d.wickets != null);
+  if (innings.length === 0) return null;
+
+  const avg = rollingAvg(innings.map((d) => d.wickets ?? 0));
+  const overallAvg = parseFloat(
+    (innings.reduce((s, d) => s + (d.wickets ?? 0), 0) / innings.length).toFixed(1)
+  );
+
+  const chartData = innings.map((d, i) => ({
+    label: `vs ${d.opponent}`,
+    Wickets: d.wickets ?? 0,
+    Avg: avg[i],
+  }));
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <CardTitle>Wickets Taken</CardTitle>
+            <p className="text-sm text-muted-foreground mt-0.5">Per spell · {innings.length} logged</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold" style={{ color: "hsl(var(--secondary))" }}>{overallAvg}</p>
+            <p className="text-xs text-muted-foreground">avg per spell</p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={240}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+            <XAxis dataKey="label" {...xAxisProps(chartData.length)} />
+            <YAxis {...yAxisProps()} allowDecimals={false} />
+            <ReferenceLine y={overallAvg} stroke="hsl(var(--secondary))" strokeDasharray="4 3" strokeOpacity={0.4} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(value: any, name: string) => {
+                if (name === "Avg") return [`${value} (3-match avg)`, "Trend"];
+                return [value, name];
+              }}
+            />
+            <Bar dataKey="Wickets" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} maxBarSize={44} opacity={0.85} />
+            <Line
+              dataKey="Avg"
+              type="monotone"
+              stroke="hsl(var(--secondary))"
+              strokeWidth={2}
+              dot={false}
+              strokeOpacity={0.7}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </CardContent>
@@ -543,11 +619,17 @@ export default function Dashboard() {
         <EncouragementBanner data={filteredData} />
       )}
 
-      {/* Performance chart */}
+      {/* Runs & Wickets charts */}
       {chartLoading ? (
-        <Skeleton className="h-64 rounded-xl" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
       ) : hasMatchData ? (
-        <PerformanceChart data={filteredData} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <RunsChart data={filteredData} />
+          <WicketsChart data={filteredData} />
+        </div>
       ) : null}
 
       {/* Form guide */}
