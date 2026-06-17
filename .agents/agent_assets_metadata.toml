@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "qxP5YrxjlXO_Asp1Elraj"
+uri = "file://artifacts/cricket-log-mobile/assets/images/icon.png"
+type = "image"
+title = "cricket log app icon"

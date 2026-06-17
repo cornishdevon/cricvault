@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "Cricket Log Mobile"
+version = "1.0.0"
+id = "artifacts/cricket-log-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/mobile/" ]
+localPort = 25973
+
+[services.development]
+run = "pnpm --filter @workspace/cricket-log-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cricket-log-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/cricket-log-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "25973"
+BASE_PATH = "/mobile/"
