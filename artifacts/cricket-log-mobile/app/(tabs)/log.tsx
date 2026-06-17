@@ -702,16 +702,17 @@ export default function LogMatchScreen() {
             </Row>
           )}
         </SectionCard>
+
       </ScrollView>
 
-      {/* Save button */}
+      {/* Floating save bar — sits above the tab bar */}
       <View
         style={[
-          styles.footer,
+          styles.saveBar,
           {
             backgroundColor: colors.card,
             borderTopColor: colors.border,
-            paddingBottom: insets.bottom + 8,
+            bottom: insets.bottom + (Platform.OS === "web" ? 84 : 49),
           },
         ]}
       >
@@ -720,7 +721,7 @@ export default function LogMatchScreen() {
           onPress={handleSave}
           disabled={isPending}
         >
-          <Feather name="check" size={18} color="#fff" />
+          <Feather name="check-circle" size={20} color="#fff" />
           <Text style={styles.saveBtnText}>{isPending ? "Saving…" : "Save Match"}</Text>
         </TouchableOpacity>
       </View>
@@ -776,13 +777,12 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
   chipText: { fontSize: 12, fontFamily: "Inter_500Medium" },
 
-  footer: {
+  saveBar: {
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingVertical: 10,
     borderTopWidth: 1,
   },
   saveBtn: {
