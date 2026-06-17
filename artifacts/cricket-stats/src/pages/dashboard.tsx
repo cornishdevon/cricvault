@@ -478,12 +478,15 @@ export default function Dashboard() {
 
       {/* Summary cards */}
       {summaryLoading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-32 rounded-xl" />
-          <Skeleton className="h-32 rounded-xl" />
-          <Skeleton className="h-32 rounded-xl" />
+        <div className="rounded-2xl bg-primary p-5">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+          </div>
         </div>
       ) : (
+        <div className="rounded-2xl bg-primary p-5">
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
@@ -531,6 +534,7 @@ export default function Dashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
         </div>
       )}
 
