@@ -466,7 +466,7 @@ export default function LogMatchScreen() {
         </Animated.View>
       )}
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 110 }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + (Platform.OS === "web" ? 180 : 140) }]}
         keyboardShouldPersistTaps="handled"
       >
         {/* ── Match Info ── */}
