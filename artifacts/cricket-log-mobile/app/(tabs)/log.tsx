@@ -3,9 +3,16 @@ import {
   useCreateBattingStats,
   useCreateBowlingStats,
   useCreateFieldingStats,
+  useAddMatchPhoto,
+  useAddMatchVideo,
+  useCreateMatchReport,
+  useListMatchPhotos,
+  useListMatchVideos,
   getListMatchesQueryKey,
   getGetPerMatchStatsQueryKey,
   getGetStatsSummaryQueryKey,
+  getListMatchPhotosQueryKey,
+  getListMatchVideosQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -14,6 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Image,
   KeyboardAvoidingView,
   PanResponder,
   Platform,
@@ -25,6 +33,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
@@ -298,6 +307,330 @@ function SectionCard({
   );
 }
 
+// ── Media Step (Step 2) ───────────────────────────────────────────────────────
+
+async function uploadMobileFile(uri: string, contentType: string): Promise<string | null> {
+  try {
+    const domain = process.env.EXPO_PUBLIC_DOMAIN;
+    const apiBase = domain ? `https://${domain}` : "";
+    const filename = uri.split("/").pop() ?? "upload";
+    const urlRes = await fetch(`${apiBase}/api/storage/uploads/request-url`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: filename, size: 0, contentType }),
+    });
+    if (!urlRes.ok) return null;
+    const { uploadURL, objectPath } = await urlRes.json();
+    const fileRes = await fetch(uri);
+    const blob = await fileRes.blob();
+    await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": contentType }, body: blob });
+    return objectPath as string;
+  } catch {
+    return null;
+  }
+}
+
+function MediaStep({
+  matchId,
+  opponent,
+  onDone,
+}: {
+  matchId: number;
+  opponent: string;
+  onDone: () => void;
+}) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const qc = useQueryClient();
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [highlights, setHighlights] = useState("");
+  const [savingHighlights, setSavingHighlights] = useState(false);
+  const [highlightsSaved, setHighlightsSaved] = useState(false);
+
+  const { data: photos } = useListMatchPhotos(matchId, {
+    query: { queryKey: getListMatchPhotosQueryKey(matchId) },
+  });
+  const { data: videos } = useListMatchVideos(matchId, {
+    query: { queryKey: getListMatchVideosQueryKey(matchId) },
+  });
+  const addPhoto = useAddMatchPhoto();
+  const addVideo = useAddMatchVideo();
+  const createReport = useCreateMatchReport();
+
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  const storageBase = domain ? `https://${domain}` : "";
+
+  const handlePickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo access to upload match photos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    setUploadingPhoto(true);
+    try {
+      const contentType = asset.mimeType ?? "image/jpeg";
+      const objectPath = await uploadMobileFile(asset.uri, contentType);
+      if (!objectPath) throw new Error("Upload failed");
+      addPhoto.mutate(
+        { matchId, data: { url: `/api/storage${objectPath}` } },
+        {
+          onSuccess: () => qc.invalidateQueries({ queryKey: getListMatchPhotosQueryKey(matchId) }),
+          onError: () => Alert.alert("Error", "Failed to save photo."),
+        }
+      );
+    } catch {
+      Alert.alert("Error", "Photo upload failed.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePickVideo = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow media access to upload match videos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    setUploadingVideo(true);
+    try {
+      const contentType = asset.mimeType ?? "video/mp4";
+      const objectPath = await uploadMobileFile(asset.uri, contentType);
+      if (!objectPath) throw new Error("Upload failed");
+      addVideo.mutate(
+        { matchId, data: { objectPath: `/api/storage${objectPath}` } },
+        {
+          onSuccess: () => qc.invalidateQueries({ queryKey: getListMatchVideosQueryKey(matchId) }),
+          onError: () => Alert.alert("Error", "Failed to save video."),
+        }
+      );
+    } catch {
+      Alert.alert("Error", "Video upload failed.");
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  const handleSaveHighlights = () => {
+    if (!highlights.trim()) return;
+    setSavingHighlights(true);
+    createReport.mutate(
+      { matchId, data: { highlightsUrl: highlights.trim() } as any },
+      {
+        onSuccess: () => { setSavingHighlights(false); setHighlightsSaved(true); },
+        onError: () => { setSavingHighlights(false); Alert.alert("Error", "Failed to save link."); },
+      }
+    );
+  };
+
+  const photoCount = photos?.length ?? 0;
+  const videoCount = videos?.length ?? 0;
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 120 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* Step indicator */}
+      <View style={mediaStyles.stepHeader}>
+        <View style={mediaStyles.stepDots}>
+          <View style={[mediaStyles.dot, { backgroundColor: colors.border }]} />
+          <View style={[mediaStyles.dotLine, { backgroundColor: colors.border }]} />
+          <View style={[mediaStyles.dot, { backgroundColor: colors.primary }]} />
+        </View>
+        <Text style={[mediaStyles.stepTitle, { color: colors.foreground }]}>Step 2 — Add Media</Text>
+        <Text style={[mediaStyles.stepSub, { color: colors.mutedForeground }]}>vs {opponent}</Text>
+      </View>
+
+      <View style={{ height: 16 }} />
+
+      {/* Photos */}
+      <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={mediaStyles.cardRow}>
+          <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
+            📷 Photos{photoCount > 0 ? ` (${photoCount})` : ""}
+          </Text>
+          <TouchableOpacity
+            style={[mediaStyles.addBtn, { backgroundColor: colors.primary }]}
+            onPress={handlePickPhoto}
+            disabled={uploadingPhoto}
+          >
+            <Text style={mediaStyles.addBtnText}>{uploadingPhoto ? "Uploading…" : "+ Add"}</Text>
+          </TouchableOpacity>
+        </View>
+        {photoCount > 0 ? (
+          <View style={mediaStyles.photoGrid}>
+            {photos!.map((photo) => (
+              <Image
+                key={photo.id}
+                source={{ uri: photo.url.startsWith("http") ? photo.url : `${storageBase}${photo.url}` }}
+                style={mediaStyles.photoThumb}
+              />
+            ))}
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[mediaStyles.dropZone, { borderColor: colors.border }]}
+            onPress={handlePickPhoto}
+            disabled={uploadingPhoto}
+          >
+            <Text style={{ fontSize: 28 }}>📷</Text>
+            <Text style={[mediaStyles.dropText, { color: colors.mutedForeground }]}>
+              {uploadingPhoto ? "Uploading…" : "Tap to add match photos"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={{ height: 12 }} />
+
+      {/* Videos */}
+      <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={mediaStyles.cardRow}>
+          <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
+            🎬 Videos{videoCount > 0 ? ` (${videoCount})` : ""}
+          </Text>
+          <TouchableOpacity
+            style={[mediaStyles.addBtn, { backgroundColor: colors.primary }]}
+            onPress={handlePickVideo}
+            disabled={uploadingVideo}
+          >
+            <Text style={mediaStyles.addBtnText}>{uploadingVideo ? "Uploading…" : "+ Add"}</Text>
+          </TouchableOpacity>
+        </View>
+        {videoCount > 0 ? (
+          <View style={{ gap: 8, marginTop: 10 }}>
+            {videos!.map((v, i) => (
+              <View key={v.id} style={[mediaStyles.videoRow, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+                <Text style={{ fontSize: 16 }}>🎬</Text>
+                <Text style={[mediaStyles.videoName, { color: colors.foreground }]}>{v.caption || `Video ${i + 1}`}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[mediaStyles.dropZone, { borderColor: colors.border }]}
+            onPress={handlePickVideo}
+            disabled={uploadingVideo}
+          >
+            <Text style={{ fontSize: 28 }}>🎬</Text>
+            <Text style={[mediaStyles.dropText, { color: colors.mutedForeground }]}>
+              {uploadingVideo ? "Uploading…" : "Tap to add match videos"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={{ height: 12 }} />
+
+      {/* Highlights URL */}
+      <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
+          🔗 Highlights Link{highlightsSaved ? " ✓" : ""}
+        </Text>
+        {highlightsSaved ? (
+          <Text style={[mediaStyles.savedText, { color: colors.primary }]}>Link saved!</Text>
+        ) : (
+          <View style={{ gap: 8, marginTop: 10 }}>
+            <TextInput
+              style={[mediaStyles.hlInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              placeholder="https://www.youtube.com/watch?v=..."
+              placeholderTextColor={colors.mutedForeground}
+              value={highlights}
+              onChangeText={setHighlights}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={[mediaStyles.saveHlBtn, { backgroundColor: colors.primary, opacity: (!highlights.trim() || savingHighlights) ? 0.5 : 1 }]}
+              onPress={handleSaveHighlights}
+              disabled={!highlights.trim() || savingHighlights}
+            >
+              <Text style={mediaStyles.saveHlBtnText}>{savingHighlights ? "Saving…" : "Save Link"}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      <View style={{ height: 20 }} />
+
+      {/* Done */}
+      <TouchableOpacity
+        style={[mediaStyles.doneBtn, { backgroundColor: colors.primary }]}
+        onPress={onDone}
+      >
+        <Text style={mediaStyles.doneBtnText}>Done — View Match</Text>
+      </TouchableOpacity>
+      <Text style={[mediaStyles.skipText, { color: colors.mutedForeground }]}>
+        Media can also be added from the match detail page later.
+      </Text>
+    </ScrollView>
+  );
+}
+
+const mediaStyles = StyleSheet.create({
+  stepHeader: { alignItems: "center", paddingBottom: 4 },
+  stepDots: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 10 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  dotLine: { width: 32, height: 2, borderRadius: 1 },
+  stepTitle: { fontSize: 20, fontFamily: "Inter_700Bold" },
+  stepSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+
+  card: { borderRadius: 14, borderWidth: 1, padding: 14 },
+  cardRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  cardTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+
+  addBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8 },
+  addBtnText: { color: "#fff", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
+  dropZone: {
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderRadius: 10,
+    padding: 24,
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+  },
+  dropText: { fontSize: 13, fontFamily: "Inter_400Regular" },
+
+  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  photoThumb: { width: 80, height: 80, borderRadius: 8 },
+
+  videoRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10, borderRadius: 8, borderWidth: 1 },
+  videoName: { fontSize: 13, fontFamily: "Inter_400Regular", flex: 1 },
+
+  hlInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+  },
+  saveHlBtn: { borderRadius: 8, paddingVertical: 11, alignItems: "center" },
+  saveHlBtnText: { color: "#fff", fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  savedText: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginTop: 6 },
+
+  doneBtn: { borderRadius: 14, paddingVertical: 16, alignItems: "center" },
+  doneBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
+  skipText: { textAlign: "center", fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 10 },
+});
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function LogMatchScreen() {
@@ -319,9 +652,9 @@ export default function LogMatchScreen() {
       Animated.timing(slideAnim, { toValue: -160, duration: 280, useNativeDriver: true }),
     ]).start(() => {
       setPopupBadges([]);
-      router.replace("/");
+      // Stay on step 2 — the Done button handles navigation
     });
-  }, [fadeAnim, slideAnim, router]);
+  }, [fadeAnim, slideAnim]);
 
   useEffect(() => { dismissRef.current = dismissPopup; }, [dismissPopup]);
 
@@ -351,6 +684,10 @@ export default function LogMatchScreen() {
   const [hasBowling, setHasBowling] = useState(false);
   const [hasFielding, setHasFielding] = useState(false);
   const [isWicketKeeper, setIsWicketKeeper] = useState(false);
+
+  const [step, setStep] = useState<1 | 2>(1);
+  const [createdMatchId, setCreatedMatchId] = useState<number | null>(null);
+  const [savedOpponent, setSavedOpponent] = useState("");
 
   const { mutateAsync: createMatch, isPending } = useCreateMatch();
   const { mutateAsync: createBattingStats } = useCreateBattingStats();
@@ -522,6 +859,9 @@ export default function LogMatchScreen() {
         ...matchEvents.filter((e) => !gainedIds.has(e.id)),
       ];
 
+      // Save opponent before reset (used in step 2 header)
+      const opp = matchForm.opponent;
+
       // Reset form
       setMatchForm(defaultMatch);
       setBattingForm(defaultBatting);
@@ -532,19 +872,65 @@ export default function LogMatchScreen() {
       setHasFielding(false);
       setIsWicketKeeper(false);
 
+      // Advance to step 2
+      setSavedOpponent(opp);
+      setCreatedMatchId(matchId);
+      setStep(2);
+
       if (allCelebrations.length > 0) {
         setPopupBadges(allCelebrations);
         fadeAnim.setValue(0);
         slideAnim.setValue(0);
         Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }).start();
-      } else {
-        router.replace("/");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       Alert.alert("Error", `Failed to save: ${msg}`);
     }
   };
+
+  // Step 2 — media upload (with badge popup still overlaid if earned)
+  if (step === 2 && createdMatchId !== null) {
+    return (
+      <View style={{ flex: 1 }}>
+        <MediaStep
+          matchId={createdMatchId}
+          opponent={savedOpponent}
+          onDone={() => {
+            setStep(1);
+            setCreatedMatchId(null);
+            setSavedOpponent("");
+            router.replace("/");
+          }}
+        />
+        {popupBadges.length > 0 && (
+          <Animated.View
+            style={[
+              styles.badgePopup,
+              {
+                opacity: fadeAnim,
+                top: insets.top + 24,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.popupHandle} />
+            <Text style={styles.popupTitle}>
+              🎉 Badge{popupBadges.length > 1 ? "s" : ""} Unlocked!
+            </Text>
+            {popupBadges.map((b) => (
+              <View key={b.id} style={styles.popupRow}>
+                <Text style={styles.popupIcon}>{b.icon}</Text>
+                <Text style={styles.popupLabel}>{b.label}</Text>
+              </View>
+            ))}
+            <Text style={styles.popupHint}>Swipe up to dismiss</Text>
+          </Animated.View>
+        )}
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
