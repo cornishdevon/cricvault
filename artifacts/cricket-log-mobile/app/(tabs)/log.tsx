@@ -10,11 +10,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
   KeyboardAvoidingView,
+  PanResponder,
   Platform,
   ScrollView,
   StyleSheet,
@@ -305,8 +306,41 @@ export default function LogMatchScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [popupBadges, setPopupBadges] = useState<{ id: string; icon: string; label: string }[]>([]);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [popupBadges, setPopupBadges] = useState<{ id: string; icon: string; label: string; imageKey?: string }[]>([]);
+  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Ref so PanResponder (created once) can call the latest dismiss fn
+  const dismissRef = useRef<(() => void) | null>(null);
+
+  const dismissPopup = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim,  { toValue: 0, duration: 280, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -160, duration: 280, useNativeDriver: true }),
+    ]).start(() => {
+      setPopupBadges([]);
+      router.replace("/");
+    });
+  }, [fadeAnim, slideAnim, router]);
+
+  useEffect(() => { dismissRef.current = dismissPopup; }, [dismissPopup]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > 4,
+      onPanResponderMove: (_, gs) => {
+        if (gs.dy < 0) slideAnim.setValue(gs.dy);
+      },
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy < -50 || gs.vy < -0.6) {
+          dismissRef.current?.();
+        } else {
+          Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatch);
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
@@ -456,16 +490,10 @@ export default function LogMatchScreen() {
       setIsWicketKeeper(false);
 
       if (gained.length > 0) {
-        setPopupBadges(gained.map((b) => ({ id: b.id, icon: b.icon, label: b.label })));
+        setPopupBadges(gained.map((b) => ({ id: b.id, icon: b.icon, label: b.label, imageKey: b.imageKey })));
         fadeAnim.setValue(0);
-        Animated.sequence([
-          Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
-          Animated.delay(2200),
-          Animated.timing(fadeAnim, { toValue: 0, duration: 450, useNativeDriver: true }),
-        ]).start(() => {
-          setPopupBadges([]);
-          router.replace("/");
-        });
+        slideAnim.setValue(0);
+        Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }).start();
       } else {
         router.replace("/");
       }
@@ -484,9 +512,15 @@ export default function LogMatchScreen() {
         <Animated.View
           style={[
             styles.badgePopup,
-            { opacity: fadeAnim, top: insets.top + 24 },
+            {
+              opacity: fadeAnim,
+              top: insets.top + 24,
+              transform: [{ translateY: slideAnim }],
+            },
           ]}
+          {...panResponder.panHandlers}
         >
+          <View style={styles.popupHandle} />
           <Text style={styles.popupTitle}>
             🎉 Badge{popupBadges.length > 1 ? "s" : ""} Unlocked!
           </Text>
@@ -496,6 +530,7 @@ export default function LogMatchScreen() {
               <Text style={styles.popupLabel}>{b.label}</Text>
             </View>
           ))}
+          <Text style={styles.popupHint}>Swipe up to dismiss</Text>
         </Animated.View>
       )}
       <ScrollView
@@ -931,11 +966,25 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 6,
   },
+  popupHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#4ade8066",
+    marginBottom: 14,
+  },
   popupIcon: { fontSize: 26 },
   popupLabel: {
     fontSize: 16,
     fontFamily: "Inter_600SemiBold",
     color: "#fff",
+  },
+  popupHint: {
+    fontSize: 11,
+    color: "#4ade8066",
+    fontFamily: "Inter_400Regular",
+    marginTop: 10,
+    letterSpacing: 0.3,
   },
 
   saveBar: {
