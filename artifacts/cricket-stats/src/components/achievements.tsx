@@ -283,6 +283,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Century",
       description: "Scored 100–149 runs in an innings",
       icon: "💯",
+      imageKey: "century",
       earned: !!first100,
       matchId: first100?.matchId,
       opponent: first100?.opponent,

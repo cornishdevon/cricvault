@@ -166,7 +166,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 
     { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",       icon: "🏏", earned: !!first50,  detail: first50  ? `${first50.runs} vs ${first50.opponent}` : undefined },
-    { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
+    { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", imageKey: "century", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
     { id: "first150",      label: "150 Club",        description: "150+ runs in an innings",        icon: "💎", earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined },
     { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },

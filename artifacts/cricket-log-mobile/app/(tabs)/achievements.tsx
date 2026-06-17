@@ -16,6 +16,7 @@ import { computeBadges, type PerMatchStat, type Badge } from "@/utils/computeBad
 
 const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
   "pinch-hitter": require("@/assets/badges/pinch-hitter.png"),
+  "century":      require("@/assets/badges/century.png"),
 };
 
 function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof useColors> }) {
