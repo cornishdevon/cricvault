@@ -70,6 +70,7 @@ function BattingTab({ matchId }: { matchId: number }) {
     sixes: "",
     battingPosition: "",
     howOut: "",
+    badUmpireDecision: "" as "" | "yes" | "no",
   });
   const [editing, setEditing] = useState(false);
 
@@ -84,6 +85,10 @@ function BattingTab({ matchId }: { matchId: number }) {
         sixes: String(stats.sixes),
         battingPosition: stats.battingPosition ? String(stats.battingPosition) : "",
         howOut: stats.howOut || "",
+        badUmpireDecision:
+          (stats as any).badUmpireDecision === true ? "no"
+          : (stats as any).badUmpireDecision === false ? "yes"
+          : "",
       });
     }
     setEditing(true);
@@ -101,6 +106,10 @@ function BattingTab({ matchId }: { matchId: number }) {
       sixes,
       battingPosition: form.battingPosition ? Number(form.battingPosition) : undefined,
       howOut: (form.howOut as any) || undefined,
+      badUmpireDecision:
+        ["LBW", "Caught Behind"].includes(form.howOut) && form.badUmpireDecision !== ""
+          ? form.badUmpireDecision === "no"
+          : undefined,
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
@@ -145,9 +154,22 @@ function BattingTab({ matchId }: { matchId: number }) {
               {stats.battingPosition && <StatBadge label="Position" value={`#${stats.battingPosition}`} />}
             </div>
             {stats.howOut && (
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <span className="text-sm text-muted-foreground">Dismissal:</span>
                 <Badge variant="outline">{stats.howOut}</Badge>
+                {["LBW", "Caught Behind"].includes(stats.howOut ?? "") &&
+                  (stats as any).badUmpireDecision != null && (
+                    <Badge
+                      variant="outline"
+                      className={(stats as any).badUmpireDecision === false
+                        ? "border-red-300 text-red-600 bg-red-50"
+                        : "border-emerald-300 text-emerald-700 bg-emerald-50"}
+                    >
+                      {(stats as any).badUmpireDecision === false
+                        ? "😤 Bad decision"
+                        : "✓ Correct decision"}
+                    </Badge>
+                  )}
               </div>
             )}
           </CardContent>
@@ -189,13 +211,30 @@ function BattingTab({ matchId }: { matchId: number }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Not selected</SelectItem>
-                    {["Bowled", "Caught", "LBW", "Run Out", "Stumped", "Hit Wicket", "Not Out", "Retired"].map((o) => (
+                    {["Bowled", "Caught", "Caught Behind", "LBW", "Run Out", "Stumped", "Hit Wicket", "Not Out", "Retired"].map((o) => (
                       <SelectItem key={o} value={o}>{o}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+            {["LBW", "Caught Behind"].includes(form.howOut) && (
+              <div className="space-y-1.5">
+                <Label>Did the umpire make the correct decision?</Label>
+                <Select
+                  value={form.badUmpireDecision}
+                  onValueChange={(v) => setForm({ ...form, badUmpireDecision: v as "" | "yes" | "no" })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes — correct decision</SelectItem>
+                    <SelectItem value="no">No — bad decision 😤</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {form.runs && form.ballsFaced && Number(form.ballsFaced) > 0 && (
               <p className="text-sm text-muted-foreground">
                 Strike Rate: <span className="font-semibold text-foreground">{((Number(form.runs) / Number(form.ballsFaced)) * 100).toFixed(1)}</span>

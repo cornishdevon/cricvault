@@ -27,6 +27,7 @@ export const battingStatsTable = pgTable("batting_stats", {
   strikeRate: numeric("strike_rate", { precision: 6, scale: 2 }).notNull().default("0"),
   battingPosition: integer("batting_position"),
   howOut: text("how_out"),
+  badUmpireDecision: boolean("bad_umpire_decision"),
 });
 
 export const insertBattingStatsSchema = createInsertSchema(battingStatsTable).omit({ id: true });

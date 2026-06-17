@@ -24,6 +24,7 @@ type PerMatchStat = {
   missedStumpings?: number | null;
   result?: string | null;
   playerOfTheMatch?: boolean | null;
+  badUmpireDecision?: boolean | null;
 };
 
 type Badge = {
@@ -191,6 +192,11 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       (d.runs ?? 0) >= 30 &&
       ((d.wickets ?? 0) >= 3 || (d.catches ?? 0) + (d.stumpings ?? 0) >= 3)
   );
+
+  // ── NEW: Triggered — umpire gave a bad decision (LBW or caught behind) ──
+  const triggeredMatches = sorted.filter((d) => d.badUmpireDecision === true);
+  const triggeredEarned  = triggeredMatches.length > 0;
+  const triggeredFirst   = triggeredMatches[0];
 
   // ── NEW: Teflon (shame) — drops 2+ catches in one game ───────────────────
   const teflonMatch = sorted.find((d) => (d.droppedCatches ?? 0) >= 2);
@@ -467,6 +473,19 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       detail: allRounderMatch
         ? `${allRounderMatch.runs}r / ${allRounderMatch.wickets ?? 0}wkt`
         : undefined,
+    },
+
+    // ─ Umpire decisions ─
+    {
+      id: "triggered",
+      label: "Triggered",
+      description: "Given out on a bad umpire decision (LBW or caught behind)",
+      icon: "😤",
+      earned: triggeredEarned,
+      matchId: triggeredFirst?.matchId,
+      opponent: triggeredFirst?.opponent,
+      detail: triggeredMatches.length > 1 ? `${triggeredMatches.length}× robbed` : undefined,
+      isNegative: true,
     },
 
     // ─ Batting mishaps ─
