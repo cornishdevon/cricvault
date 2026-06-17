@@ -87,7 +87,8 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
 
   // ── Batting milestones ─────────────────────────────────────────────────────
-  const first50any = battingInnings.find((d) => (d.runs ?? 0) >= 50);
+  // Escalation: Half-Century only fires for 50–99 runs. Century (100+) supersedes it.
+  const first50any = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 50 && r < 100; });
   const first100   = battingInnings.find((d) => (d.runs ?? 0) >= 100);
 
   // ── Five-for ───────────────────────────────────────────────────────────────

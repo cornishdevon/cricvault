@@ -10,9 +10,10 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,6 +27,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { computeBadges, type PerMatchStat } from "@/utils/computeBadges";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -297,6 +299,9 @@ export default function LogMatchScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const [popupBadges, setPopupBadges] = useState<{ id: string; icon: string; label: string }[]>([]);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatch);
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
   const [bowlingForm, setBowlingForm] = useState<BowlingForm>(defaultBowling);
@@ -324,6 +329,10 @@ export default function LogMatchScreen() {
     }
 
     try {
+      // Snapshot badges earned before this match so we can diff afterwards
+      const prevData = (queryClient.getQueryData(getGetPerMatchStatsQueryKey()) ?? []) as PerMatchStat[];
+      const prevEarned = new Set(computeBadges(prevData).filter((b) => b.earned).map((b) => b.id));
+
       const match = await createMatch({
         data: {
           date: matchForm.date,
@@ -393,10 +402,15 @@ export default function LogMatchScreen() {
 
       await Promise.all(promises);
 
-      // Invalidate all cached queries so dashboard & achievements refresh
-      await queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
-      await queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
-      await queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+      // Refetch all queries and compute newly earned badges
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: getGetPerMatchStatsQueryKey() }),
+        queryClient.refetchQueries({ queryKey: getListMatchesQueryKey() }),
+        queryClient.refetchQueries({ queryKey: getGetStatsSummaryQueryKey() }),
+      ]);
+
+      const freshData = (queryClient.getQueryData(getGetPerMatchStatsQueryKey()) ?? []) as PerMatchStat[];
+      const gained = computeBadges(freshData).filter((b) => b.earned && !b.isNegative && !prevEarned.has(b.id));
 
       // Reset form
       setMatchForm(defaultMatch);
@@ -408,8 +422,20 @@ export default function LogMatchScreen() {
       setHasFielding(false);
       setIsWicketKeeper(false);
 
-      // Navigate to dashboard so achievements & stats are visible immediately
-      router.replace("/");
+      if (gained.length > 0) {
+        setPopupBadges(gained.map((b) => ({ id: b.id, icon: b.icon, label: b.label })));
+        fadeAnim.setValue(0);
+        Animated.sequence([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
+          Animated.delay(2200),
+          Animated.timing(fadeAnim, { toValue: 0, duration: 450, useNativeDriver: true }),
+        ]).start(() => {
+          setPopupBadges([]);
+          router.replace("/");
+        });
+      } else {
+        router.replace("/");
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       Alert.alert("Error", `Failed to save: ${msg}`);
@@ -421,6 +447,24 @@ export default function LogMatchScreen() {
       style={{ flex: 1, backgroundColor: colors.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      {popupBadges.length > 0 && (
+        <Animated.View
+          style={[
+            styles.badgePopup,
+            { opacity: fadeAnim, top: insets.top + 24 },
+          ]}
+        >
+          <Text style={styles.popupTitle}>
+            🎉 Badge{popupBadges.length > 1 ? "s" : ""} Unlocked!
+          </Text>
+          {popupBadges.map((b) => (
+            <View key={b.id} style={styles.popupRow}>
+              <Text style={styles.popupIcon}>{b.icon}</Text>
+              <Text style={styles.popupLabel}>{b.label}</Text>
+            </View>
+          ))}
+        </Animated.View>
+      )}
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 110 }]}
         keyboardShouldPersistTaps="handled"
@@ -795,6 +839,44 @@ const styles = StyleSheet.create({
   chipGroup: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
   chipText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+
+  badgePopup: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    zIndex: 999,
+    backgroundColor: "#0f2218",
+    borderColor: "#4ade80",
+    borderWidth: 1.5,
+    borderRadius: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  popupTitle: {
+    fontSize: 17,
+    fontFamily: "Inter_700Bold",
+    color: "#4ade80",
+    marginBottom: 14,
+    textAlign: "center",
+  },
+  popupRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 6,
+  },
+  popupIcon: { fontSize: 26 },
+  popupLabel: {
+    fontSize: 16,
+    fontFamily: "Inter_600SemiBold",
+    color: "#fff",
+  },
 
   saveBar: {
     position: "absolute",
