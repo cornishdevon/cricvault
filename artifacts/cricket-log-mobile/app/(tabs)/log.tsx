@@ -23,6 +23,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 type MatchForm = {
   date: string;
   opponent: string;
@@ -63,6 +65,8 @@ type FieldingForm = {
   missedStumpings: string;
 };
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
 const HOW_OUT_OPTIONS = [
   "Not Out",
   "Caught",
@@ -73,137 +77,6 @@ const HOW_OUT_OPTIONS = [
   "Hit Wicket",
   "Retired",
 ];
-
-function SectionHeader({
-  title,
-  step,
-  total,
-  colors,
-}: {
-  title: string;
-  step: number;
-  total: number;
-  colors: ReturnType<typeof useColors>;
-}) {
-  return (
-    <View style={styles.sectionHeader}>
-      <View style={[styles.stepBadge, { backgroundColor: colors.primary }]}>
-        <Text style={styles.stepNum}>{step}</Text>
-      </View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
-      <Text style={[styles.stepOf, { color: colors.mutedForeground }]}>
-        Step {step} of {total}
-      </Text>
-    </View>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  const colors = useColors();
-  return (
-    <View style={styles.field}>
-      <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>
-      {children}
-    </View>
-  );
-}
-
-function Input({
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType = "default",
-}: {
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-  keyboardType?: "default" | "numeric" | "decimal-pad";
-}) {
-  const colors = useColors();
-  return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      keyboardType={keyboardType}
-      placeholderTextColor={colors.mutedForeground}
-      style={[
-        styles.input,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          color: colors.foreground,
-          fontFamily: "Inter_400Regular",
-        },
-      ]}
-    />
-  );
-}
-
-function ToggleRow({
-  label,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  value: boolean;
-  onValueChange: (v: boolean) => void;
-}) {
-  const colors = useColors();
-  return (
-    <View style={[styles.toggleRow, { borderColor: colors.border }]}>
-      <Text style={[styles.toggleLabel, { color: colors.foreground }]}>{label}</Text>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: colors.border, true: colors.primary }}
-        thumbColor="#fff"
-      />
-    </View>
-  );
-}
-
-function ChipGroup({
-  options,
-  selected,
-  onSelect,
-}: {
-  options: string[];
-  selected: string;
-  onSelect: (v: string) => void;
-}) {
-  const colors = useColors();
-  return (
-    <View style={styles.chipGroup}>
-      {options.map((opt) => {
-        const active = selected === opt;
-        return (
-          <TouchableOpacity
-            key={opt}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: active ? colors.primary : colors.card,
-                borderColor: active ? colors.primary : colors.border,
-              },
-            ]}
-            onPress={() => onSelect(opt)}
-          >
-            <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>
-              {opt}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
 
 const defaultMatch: MatchForm = {
   date: new Date().toISOString().split("T")[0],
@@ -245,58 +118,204 @@ const defaultFielding: FieldingForm = {
   missedStumpings: "",
 };
 
+// ── Shared UI components ──────────────────────────────────────────────────────
+
+function Input({
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType = "default",
+}: {
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder?: string;
+  keyboardType?: "default" | "numeric" | "decimal-pad";
+}) {
+  const colors = useColors();
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      keyboardType={keyboardType}
+      placeholderTextColor={colors.mutedForeground}
+      style={[
+        styles.input,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          color: colors.foreground,
+          fontFamily: "Inter_400Regular",
+        },
+      ]}
+    />
+  );
+}
+
+function Field({
+  label,
+  children,
+  half,
+}: {
+  label: string;
+  children: React.ReactNode;
+  half?: boolean;
+}) {
+  const colors = useColors();
+  return (
+    <View style={[styles.field, half && { flex: 1 }]}>
+      <Text style={[styles.label, { color: colors.mutedForeground }]}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function Row({ children }: { children: React.ReactNode }) {
+  return <View style={styles.row}>{children}</View>;
+}
+
+function ToggleRow({
+  label,
+  value,
+  onValueChange,
+  sublabel,
+}: {
+  label: string;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+  sublabel?: string;
+}) {
+  const colors = useColors();
+  return (
+    <View style={[styles.toggleRow, { borderColor: colors.border }]}>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.toggleLabel, { color: colors.foreground }]}>{label}</Text>
+        {sublabel ? (
+          <Text style={[styles.toggleSub, { color: colors.mutedForeground }]}>{sublabel}</Text>
+        ) : null}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: colors.border, true: colors.primary }}
+        thumbColor="#fff"
+      />
+    </View>
+  );
+}
+
+function ChipGroup({
+  options,
+  selected,
+  onSelect,
+}: {
+  options: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  const colors = useColors();
+  return (
+    <View style={styles.chipGroup}>
+      {options.map((opt) => {
+        const active = selected === opt;
+        return (
+          <TouchableOpacity
+            key={opt}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: active ? colors.primary : colors.card,
+                borderColor: active ? colors.primary : colors.border,
+              },
+            ]}
+            onPress={() => onSelect(active ? "" : opt)}
+          >
+            <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>
+              {opt}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function SectionCard({
+  icon,
+  title,
+  enabled,
+  onToggle,
+  children,
+  alwaysOpen,
+}: {
+  icon: string;
+  title: string;
+  enabled: boolean;
+  onToggle?: (v: boolean) => void;
+  children: React.ReactNode;
+  alwaysOpen?: boolean;
+}) {
+  const colors = useColors();
+  const isOpen = alwaysOpen || enabled;
+
+  return (
+    <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* Header row */}
+      <View style={styles.sectionCardHeader}>
+        <Text style={styles.sectionIcon}>{icon}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
+        {onToggle && (
+          <Switch
+            value={enabled}
+            onValueChange={onToggle}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#fff"
+          />
+        )}
+      </View>
+
+      {isOpen && (
+        <View style={[styles.sectionBody, { borderTopColor: colors.border }]}>
+          {children}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
+
 export default function LogMatchScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [step, setStep] = useState(1);
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatch);
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
   const [bowlingForm, setBowlingForm] = useState<BowlingForm>(defaultBowling);
   const [fieldingForm, setFieldingForm] = useState<FieldingForm>(defaultFielding);
+
   const [hasBatting, setHasBatting] = useState(true);
   const [hasBowling, setHasBowling] = useState(false);
   const [hasFielding, setHasFielding] = useState(false);
+  const [isWicketKeeper, setIsWicketKeeper] = useState(false);
 
-  const { mutateAsync: createMatch, isPending: matchPending } = useCreateMatch();
+  const { mutateAsync: createMatch, isPending } = useCreateMatch();
   const { mutateAsync: createBattingStats } = useCreateBattingStats();
   const { mutateAsync: createBowlingStats } = useCreateBowlingStats();
   const { mutateAsync: createFieldingStats } = useCreateFieldingStats();
 
-  const totalSteps =
-    1 + (hasBatting ? 1 : 0) + (hasBowling ? 1 : 0) + (hasFielding ? 1 : 0) + 1;
+  const updateMatch   = (k: keyof MatchForm,   v: string | boolean) => setMatchForm(p => ({ ...p, [k]: v }));
+  const updateBatting = (k: keyof BattingForm, v: string | boolean) => setBattingForm(p => ({ ...p, [k]: v }));
+  const updateBowling = (k: keyof BowlingForm, v: string | boolean) => setBowlingForm(p => ({ ...p, [k]: v }));
+  const updateFielding= (k: keyof FieldingForm,v: string)           => setFieldingForm(p => ({ ...p, [k]: v }));
 
-  const updateMatch = (k: keyof MatchForm, v: string | boolean) =>
-    setMatchForm((p) => ({ ...p, [k]: v }));
-  const updateBatting = (k: keyof BattingForm, v: string | boolean) =>
-    setBattingForm((p) => ({ ...p, [k]: v }));
-  const updateBowling = (k: keyof BowlingForm, v: string | boolean) =>
-    setBowlingForm((p) => ({ ...p, [k]: v }));
-  const updateFielding = (k: keyof FieldingForm, v: string) =>
-    setFieldingForm((p) => ({ ...p, [k]: v }));
-
-  const reviewStep = 1 + (hasBatting ? 1 : 0) + (hasBowling ? 1 : 0) + (hasFielding ? 1 : 0) + 1;
-  const isLastStep = step === reviewStep;
-  const isFirstStep = step === 1;
-
-  const handleNext = () => {
-    if (step === 1) {
-      if (!matchForm.opponent.trim()) {
-        Alert.alert("Required", "Please enter an opponent name.");
-        return;
-      }
-      if (!matchForm.date.trim()) {
-        Alert.alert("Required", "Please enter a date.");
-        return;
-      }
+  const handleSave = async () => {
+    if (!matchForm.opponent.trim()) {
+      Alert.alert("Required", "Please enter an opponent name.");
+      return;
     }
-    setStep((s) => s + 1);
-  };
 
-  const handleBack = () => setStep((s) => Math.max(1, s - 1));
-
-  const handleSubmit = async () => {
     try {
       const match = await createMatch({
         data: {
@@ -310,7 +329,6 @@ export default function LogMatchScreen() {
       });
 
       const matchId = match.id;
-
       const promises: Promise<unknown>[] = [];
 
       if (hasBatting && battingForm.runs !== "") {
@@ -322,9 +340,7 @@ export default function LogMatchScreen() {
               ballsFaced: Number(battingForm.ballsFaced) || 0,
               fours: Number(battingForm.fours) || 0,
               sixes: Number(battingForm.sixes) || 0,
-              battingPosition: battingForm.battingPosition
-                ? Number(battingForm.battingPosition)
-                : undefined,
+              battingPosition: battingForm.battingPosition ? Number(battingForm.battingPosition) : undefined,
               howOut: battingForm.howOut || undefined,
               badUmpireDecision: battingForm.badUmpireDecision,
             },
@@ -369,32 +385,25 @@ export default function LogMatchScreen() {
 
       await Promise.all(promises);
 
+      // Reset
       setMatchForm(defaultMatch);
       setBattingForm(defaultBatting);
       setBowlingForm(defaultBowling);
       setFieldingForm(defaultFielding);
-      setStep(1);
       setHasBatting(true);
       setHasBowling(false);
       setHasFielding(false);
+      setIsWicketKeeper(false);
 
-      Alert.alert("Match Saved!", `Match vs ${match.opponent} has been logged.`, [
+      Alert.alert("Match Saved!", `vs ${match.opponent} has been logged.`, [
         { text: "View Match", onPress: () => router.push(`/match/${match.id}`) },
         { text: "OK" },
       ]);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      Alert.alert("Error", `Failed to save match: ${msg}`);
+      Alert.alert("Error", `Failed to save: ${msg}`);
     }
   };
-
-  const battingStep = 2;
-  const bowlingStep = hasBatting ? 3 : 2;
-  const fieldingStep = (hasBatting ? 1 : 0) + (hasBowling ? 1 : 0) + 2;
-
-  const showBatting = step === battingStep && hasBatting;
-  const showBowling = step === bowlingStep && hasBowling;
-  const showFielding = step === fieldingStep && hasFielding;
 
   return (
     <KeyboardAvoidingView
@@ -402,81 +411,69 @@ export default function LogMatchScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 110 }]}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Step 1: Match Info */}
-        {step === 1 && (
-          <View style={styles.stepContainer}>
-            <SectionHeader title="Match Info" step={1} total={totalSteps} colors={colors} />
+        {/* ── Match Info ── */}
+        <SectionCard icon="🏏" title="Match Info" enabled alwaysOpen>
+          <Field label="Date">
+            <Input
+              value={matchForm.date}
+              onChangeText={(v) => updateMatch("date", v)}
+              placeholder="YYYY-MM-DD"
+            />
+          </Field>
 
-            <Field label="Date">
-              <Input
-                value={matchForm.date}
-                onChangeText={(v) => updateMatch("date", v)}
-                placeholder="YYYY-MM-DD"
-              />
-            </Field>
+          <Field label="Opponent *">
+            <Input
+              value={matchForm.opponent}
+              onChangeText={(v) => updateMatch("opponent", v)}
+              placeholder="e.g. City CC"
+            />
+          </Field>
 
-            <Field label="Opponent *">
-              <Input
-                value={matchForm.opponent}
-                onChangeText={(v) => updateMatch("opponent", v)}
-                placeholder="e.g. City CC"
-              />
-            </Field>
-
-            <Field label="Venue">
+          <Row>
+            <Field label="Venue" half>
               <Input
                 value={matchForm.venue}
                 onChangeText={(v) => updateMatch("venue", v)}
-                placeholder="e.g. Home Ground"
+                placeholder="Optional"
               />
             </Field>
-
-            <Field label="Match Type">
+            <View style={{ width: 10 }} />
+            <Field label="Match Type" half>
               <Input
                 value={matchForm.matchType}
                 onChangeText={(v) => updateMatch("matchType", v)}
-                placeholder="e.g. Backyard, Cup Match, Club…"
+                placeholder="e.g. Cup, Club…"
               />
             </Field>
+          </Row>
 
-            <Field label="Result">
-              <Input
-                value={matchForm.result}
-                onChangeText={(v) => updateMatch("result", v)}
-                placeholder="e.g. Won by 5 wickets"
-              />
-            </Field>
-
-            <ToggleRow
-              label="Player of the Match"
-              value={matchForm.playerOfTheMatch}
-              onValueChange={(v) => updateMatch("playerOfTheMatch", v)}
+          <Field label="Result">
+            <Input
+              value={matchForm.result}
+              onChangeText={(v) => updateMatch("result", v)}
+              placeholder="e.g. Won by 5 wickets"
             />
+          </Field>
 
-            <View style={[styles.divider, { borderColor: colors.border }]} />
-            <Text style={[styles.includeLabel, { color: colors.foreground }]}>
-              Include stats:
-            </Text>
-            <ToggleRow label="Batting" value={hasBatting} onValueChange={setHasBatting} />
-            <ToggleRow label="Bowling" value={hasBowling} onValueChange={setHasBowling} />
-            <ToggleRow label="Fielding" value={hasFielding} onValueChange={setHasFielding} />
-          </View>
-        )}
+          <ToggleRow
+            label="Player of the Match"
+            value={matchForm.playerOfTheMatch}
+            onValueChange={(v) => updateMatch("playerOfTheMatch", v)}
+          />
+        </SectionCard>
 
-        {/* Batting Step */}
-        {showBatting && (
-          <View style={styles.stepContainer}>
-            <SectionHeader
-              title="Batting Stats"
-              step={battingStep}
-              total={totalSteps}
-              colors={colors}
-            />
-
-            <Field label="Runs">
+        {/* ── Batting ── */}
+        <SectionCard
+          icon="🏏"
+          title="Batting"
+          enabled={hasBatting}
+          onToggle={setHasBatting}
+        >
+          <Row>
+            <Field label="Runs Scored" half>
               <Input
                 value={battingForm.runs}
                 onChangeText={(v) => updateBatting("runs", v)}
@@ -484,8 +481,8 @@ export default function LogMatchScreen() {
                 keyboardType="numeric"
               />
             </Field>
-
-            <Field label="Balls Faced">
+            <View style={{ width: 10 }} />
+            <Field label="Balls Faced" half>
               <Input
                 value={battingForm.ballsFaced}
                 onChangeText={(v) => updateBatting("ballsFaced", v)}
@@ -493,286 +490,221 @@ export default function LogMatchScreen() {
                 keyboardType="numeric"
               />
             </Field>
+          </Row>
 
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Fours">
-                  <Input
-                    value={battingForm.fours}
-                    onChangeText={(v) => updateBatting("fours", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Sixes">
-                  <Input
-                    value={battingForm.sixes}
-                    onChangeText={(v) => updateBatting("sixes", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <Field label="Batting Position">
+          <Row>
+            <Field label="Fours" half>
               <Input
-                value={battingForm.battingPosition}
-                onChangeText={(v) => updateBatting("battingPosition", v)}
-                placeholder="e.g. 3"
-                keyboardType="numeric"
-              />
-            </Field>
-
-            <Field label="How Out">
-              <ChipGroup
-                options={HOW_OUT_OPTIONS}
-                selected={battingForm.howOut}
-                onSelect={(v) => updateBatting("howOut", v)}
-              />
-            </Field>
-
-            <ToggleRow
-              label="Bad Umpire Decision?"
-              value={battingForm.badUmpireDecision}
-              onValueChange={(v) => updateBatting("badUmpireDecision", v)}
-            />
-          </View>
-        )}
-
-        {/* Bowling Step */}
-        {showBowling && (
-          <View style={styles.stepContainer}>
-            <SectionHeader
-              title="Bowling Stats"
-              step={bowlingStep}
-              total={totalSteps}
-              colors={colors}
-            />
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Overs">
-                  <Input
-                    value={bowlingForm.overs}
-                    onChangeText={(v) => updateBowling("overs", v)}
-                    placeholder="0.0"
-                    keyboardType="decimal-pad"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Maidens">
-                  <Input
-                    value={bowlingForm.maidens}
-                    onChangeText={(v) => updateBowling("maidens", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Runs Conceded">
-                  <Input
-                    value={bowlingForm.runsConceded}
-                    onChangeText={(v) => updateBowling("runsConceded", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Wickets">
-                  <Input
-                    value={bowlingForm.wickets}
-                    onChangeText={(v) => updateBowling("wickets", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="No Balls">
-                  <Input
-                    value={bowlingForm.noBalls}
-                    onChangeText={(v) => updateBowling("noBalls", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Wides">
-                  <Input
-                    value={bowlingForm.wides}
-                    onChangeText={(v) => updateBowling("wides", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Bowled Wickets">
-                  <Input
-                    value={bowlingForm.bowledWickets}
-                    onChangeText={(v) => updateBowling("bowledWickets", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="LBW Wickets">
-                  <Input
-                    value={bowlingForm.lbwWickets}
-                    onChangeText={(v) => updateBowling("lbwWickets", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <ToggleRow
-              label="Hat Trick?"
-              value={bowlingForm.hatTrick}
-              onValueChange={(v) => updateBowling("hatTrick", v)}
-            />
-            <ToggleRow
-              label="Would Have Referred?"
-              value={bowlingForm.wouldHaveReferred}
-              onValueChange={(v) => updateBowling("wouldHaveReferred", v)}
-            />
-          </View>
-        )}
-
-        {/* Fielding Step */}
-        {showFielding && (
-          <View style={styles.stepContainer}>
-            <SectionHeader
-              title="Fielding Stats"
-              step={fieldingStep}
-              total={totalSteps}
-              colors={colors}
-            />
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Catches">
-                  <Input
-                    value={fieldingForm.catches}
-                    onChangeText={(v) => updateFielding("catches", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Dropped">
-                  <Input
-                    value={fieldingForm.droppedCatches}
-                    onChangeText={(v) => updateFielding("droppedCatches", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Field label="Run Outs">
-                  <Input
-                    value={fieldingForm.runOuts}
-                    onChangeText={(v) => updateFielding("runOuts", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={{ flex: 1 }}>
-                <Field label="Stumpings">
-                  <Input
-                    value={fieldingForm.stumpings}
-                    onChangeText={(v) => updateFielding("stumpings", v)}
-                    placeholder="0"
-                    keyboardType="numeric"
-                  />
-                </Field>
-              </View>
-            </View>
-
-            <Field label="Missed Stumpings">
-              <Input
-                value={fieldingForm.missedStumpings}
-                onChangeText={(v) => updateFielding("missedStumpings", v)}
+                value={battingForm.fours}
+                onChangeText={(v) => updateBatting("fours", v)}
                 placeholder="0"
                 keyboardType="numeric"
               />
             </Field>
-          </View>
-        )}
+            <View style={{ width: 10 }} />
+            <Field label="Sixes" half>
+              <Input
+                value={battingForm.sixes}
+                onChangeText={(v) => updateBatting("sixes", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+          </Row>
 
-        {/* Review Step */}
-        {isLastStep && (
-          <View style={styles.stepContainer}>
-            <SectionHeader
-              title="Review & Save"
-              step={reviewStep}
-              total={totalSteps}
-              colors={colors}
+          <Field label="Batting Position">
+            <Input
+              value={battingForm.battingPosition}
+              onChangeText={(v) => updateBatting("battingPosition", v)}
+              placeholder="e.g. 3"
+              keyboardType="numeric"
             />
-            <View
-              style={[styles.reviewCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            >
-              <ReviewRow label="Opponent" value={`vs ${matchForm.opponent}`} />
-              <ReviewRow label="Date" value={matchForm.date} />
-              <ReviewRow label="Type" value={matchForm.matchType} />
-              {matchForm.venue ? <ReviewRow label="Venue" value={matchForm.venue} /> : null}
-              {matchForm.result ? <ReviewRow label="Result" value={matchForm.result} /> : null}
-              {matchForm.playerOfTheMatch ? <ReviewRow label="POTM" value="Yes ⭐" /> : null}
-              {hasBatting && battingForm.runs !== "" ? (
-                <ReviewRow
-                  label="Batting"
-                  value={`${battingForm.runs} runs (${battingForm.ballsFaced}b)${battingForm.howOut ? ` · ${battingForm.howOut}` : ""}`}
+          </Field>
+
+          <Field label="How Out">
+            <ChipGroup
+              options={HOW_OUT_OPTIONS}
+              selected={battingForm.howOut}
+              onSelect={(v) => updateBatting("howOut", v)}
+            />
+          </Field>
+
+          <ToggleRow
+            label="Bad Umpire Decision?"
+            sublabel="Were you given out incorrectly?"
+            value={battingForm.badUmpireDecision}
+            onValueChange={(v) => updateBatting("badUmpireDecision", v)}
+          />
+        </SectionCard>
+
+        {/* ── Bowling ── */}
+        <SectionCard
+          icon="🎳"
+          title="Bowling"
+          enabled={hasBowling}
+          onToggle={setHasBowling}
+        >
+          <Row>
+            <Field label="Wickets" half>
+              <Input
+                value={bowlingForm.wickets}
+                onChangeText={(v) => updateBowling("wickets", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+            <View style={{ width: 10 }} />
+            <Field label="Overs" half>
+              <Input
+                value={bowlingForm.overs}
+                onChangeText={(v) => updateBowling("overs", v)}
+                placeholder="0.0"
+                keyboardType="decimal-pad"
+              />
+            </Field>
+          </Row>
+
+          <Row>
+            <Field label="Runs Conceded" half>
+              <Input
+                value={bowlingForm.runsConceded}
+                onChangeText={(v) => updateBowling("runsConceded", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+            <View style={{ width: 10 }} />
+            <Field label="Maidens" half>
+              <Input
+                value={bowlingForm.maidens}
+                onChangeText={(v) => updateBowling("maidens", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+          </Row>
+
+          <Row>
+            <Field label="No Balls" half>
+              <Input
+                value={bowlingForm.noBalls}
+                onChangeText={(v) => updateBowling("noBalls", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+            <View style={{ width: 10 }} />
+            <Field label="Wides" half>
+              <Input
+                value={bowlingForm.wides}
+                onChangeText={(v) => updateBowling("wides", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+          </Row>
+
+          <Row>
+            <Field label="Bowled Wkts" half>
+              <Input
+                value={bowlingForm.bowledWickets}
+                onChangeText={(v) => updateBowling("bowledWickets", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+            <View style={{ width: 10 }} />
+            <Field label="LBW Wkts" half>
+              <Input
+                value={bowlingForm.lbwWickets}
+                onChangeText={(v) => updateBowling("lbwWickets", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+          </Row>
+
+          <ToggleRow
+            label="Hat Trick!"
+            value={bowlingForm.hatTrick}
+            onValueChange={(v) => updateBowling("hatTrick", v)}
+          />
+          <ToggleRow
+            label="Would Have Referred?"
+            sublabel="Not-out that should have been given"
+            value={bowlingForm.wouldHaveReferred}
+            onValueChange={(v) => updateBowling("wouldHaveReferred", v)}
+          />
+        </SectionCard>
+
+        {/* ── Fielding ── */}
+        <SectionCard
+          icon="🧤"
+          title="Fielding"
+          enabled={hasFielding}
+          onToggle={setHasFielding}
+        >
+          <Row>
+            <Field label="Catches" half>
+              <Input
+                value={fieldingForm.catches}
+                onChangeText={(v) => updateFielding("catches", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+            <View style={{ width: 10 }} />
+            <Field label="Dropped" half>
+              <Input
+                value={fieldingForm.droppedCatches}
+                onChangeText={(v) => updateFielding("droppedCatches", v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
+            </Field>
+          </Row>
+
+          <Field label="Run Outs">
+            <Input
+              value={fieldingForm.runOuts}
+              onChangeText={(v) => updateFielding("runOuts", v)}
+              placeholder="0"
+              keyboardType="numeric"
+            />
+          </Field>
+
+          <ToggleRow
+            label="Wicket Keeper?"
+            sublabel="Add stumpings for this match"
+            value={isWicketKeeper}
+            onValueChange={setIsWicketKeeper}
+          />
+
+          {isWicketKeeper && (
+            <Row>
+              <Field label="Stumpings" half>
+                <Input
+                  value={fieldingForm.stumpings}
+                  onChangeText={(v) => updateFielding("stumpings", v)}
+                  placeholder="0"
+                  keyboardType="numeric"
                 />
-              ) : null}
-              {hasBowling && bowlingForm.overs !== "" ? (
-                <ReviewRow
-                  label="Bowling"
-                  value={`${bowlingForm.wickets}/${bowlingForm.runsConceded} in ${bowlingForm.overs} overs`}
+              </Field>
+              <View style={{ width: 10 }} />
+              <Field label="Missed Stumpings" half>
+                <Input
+                  value={fieldingForm.missedStumpings}
+                  onChangeText={(v) => updateFielding("missedStumpings", v)}
+                  placeholder="0"
+                  keyboardType="numeric"
                 />
-              ) : null}
-              {hasFielding ? (
-                <ReviewRow
-                  label="Fielding"
-                  value={`${fieldingForm.catches} catches · ${fieldingForm.runOuts} run outs`}
-                />
-              ) : null}
-            </View>
-          </View>
-        )}
+              </Field>
+            </Row>
+          )}
+        </SectionCard>
       </ScrollView>
 
-      {/* Bottom navigation */}
+      {/* Save button */}
       <View
         style={[
           styles.footer,
@@ -783,124 +715,83 @@ export default function LogMatchScreen() {
           },
         ]}
       >
-        {!isFirstStep && (
-          <TouchableOpacity
-            style={[styles.backBtn, { borderColor: colors.border }]}
-            onPress={handleBack}
-          >
-            <Feather name="chevron-left" size={18} color={colors.foreground} />
-            <Text style={[styles.backBtnText, { color: colors.foreground }]}>Back</Text>
-          </TouchableOpacity>
-        )}
         <TouchableOpacity
-          style={[
-            styles.nextBtn,
-            { backgroundColor: colors.primary },
-            isFirstStep && { flex: 1 },
-          ]}
-          onPress={isLastStep ? handleSubmit : handleNext}
-          disabled={matchPending}
+          style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: isPending ? 0.7 : 1 }]}
+          onPress={handleSave}
+          disabled={isPending}
         >
-          <Text style={styles.nextBtnText}>
-            {isLastStep ? (matchPending ? "Saving…" : "Save Match") : "Next"}
-          </Text>
-          {!isLastStep && <Feather name="chevron-right" size={18} color="#fff" />}
+          <Feather name="check" size={18} color="#fff" />
+          <Text style={styles.saveBtnText}>{isPending ? "Saving…" : "Save Match"}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
-  const colors = useColors();
-  return (
-    <View style={[styles.reviewRow, { borderBottomColor: colors.border }]}>
-      <Text style={[styles.reviewLabel, { color: colors.mutedForeground }]}>{label}</Text>
-      <Text style={[styles.reviewValue, { color: colors.foreground }]}>{value}</Text>
-    </View>
-  );
-}
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  stepContainer: { padding: 16 },
-  sectionHeader: {
+  scroll: { padding: 12, gap: 12 },
+
+  sectionCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  sectionCardHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
   },
-  stepBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+  sectionIcon: { fontSize: 20 },
+  sectionTitle: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold" },
+  sectionBody: { borderTopWidth: StyleSheet.hairlineWidth, padding: 14, gap: 4 },
+
+  field: { marginBottom: 12 },
+  label: { fontSize: 12, fontFamily: "Inter_500Medium", marginBottom: 5 },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    fontSize: 15,
   },
-  stepNum: { color: "#fff", fontSize: 14, fontFamily: "Inter_700Bold" },
-  sectionTitle: { fontSize: 18, fontFamily: "Inter_700Bold", flex: 1 },
-  stepOf: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  field: { marginBottom: 14 },
-  label: { fontSize: 13, fontFamily: "Inter_500Medium", marginBottom: 6 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 15 },
+
+  row: { flexDirection: "row", marginBottom: 0 },
+
   toggleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 2,
   },
-  toggleLabel: { fontSize: 15, fontFamily: "Inter_400Regular" },
-  chipGroup: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  row: { flexDirection: "row" },
-  divider: { borderTopWidth: 1, marginVertical: 16 },
-  includeLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 4 },
+  toggleLabel: { fontSize: 14, fontFamily: "Inter_500Medium" },
+  toggleSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
+
+  chipGroup: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  chip: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  chipText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+
   footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    gap: 10,
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
   },
-  backBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-  },
-  backBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
-  nextBtn: {
-    flex: 1,
+  saveBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    borderRadius: 10,
-    paddingVertical: 13,
+    gap: 8,
+    borderRadius: 12,
+    paddingVertical: 14,
   },
-  nextBtnText: { color: "#fff", fontSize: 15, fontFamily: "Inter_600SemiBold" },
-  reviewCard: { borderRadius: 12, borderWidth: 1, overflow: "hidden" },
-  reviewRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  reviewLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  reviewValue: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-    flex: 1,
-    textAlign: "right",
-  },
+  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
 });
