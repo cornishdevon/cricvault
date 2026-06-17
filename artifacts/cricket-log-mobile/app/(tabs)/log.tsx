@@ -3,7 +3,11 @@ import {
   useCreateBattingStats,
   useCreateBowlingStats,
   useCreateFieldingStats,
+  getListMatchesQueryKey,
+  getGetPerMatchStatsQueryKey,
+  getGetStatsSummaryQueryKey,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -289,6 +293,7 @@ export default function LogMatchScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatch);
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
@@ -385,7 +390,12 @@ export default function LogMatchScreen() {
 
       await Promise.all(promises);
 
-      // Reset
+      // Invalidate all cached queries so dashboard & achievements refresh
+      await queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+
+      // Reset form
       setMatchForm(defaultMatch);
       setBattingForm(defaultBatting);
       setBowlingForm(defaultBowling);
@@ -395,10 +405,8 @@ export default function LogMatchScreen() {
       setHasFielding(false);
       setIsWicketKeeper(false);
 
-      Alert.alert("Match Saved!", `vs ${match.opponent} has been logged.`, [
-        { text: "View Match", onPress: () => router.push(`/match/${match.id}`) },
-        { text: "OK" },
-      ]);
+      // Navigate to dashboard so achievements & stats are visible immediately
+      router.replace("/");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       Alert.alert("Error", `Failed to save: ${msg}`);
