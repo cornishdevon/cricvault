@@ -142,6 +142,35 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
     (d) => (d.runs ?? 0) >= 50 && (d.ballsFaced ?? 999) < 20 && (d.ballsFaced ?? 0) > 0
   );
 
+  // ── Golden Duck — out first ball ──────────────────────────────────────────
+  const isDismissed = (d: PerMatchStat) =>
+    !!d.howOut && d.howOut !== "Not Out" && d.howOut !== "Retired";
+  const goldenDuckMatch = battingInnings.find(
+    (d) => (d.runs ?? 0) === 0 && (d.ballsFaced ?? 0) === 1 && isDismissed(d)
+  );
+
+  // ── Duck Hunting — ducks (0 off any balls, dismissed) ────────────────────
+  const duckMatches = battingInnings.filter(
+    (d) => (d.runs ?? 0) === 0 && isDismissed(d)
+  );
+  const duckCount = duckMatches.length;
+
+  // ── Nervous 90s — out between 90 and 99 ──────────────────────────────────
+  const nervousNinetiesMatches = battingInnings.filter(
+    (d) => (d.runs ?? 0) >= 90 && (d.runs ?? 0) <= 99 && isDismissed(d)
+  );
+  const nervousNinetiesMatch = nervousNinetiesMatches[0];
+
+  // ── One Short — out at 49, 99, 149, 199… ─────────────────────────────────
+  const oneShortMatches = battingInnings.filter(
+    (d) => {
+      const r = d.runs ?? 0;
+      return r >= 49 && r % 50 === 49 && isDismissed(d);
+    }
+  );
+  const oneShortCount = oneShortMatches.length;
+  const oneShortFirst = oneShortMatches[0];
+
   // ── Line and Length ───────────────────────────────────────────────────────
   const lineAndLengthEarned = totalOvers >= 40 && careerEconomy < 3;
 
@@ -265,6 +294,33 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       opponent: pinchHitterMatch?.opponent,
       detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined,
     },
+    {
+      id: "nervousNineties",
+      label: "Nervous 90s",
+      description: "Got out between 90 and 99",
+      icon: "😰",
+      earned: !!nervousNinetiesMatch,
+      matchId: nervousNinetiesMatch?.matchId,
+      opponent: nervousNinetiesMatch?.opponent,
+      detail: nervousNinetiesMatch ? `${nervousNinetiesMatch.runs} runs` : undefined,
+    },
+    // One Short milestones — 49, 99, 149… out on the last before a milestone
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `oneShort_${milestone}`,
+      label: milestone === 1 ? "One Short" : `One Short ×${milestone}`,
+      description: milestone === 1
+        ? "Out one run short of a milestone (49, 99, 149…)"
+        : `One short of a milestone ${milestone} times`,
+      icon: "1️⃣",
+      earned: oneShortCount >= milestone,
+      matchId: milestone === 1 ? oneShortFirst?.matchId : undefined,
+      opponent: milestone === 1 ? oneShortFirst?.opponent : undefined,
+      detail: oneShortCount >= milestone
+        ? milestone === 1
+          ? `${oneShortFirst?.runs} runs`
+          : `${oneShortCount} times`
+        : undefined,
+    })),
     {
       id: "leatherOnWillow",
       label: "Leather on Willow",
@@ -516,6 +572,26 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
     })),
 
     // ─ Batting mishaps ─
+    {
+      id: "goldenDuck",
+      label: "Golden Duck",
+      description: "Out first ball for a duck",
+      icon: "🦆",
+      earned: !!goldenDuckMatch,
+      matchId: goldenDuckMatch?.matchId,
+      opponent: goldenDuckMatch?.opponent,
+      isNegative: true,
+    },
+    // Duck Hunting milestones — every 5 ducks starting at 5
+    ...[5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `duckHunting_${milestone}`,
+      label: `Duck Hunting ×${milestone}`,
+      description: `${milestone} ducks in your career`,
+      icon: "🦆",
+      earned: duckCount >= milestone,
+      detail: duckCount >= milestone ? `${duckCount} ducks total` : undefined,
+      isNegative: true,
+    })),
     {
       id: "billyBigPads",
       label: "Billy Big Pads",
