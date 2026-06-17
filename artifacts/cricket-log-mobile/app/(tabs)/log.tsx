@@ -322,12 +322,36 @@ export default function LogMatchScreen() {
   const updateBowling = (k: keyof BowlingForm, v: string | boolean) => setBowlingForm(p => ({ ...p, [k]: v }));
   const updateFielding= (k: keyof FieldingForm,v: string)           => setFieldingForm(p => ({ ...p, [k]: v }));
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!matchForm.opponent.trim()) {
       Alert.alert("Required", "Please enter an opponent name.");
       return;
     }
 
+    // Duplicate detection — same date + opponent (case-insensitive) already saved
+    const cachedMatches = (queryClient.getQueryData(getListMatchesQueryKey()) ?? []) as Array<{ date: string; opponent: string }>;
+    const duplicate = cachedMatches.find(
+      (m) =>
+        m.date === matchForm.date &&
+        m.opponent.trim().toLowerCase() === matchForm.opponent.trim().toLowerCase(),
+    );
+
+    if (duplicate) {
+      Alert.alert(
+        "Already Saved?",
+        `You already have a match vs ${duplicate.opponent} on ${duplicate.date}.\n\nSave another anyway?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Save Anyway", style: "default", onPress: () => void doSave() },
+        ],
+      );
+      return;
+    }
+
+    void doSave();
+  };
+
+  const doSave = async () => {
     try {
       // Snapshot badges earned before this match so we can diff afterwards
       const prevData = (queryClient.getQueryData(getGetPerMatchStatsQueryKey()) ?? []) as PerMatchStat[];
