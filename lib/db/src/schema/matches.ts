@@ -8,6 +8,7 @@ export const matchesTable = pgTable("matches", {
   opponent: text("opponent").notNull(),
   venue: text("venue"),
   matchType: text("match_type").notNull().default("Club"),
+  playingFor: text("playing_for"),
   result: text("result"),
   playerOfTheMatch: boolean("player_of_the_match").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),

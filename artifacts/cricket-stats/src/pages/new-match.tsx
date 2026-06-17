@@ -31,6 +31,7 @@ export default function NewMatch() {
     opponent: "",
     venue: "",
     matchType: "Club",
+    playingFor: "",
     result: "",
   });
 
@@ -47,6 +48,7 @@ export default function NewMatch() {
           opponent: form.opponent,
           venue: form.venue || undefined,
           matchType: form.matchType as any,
+          playingFor: form.playingFor || undefined,
           result: (form.result as any) || undefined,
         },
       },
@@ -113,6 +115,16 @@ export default function NewMatch() {
                 value={form.opponent}
                 onChange={(e) => setForm({ ...form, opponent: e.target.value })}
                 required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="playingFor">Playing For</Label>
+              <Input
+                id="playingFor"
+                placeholder="e.g. City CC, School XI"
+                value={form.playingFor}
+                onChange={(e) => setForm({ ...form, playingFor: e.target.value })}
               />
             </div>
 

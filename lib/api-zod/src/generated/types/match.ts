@@ -16,6 +16,8 @@ export interface Match {
   venue?: string | null;
   matchType: MatchMatchType;
   /** @nullable */
+  playingFor?: string | null;
+  /** @nullable */
   result?: MatchResult;
   createdAt: string;
 }

@@ -42,6 +42,8 @@ export interface Match {
   venue?: string | null;
   matchType: MatchMatchType;
   /** @nullable */
+  playingFor?: string | null;
+  /** @nullable */
   result?: MatchResult;
   createdAt: string;
 }
@@ -73,6 +75,7 @@ export interface MatchInput {
   opponent: string;
   venue?: string;
   matchType: MatchInputMatchType;
+  playingFor?: string;
   result?: MatchInputResult;
 }
 
@@ -103,6 +106,7 @@ export interface MatchUpdate {
   opponent?: string;
   venue?: string;
   matchType?: MatchUpdateMatchType;
+  playingFor?: string;
   result?: MatchUpdateResult;
 }
 

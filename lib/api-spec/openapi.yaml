@@ -522,6 +522,8 @@ components:
         matchType:
           type: string
           enum: [T20, ODI, Test, Club, Friendly, Other]
+        playingFor:
+          type: ["string", "null"]
         result:
           type: ["string", "null"]
           enum: [Win, Loss, Draw, "No Result", null]
@@ -541,6 +543,8 @@ components:
         matchType:
           type: string
           enum: [T20, ODI, Test, Club, Friendly, Other]
+        playingFor:
+          type: string
         result:
           type: string
           enum: [Win, Loss, Draw, "No Result"]
@@ -557,6 +561,8 @@ components:
         matchType:
           type: string
           enum: [T20, ODI, Test, Club, Friendly, Other]
+        playingFor:
+          type: string
         result:
           type: string
           enum: [Win, Loss, Draw, "No Result"]

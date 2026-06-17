@@ -29,13 +29,13 @@ router.get("/matches", async (req, res) => {
 });
 
 router.post("/matches", async (req, res) => {
-  const { date, opponent, venue, matchType, result, playerOfTheMatch } = req.body;
+  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch } = req.body;
   if (!date || !opponent || !matchType) {
     return res.status(400).json({ error: "date, opponent, and matchType are required" });
   }
   const [match] = await db
     .insert(matchesTable)
-    .values({ date, opponent, venue: venue ?? null, matchType, result: result ?? null, playerOfTheMatch: !!playerOfTheMatch })
+    .values({ date, opponent, venue: venue ?? null, matchType, playingFor: playingFor ?? null, result: result ?? null, playerOfTheMatch: !!playerOfTheMatch })
     .returning();
   res.status(201).json({ ...match, createdAt: match.createdAt.toISOString() });
 });
@@ -49,12 +49,13 @@ router.get("/matches/:matchId", async (req, res) => {
 
 router.patch("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { date, opponent, venue, matchType, result, playerOfTheMatch } = req.body;
+  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch } = req.body;
   const updates: Record<string, unknown> = {};
   if (date !== undefined) updates.date = date;
   if (opponent !== undefined) updates.opponent = opponent;
   if (venue !== undefined) updates.venue = venue;
   if (matchType !== undefined) updates.matchType = matchType;
+  if (playingFor !== undefined) updates.playingFor = playingFor;
   if (result !== undefined) updates.result = result;
   if (playerOfTheMatch !== undefined) updates.playerOfTheMatch = !!playerOfTheMatch;
   const [match] = await db

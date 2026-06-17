@@ -13,5 +13,6 @@ export interface MatchUpdate {
   opponent?: string;
   venue?: string;
   matchType?: MatchUpdateMatchType;
+  playingFor?: string;
   result?: MatchUpdateResult;
 }

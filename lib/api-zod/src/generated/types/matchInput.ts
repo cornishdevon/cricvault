@@ -13,5 +13,6 @@ export interface MatchInput {
   opponent: string;
   venue?: string;
   matchType: MatchInputMatchType;
+  playingFor?: string;
   result?: MatchInputResult;
 }

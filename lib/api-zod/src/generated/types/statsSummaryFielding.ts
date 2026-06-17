@@ -10,4 +10,5 @@ export type StatsSummaryFielding = {
   totalCatches: number;
   totalDroppedCatches: number;
   totalRunOuts: number;
+  totalStumpings: number;
 };

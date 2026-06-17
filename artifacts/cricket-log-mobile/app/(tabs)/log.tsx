@@ -34,6 +34,7 @@ type MatchForm = {
   opponent: string;
   venue: string;
   matchType: string;
+  playingFor: string;
   result: string;
   playerOfTheMatch: boolean;
 };
@@ -87,6 +88,7 @@ const defaultMatch: MatchForm = {
   opponent: "",
   venue: "",
   matchType: "",
+  playingFor: "",
   result: "",
   playerOfTheMatch: false,
 };
@@ -328,6 +330,7 @@ export default function LogMatchScreen() {
           opponent: matchForm.opponent,
           venue: matchForm.venue || undefined,
           matchType: matchForm.matchType,
+          playingFor: matchForm.playingFor || undefined,
           result: matchForm.result || undefined,
           playerOfTheMatch: matchForm.playerOfTheMatch,
         },
@@ -437,6 +440,14 @@ export default function LogMatchScreen() {
               value={matchForm.opponent}
               onChangeText={(v) => updateMatch("opponent", v)}
               placeholder="e.g. City CC"
+            />
+          </Field>
+
+          <Field label="Playing For">
+            <Input
+              value={matchForm.playingFor}
+              onChangeText={(v) => updateMatch("playingFor", v)}
+              placeholder="e.g. City CC, School XI"
             />
           </Field>
 

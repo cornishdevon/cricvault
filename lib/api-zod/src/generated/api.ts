@@ -25,6 +25,7 @@ export const ListMatchesResponseItem = zod.object({
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
   "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "playingFor": zod.string().nullish(),
   "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
   "createdAt": zod.string()
 })
@@ -39,6 +40,7 @@ export const CreateMatchBody = zod.object({
   "opponent": zod.string(),
   "venue": zod.string().optional(),
   "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "playingFor": zod.string().optional(),
   "result": zod.enum(['Win', 'Loss', 'Draw', 'No Result']).optional()
 })
 
@@ -56,6 +58,7 @@ export const GetMatchResponse = zod.object({
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
   "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "playingFor": zod.string().nullish(),
   "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
   "createdAt": zod.string()
 })
@@ -73,6 +76,7 @@ export const UpdateMatchBody = zod.object({
   "opponent": zod.string().optional(),
   "venue": zod.string().optional(),
   "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']).optional(),
+  "playingFor": zod.string().optional(),
   "result": zod.enum(['Win', 'Loss', 'Draw', 'No Result']).optional()
 })
 
@@ -82,6 +86,7 @@ export const UpdateMatchResponse = zod.object({
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
   "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "playingFor": zod.string().nullish(),
   "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
   "createdAt": zod.string()
 })
@@ -511,7 +516,8 @@ export const GetStatsSummaryResponse = zod.object({
   "fielding": zod.object({
   "totalCatches": zod.number(),
   "totalDroppedCatches": zod.number(),
-  "totalRunOuts": zod.number()
+  "totalRunOuts": zod.number(),
+  "totalStumpings": zod.number()
 })
 })
 
