@@ -694,17 +694,17 @@ function BadgeCard({ badge }: { badge: Badge }) {
           ? badge.isNegative
             ? "bg-destructive/5 border-destructive/30 shadow-sm hover:border-destructive/60 hover:shadow-md"
             : "bg-card border-primary/30 shadow-sm hover:border-primary/60 hover:shadow-md"
-          : "bg-muted/40 border-border opacity-40 grayscale"
+          : "bg-zinc-800 border-zinc-700"
       }`}
     >
       <span className="text-2xl" role="img" aria-label={badge.label}>
         {badge.earned ? badge.icon : "🔒"}
       </span>
       <div>
-        <p className={`font-semibold text-xs leading-tight ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-muted-foreground"}`}>
+        <p className={`font-semibold text-xs leading-tight ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-zinc-400"}`}>
           {badge.label}
         </p>
-        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{badge.description}</p>
+        <p className={`text-[10px] mt-0.5 leading-snug ${badge.earned ? "text-muted-foreground" : "text-zinc-500"}`}>{badge.description}</p>
       </div>
       {badge.earned && badge.detail && (
         <p className={`text-[11px] font-medium mt-auto ${badge.isNegative ? "text-destructive/80" : "text-primary"}`}>
