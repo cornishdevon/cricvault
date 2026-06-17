@@ -151,6 +151,7 @@ export default function DashboardScreen() {
           <View style={styles.statsGrid}>
             <StatCard label="Catches" value={summary.fielding.totalCatches} colors={colors} />
             <StatCard label="Run Outs" value={summary.fielding.totalRunOuts} colors={colors} />
+            <StatCard label="Stumpings" value={summary.fielding.totalStumpings} colors={colors} />
             <StatCard
               label="Dropped"
               value={summary.fielding.totalDroppedCatches}

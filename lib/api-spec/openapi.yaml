@@ -904,11 +904,13 @@ components:
               type: integer
         fielding:
           type: object
-          required: [totalCatches, totalDroppedCatches, totalRunOuts]
+          required: [totalCatches, totalDroppedCatches, totalRunOuts, totalStumpings]
           properties:
             totalCatches:
               type: integer
             totalDroppedCatches:
               type: integer
             totalRunOuts:
+              type: integer
+            totalStumpings:
               type: integer

@@ -438,6 +438,7 @@ router.get("/stats/summary", async (req, res) => {
   const totalCatches = fieldingRows.reduce((s, r) => s + r.catches, 0);
   const totalDroppedCatches = fieldingRows.reduce((s, r) => s + r.droppedCatches, 0);
   const totalRunOuts = fieldingRows.reduce((s, r) => s + r.runOuts, 0);
+  const totalStumpings = fieldingRows.reduce((s, r) => s + r.stumpings, 0);
 
   res.json({
     totalMatches,
@@ -462,6 +463,7 @@ router.get("/stats/summary", async (req, res) => {
       totalCatches,
       totalDroppedCatches,
       totalRunOuts,
+      totalStumpings,
     },
   });
 });
