@@ -239,7 +239,7 @@ export default function MatchReport() {
 
         {/* Footer watermark */}
         <p className="text-center text-xs text-muted-foreground pt-2">
-          Cricket Log · {format(new Date(), "d MMM yyyy")}
+          CricVault · {format(new Date(), "d MMM yyyy")}
         </p>
       </div>
     </>

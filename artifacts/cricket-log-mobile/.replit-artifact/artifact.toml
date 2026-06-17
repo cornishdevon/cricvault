@@ -1,6 +1,6 @@
 kind = "mobile"
 previewPath = "/mobile/"
-title = "Cricket Log Mobile"
+title = "CricVault"
 version = "1.0.0"
 id = "artifacts/cricket-log-mobile"
 router = "expo-domain"

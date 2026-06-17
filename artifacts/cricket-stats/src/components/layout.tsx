@@ -17,7 +17,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="container flex h-16 items-center px-4 max-w-5xl mx-auto">
           <Link href="/" className="flex items-center gap-2 font-bold text-primary mr-8">
             <Trophy className="h-6 w-6" />
-            <span className="hidden sm:inline-block">Cricket Log</span>
+            <span className="hidden sm:inline-block">CricVault</span>
           </Link>
           <nav className="flex items-center gap-6 text-sm font-medium flex-1">
             {navItems.map((item) => {

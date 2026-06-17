@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Cricket Stats Tracker"
+title = "CricVault"
 version = "1.0.0"
 id = "artifacts/cricket-stats"
 router = "path"

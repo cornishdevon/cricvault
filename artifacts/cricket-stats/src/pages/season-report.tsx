@@ -152,7 +152,7 @@ export default function SeasonReport() {
         {/* Header */}
         <Card>
           <CardContent className="p-6">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Cricket Log</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">CricVault</p>
             <h1 className="text-2xl font-bold text-foreground">{title}</h1>
             <p className="text-sm text-muted-foreground mt-1">Generated {format(new Date(), "d MMMM yyyy")}</p>
             <div className="flex flex-wrap gap-3 mt-4">
@@ -265,7 +265,7 @@ export default function SeasonReport() {
         )}
 
         <p className="text-center text-xs text-muted-foreground pt-2">
-          Cricket Log · {format(new Date(), "d MMM yyyy")}
+          CricVault · {format(new Date(), "d MMM yyyy")}
         </p>
       </div>
     </>
