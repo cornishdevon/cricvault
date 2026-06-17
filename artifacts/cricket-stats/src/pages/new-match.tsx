@@ -8,9 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FreeTextSelect } from "@/components/ui/free-text-select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+
+const MATCH_TYPE_SUGGESTIONS = [
+  "Club", "League", "Cup", "T20", "ODI", "Test", "Friendly", "Social",
+  "Tournament", "Charity", "Practice", "School", "Indoor", "Beach",
+  "Backyard", "Street", "Garden", "Tape ball", "Tennis ball",
+  "The Hundred", "Twenty20", "Ten10",
+];
 
 export default function NewMatch() {
   const [, navigate] = useLocation();
@@ -87,19 +95,13 @@ export default function NewMatch() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="matchType">Match Type</Label>
-                <Select
+                <FreeTextSelect
+                  id="matchType"
                   value={form.matchType}
-                  onValueChange={(v) => setForm({ ...form, matchType: v })}
-                >
-                  <SelectTrigger id="matchType">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["T20", "ODI", "Test", "Club", "Friendly", "Other"].map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => setForm({ ...form, matchType: v })}
+                  suggestions={MATCH_TYPE_SUGGESTIONS}
+                  placeholder="e.g. League, Backyard, Street…"
+                />
               </div>
             </div>
 

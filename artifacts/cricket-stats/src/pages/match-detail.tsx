@@ -36,6 +36,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FreeTextSelect } from "@/components/ui/free-text-select";
+
+const HOW_OUT_SUGGESTIONS = [
+  // Standard
+  "Bowled", "Caught", "Caught Behind", "LBW", "Run Out", "Stumped",
+  "Hit Wicket", "Not Out", "Retired",
+  // Street & backyard cricket
+  "Caught one hand one bounce", "One hand one bounce",
+  "Caught off the wall", "Caught off the ceiling",
+  "Six and out", "Tipped and run",
+  "Caught boundary out", "Automatic out",
+  "Hit the bin", "Over the fence out",
+];
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -202,20 +215,12 @@ function BattingTab({ matchId }: { matchId: number }) {
               ))}
               <div className="space-y-1.5">
                 <Label>How Out</Label>
-                <Select
+                <FreeTextSelect
                   value={form.howOut}
-                  onValueChange={(v) => setForm({ ...form, howOut: v === "none" ? "" : v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Not selected</SelectItem>
-                    {["Bowled", "Caught", "Caught Behind", "LBW", "Run Out", "Stumped", "Hit Wicket", "Not Out", "Retired"].map((o) => (
-                      <SelectItem key={o} value={o}>{o}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => setForm({ ...form, howOut: v })}
+                  suggestions={HOW_OUT_SUGGESTIONS}
+                  placeholder="e.g. Bowled, Caught one hand one bounce…"
+                />
               </div>
             </div>
             {["LBW", "Caught Behind"].includes(form.howOut) && (
