@@ -477,7 +477,50 @@ export default function LogMatchScreen() {
       ]);
 
       const freshData = (queryClient.getQueryData(getGetPerMatchStatsQueryKey()) ?? []) as PerMatchStat[];
+
+      // Career badges earned for the first time this match
       const gained = computeBadges(freshData).filter((b) => b.earned && !b.isNegative && !prevEarned.has(b.id));
+
+      // Per-match milestone celebrations — fire every time the event occurs
+      type PopupBadge = { id: string; icon: string; label: string; imageKey?: string };
+      const matchEvents: PopupBadge[] = [];
+
+      if (hasBatting && battingForm.runs !== "") {
+        const runs  = Number(battingForm.runs) || 0;
+        const balls = Number(battingForm.ballsFaced) || 0;
+        const sixes = Number(battingForm.sixes) || 0;
+        const fours = Number(battingForm.fours) || 0;
+
+        if (runs >= 150)      matchEvents.push({ id: "first150",    icon: "💎", label: "150 Club" });
+        else if (runs >= 100) matchEvents.push({ id: "first100",    icon: "💯", label: "Century", imageKey: "century" });
+        else if (runs >= 50)  matchEvents.push({ id: "first50",     icon: "🏏", label: "Half-Century" });
+
+        if (runs >= 50 && balls > 0 && balls < 20)
+          matchEvents.push({ id: "pinchHitter", icon: "⚡", label: "Pinch Hitter", imageKey: "pinch-hitter" });
+        if (sixes >= 5)  matchEvents.push({ id: "bighitter", icon: "💥", label: "Big Hitter" });
+        if (fours >= 10) matchEvents.push({ id: "boundary",  icon: "🏅", label: "Boundary Getter" });
+      }
+
+      if (hasBowling && bowlingForm.overs !== "") {
+        const wickets = Number(bowlingForm.wickets) || 0;
+        if (wickets >= 5)      matchEvents.push({ id: "fivewkt",  icon: "🔥", label: "Five-For" });
+        if (bowlingForm.hatTrick) matchEvents.push({ id: "magician", icon: "🪄", label: "Magician" });
+      }
+
+      if (matchForm.playerOfTheMatch)
+        matchEvents.push({ id: "potm", icon: "⭐", label: "Player of the Match" });
+
+      if (hasFielding) {
+        const catches = Number(fieldingForm.catches) || 0;
+        if (catches >= 3) matchEvents.push({ id: "buckethands", icon: "🧤", label: "Bucket Hands" });
+      }
+
+      // Merge: career first-earns take priority, then per-match events (deduplicated)
+      const gainedIds = new Set(gained.map((b) => b.id));
+      const allCelebrations: PopupBadge[] = [
+        ...gained.map((b) => ({ id: b.id, icon: b.icon, label: b.label, imageKey: b.imageKey })),
+        ...matchEvents.filter((e) => !gainedIds.has(e.id)),
+      ];
 
       // Reset form
       setMatchForm(defaultMatch);
@@ -489,8 +532,8 @@ export default function LogMatchScreen() {
       setHasFielding(false);
       setIsWicketKeeper(false);
 
-      if (gained.length > 0) {
-        setPopupBadges(gained.map((b) => ({ id: b.id, icon: b.icon, label: b.label, imageKey: b.imageKey })));
+      if (allCelebrations.length > 0) {
+        setPopupBadges(allCelebrations);
         fadeAnim.setValue(0);
         slideAnim.setValue(0);
         Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }).start();
