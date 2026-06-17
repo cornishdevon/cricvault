@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 
 type PerMatchStat = {
@@ -701,16 +702,100 @@ function computeMilestones(data: PerMatchStat[]) {
   };
 }
 
-function BadgeCard({ badge }: { badge: Badge }) {
+function BadgeModal({ badge, onClose }: { badge: Badge | null; onClose: () => void }) {
+  if (!badge) return null;
+
+  const accentClass = badge.isNegative ? "text-destructive" : "text-primary";
+  const pillClass   = badge.isNegative
+    ? "bg-destructive/10 border-destructive/30 text-destructive"
+    : "bg-primary/10 border-primary/30 text-primary";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className={`relative w-full max-w-sm rounded-2xl border p-8 flex flex-col items-center text-center gap-4 shadow-2xl ${
+          badge.earned
+            ? badge.isNegative
+              ? "bg-zinc-900 border-destructive/40"
+              : "bg-zinc-900 border-primary/40"
+            : "bg-zinc-900 border-zinc-700"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Icon / image */}
+        <div className="flex items-center justify-center w-36 h-36">
+          {badge.earned && badge.imageKey ? (
+            <img
+              src={`/badges/${badge.imageKey}.png`}
+              alt={badge.label}
+              className="w-36 h-36 object-contain rounded-full"
+            />
+          ) : (
+            <span className="text-8xl leading-none" role="img" aria-label={badge.label}>
+              {badge.earned ? badge.icon : "🔒"}
+            </span>
+          )}
+        </div>
+
+        {/* Earned pill */}
+        {badge.earned && (
+          <span className={`text-xs font-bold px-3 py-1 rounded-full border ${pillClass}`}>
+            {badge.isNegative ? "Unlocked 😬" : "Earned ✓"}
+          </span>
+        )}
+
+        <div>
+          <p className={`text-xl font-extrabold ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-zinc-400"}`}>
+            {badge.label}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 leading-snug">{badge.description}</p>
+        </div>
+
+        {badge.earned && badge.detail && (
+          <p className={`text-sm font-bold ${accentClass}`}>{badge.detail}</p>
+        )}
+        {badge.earned && !badge.detail && badge.opponent && (
+          <p className={`text-sm font-bold ${accentClass}`}>vs {badge.opponent}</p>
+        )}
+        {!badge.earned && (
+          <p className="text-xs text-muted-foreground italic">Keep playing to unlock this badge</p>
+        )}
+
+        {badge.earned && badge.matchId && (
+          <Link
+            href={`/matches/${badge.matchId}`}
+            onClick={onClose}
+            className="text-xs text-primary underline underline-offset-2"
+          >
+            View match →
+          </Link>
+        )}
+
+        <button
+          onClick={onClose}
+          className="mt-2 px-6 py-2 rounded-xl border border-zinc-700 text-sm text-muted-foreground hover:text-foreground hover:border-zinc-500 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BadgeCard({ badge, onClick }: { badge: Badge; onClick: () => void }) {
   const inner = (
     <div
-      className={`rounded-xl border p-3 flex flex-col items-center text-center gap-1.5 transition-all duration-200 h-full ${
+      className={`rounded-xl border p-3 flex flex-col items-center text-center gap-1.5 transition-all duration-200 h-full cursor-pointer ${
         badge.earned
           ? badge.isNegative
             ? "bg-destructive/5 border-destructive/30 shadow-sm hover:border-destructive/60 hover:shadow-md"
             : "bg-card border-primary/30 shadow-sm hover:border-primary/60 hover:shadow-md"
-          : "bg-zinc-800 border-zinc-700"
+          : "bg-zinc-800 border-zinc-700 hover:border-zinc-500"
       }`}
+      onClick={onClick}
     >
       {badge.earned && badge.imageKey ? (
         <img
@@ -742,13 +827,6 @@ function BadgeCard({ badge }: { badge: Badge }) {
     </div>
   );
 
-  if (badge.earned && badge.matchId) {
-    return (
-      <Link href={`/matches/${badge.matchId}`} className="block h-full">
-        {inner}
-      </Link>
-    );
-  }
   return <div className="h-full">{inner}</div>;
 }
 
@@ -775,56 +853,62 @@ function MilestonesBar({ milestones }: { milestones: ReturnType<typeof computeMi
 }
 
 export function Achievements({ data }: { data: PerMatchStat[] }) {
-  const badges    = computeBadges(data);
+  const badges     = computeBadges(data);
   const milestones = computeMilestones(data);
-  const positive  = badges.filter((b) => !b.isNegative);
-  const negative  = badges.filter((b) => b.isNegative);
-  const earned    = badges.filter((b) => b.earned).length;
+  const positive   = badges.filter((b) => !b.isNegative);
+  const negative   = badges.filter((b) => b.isNegative);
+  const earned     = badges.filter((b) => b.earned).length;
+
+  const [selected, setSelected] = useState<Badge | null>(null);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Achievements</h2>
-          <span className="text-sm text-muted-foreground font-medium">
-            {earned} / {badges.length} earned
-          </span>
+    <>
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Achievements</h2>
+            <span className="text-sm text-muted-foreground font-medium">
+              {earned} / {badges.length} earned
+            </span>
+          </div>
+          {milestones.totalInnings > 0 && (
+            <div className="mt-3">
+              <MilestonesBar milestones={milestones} />
+            </div>
+          )}
         </div>
-        {milestones.totalInnings > 0 && (
-          <div className="mt-3">
-            <MilestonesBar milestones={milestones} />
+
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+          {positive.map((badge, i) => (
+            <div
+              key={badge.id}
+              className="animate-in fade-in slide-in-from-bottom-2"
+              style={{ animationDelay: `${i * 30}ms` }}
+            >
+              <BadgeCard badge={badge} onClick={() => setSelected(badge)} />
+            </div>
+          ))}
+        </div>
+
+        {negative.some((b) => b.earned) && (
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-2">Hall of shame</p>
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+              {negative.filter((b) => b.earned).map((badge, i) => (
+                <div
+                  key={badge.id}
+                  className="animate-in fade-in slide-in-from-bottom-2"
+                  style={{ animationDelay: `${i * 30}ms` }}
+                >
+                  <BadgeCard badge={badge} onClick={() => setSelected(badge)} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-        {positive.map((badge, i) => (
-          <div
-            key={badge.id}
-            className="animate-in fade-in slide-in-from-bottom-2"
-            style={{ animationDelay: `${i * 30}ms` }}
-          >
-            <BadgeCard badge={badge} />
-          </div>
-        ))}
-      </div>
-
-      {negative.some((b) => b.earned) && (
-        <div>
-          <p className="text-sm font-medium text-muted-foreground mb-2">Hall of shame</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-            {negative.filter((b) => b.earned).map((badge, i) => (
-              <div
-                key={badge.id}
-                className="animate-in fade-in slide-in-from-bottom-2"
-                style={{ animationDelay: `${i * 30}ms` }}
-              >
-                <BadgeCard badge={badge} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+      <BadgeModal badge={selected} onClose={() => setSelected(null)} />
+    </>
   );
 }

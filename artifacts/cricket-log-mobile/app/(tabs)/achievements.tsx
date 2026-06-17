@@ -1,8 +1,10 @@
 import { useGetPerMatchStats } from "@workspace/api-client-react";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -19,9 +21,17 @@ const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
   "century":      require("@/assets/badges/century.png"),
 };
 
-function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof useColors> }) {
+function BadgeTile({
+  badge,
+  colors,
+  onPress,
+}: {
+  badge: Badge;
+  colors: ReturnType<typeof useColors>;
+  onPress: () => void;
+}) {
   const isLocked = !badge.earned;
-  const bgColor  = isLocked ? "#3f3f46" : badge.isNegative ? "#3d1515" : colors.card;
+  const bgColor     = isLocked ? "#3f3f46" : badge.isNegative ? "#3d1515" : colors.card;
   const borderColor = isLocked ? "#52525b" : badge.isNegative ? "#7f1d1d66" : colors.primary + "50";
   const labelColor  = isLocked ? "#a1a1aa" : badge.isNegative ? "#f87171" : colors.foreground;
   const descColor   = isLocked ? "#71717a" : colors.mutedForeground;
@@ -30,7 +40,13 @@ function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof 
   const imageSource = badge.imageKey ? BADGE_IMAGES[badge.imageKey] : null;
 
   return (
-    <View style={[styles.tile, { backgroundColor: bgColor, borderColor }]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.tile,
+        { backgroundColor: bgColor, borderColor, opacity: pressed ? 0.75 : 1 },
+      ]}
+    >
       {isLocked ? (
         <Text style={styles.icon}>🔒</Text>
       ) : imageSource ? (
@@ -49,13 +65,79 @@ function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof 
           {badge.detail}
         </Text>
       ) : null}
-    </View>
+    </Pressable>
+  );
+}
+
+function BadgeModal({
+  badge,
+  onClose,
+  colors,
+}: {
+  badge: Badge | null;
+  onClose: () => void;
+  colors: ReturnType<typeof useColors>;
+}) {
+  if (!badge) return null;
+
+  const isLocked    = !badge.earned;
+  const imageSource = badge.imageKey ? BADGE_IMAGES[badge.imageKey] : null;
+  const accentColor = badge.isNegative ? "#f87171" : colors.primary;
+  const bgColor     = isLocked ? "#27272a" : badge.isNegative ? "#2a1010" : colors.card;
+
+  return (
+    <Modal transparent animationType="fade" visible={!!badge} onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable
+          style={[styles.modalCard, { backgroundColor: bgColor, borderColor: accentColor + "60" }]}
+          onPress={() => {}}
+        >
+          {/* Badge image / icon */}
+          <View style={styles.modalIconWrap}>
+            {isLocked ? (
+              <Text style={styles.modalIconLocked}>🔒</Text>
+            ) : imageSource ? (
+              <Image source={imageSource} style={styles.modalImage} resizeMode="contain" />
+            ) : (
+              <Text style={styles.modalIconEmoji}>{badge.icon}</Text>
+            )}
+          </View>
+
+          {/* Earned ribbon */}
+          {badge.earned && (
+            <View style={[styles.earnedPill, { backgroundColor: accentColor + "22", borderColor: accentColor + "55" }]}>
+              <Text style={[styles.earnedPillText, { color: accentColor }]}>
+                {badge.isNegative ? "Unlocked 😬" : "Earned ✓"}
+              </Text>
+            </View>
+          )}
+
+          <Text style={[styles.modalLabel, { color: badge.isNegative ? "#f87171" : colors.foreground }]}>
+            {badge.label}
+          </Text>
+          <Text style={[styles.modalDesc, { color: colors.mutedForeground }]}>
+            {badge.description}
+          </Text>
+          {badge.earned && badge.detail ? (
+            <Text style={[styles.modalDetail, { color: accentColor }]}>{badge.detail}</Text>
+          ) : null}
+          {!badge.earned && (
+            <Text style={[styles.modalLocked, { color: "#71717a" }]}>Keep playing to unlock this badge</Text>
+          )}
+
+          <Pressable onPress={onClose} style={[styles.closeBtn, { borderColor: colors.border }]}>
+            <Text style={[styles.closeBtnText, { color: colors.mutedForeground }]}>Close</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
 export default function AchievementsScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
+  const [selected, setSelected] = useState<Badge | null>(null);
 
   const { data: perMatch, isLoading, isRefetching, refetch } = useGetPerMatchStats();
 
@@ -73,84 +155,88 @@ export default function AchievementsScreen() {
   const hundreds = innings.filter((d) => (d.runs ?? 0) >= 100).length;
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
-      refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Achievements</Text>
-        {badges.length > 0 && (
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            {earnedCount} / {badges.length} earned
-          </Text>
-        )}
-      </View>
-
-      {isLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: 48 }} />
-      ) : badges.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>🏏</Text>
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No matches yet</Text>
-          <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
-            Log your first match to start earning badges.
-          </Text>
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
+        }
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.foreground }]}>Achievements</Text>
+          {badges.length > 0 && (
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+              {earnedCount} / {badges.length} earned
+            </Text>
+          )}
         </View>
-      ) : (
-        <>
-          {/* Batting milestones bar */}
-          {innings.length > 0 && (
-            <View style={[styles.milestonesBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <MilestonePip color="#84cc16" count={innings.filter((d) => (d.runs ?? 0) >= 25).length} label="25+" />
-              <MilestonePip color={colors.primary} count={fifties} label="50+" />
-              <MilestonePip color="#f59e0b" count={hundreds} label="100+" />
-              <Text style={[styles.inningsTotal, { color: colors.mutedForeground }]}>
-                {innings.length} innings
-              </Text>
-            </View>
-          )}
 
-          {/* Positive badges */}
-          <View style={styles.grid}>
-            {positive.map((badge) => (
-              <BadgeTile key={badge.id} badge={badge} colors={colors} />
-            ))}
+        {isLoading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 48 }} />
+        ) : badges.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyIcon}>🏏</Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No matches yet</Text>
+            <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
+              Log your first match to start earning badges.
+            </Text>
           </View>
-
-          {/* Hall of shame */}
-          {negative.some((b) => b.earned) && (
-            <>
-              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                Hall of Shame
-              </Text>
-              <View style={styles.grid}>
-                {negative.filter((b) => b.earned).map((badge) => (
-                  <BadgeTile key={badge.id} badge={badge} colors={colors} />
-                ))}
+        ) : (
+          <>
+            {/* Batting milestones bar */}
+            {innings.length > 0 && (
+              <View style={[styles.milestonesBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <MilestonePip color="#84cc16" count={innings.filter((d) => (d.runs ?? 0) >= 25).length} label="25+" />
+                <MilestonePip color={colors.primary} count={fifties} label="50+" />
+                <MilestonePip color="#f59e0b" count={hundreds} label="100+" />
+                <Text style={[styles.inningsTotal, { color: colors.mutedForeground }]}>
+                  {innings.length} innings
+                </Text>
               </View>
-            </>
-          )}
+            )}
 
-          {/* Locked shame badges (shown dimly) */}
-          {negative.some((b) => !b.earned) && (
-            <>
-              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                Shame badges (locked)
-              </Text>
-              <View style={styles.grid}>
-                {negative.filter((b) => !b.earned).map((badge) => (
-                  <BadgeTile key={badge.id} badge={badge} colors={colors} />
-                ))}
-              </View>
-            </>
-          )}
-        </>
-      )}
-    </ScrollView>
+            {/* Positive badges */}
+            <View style={styles.grid}>
+              {positive.map((badge) => (
+                <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+              ))}
+            </View>
+
+            {/* Hall of shame */}
+            {negative.some((b) => b.earned) && (
+              <>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                  Hall of Shame
+                </Text>
+                <View style={styles.grid}>
+                  {negative.filter((b) => b.earned).map((badge) => (
+                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* Locked shame badges (shown dimly) */}
+            {negative.some((b) => !b.earned) && (
+              <>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                  Shame badges (locked)
+                </Text>
+                <View style={styles.grid}>
+                  {negative.filter((b) => !b.earned).map((badge) => (
+                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+                  ))}
+                </View>
+              </>
+            )}
+          </>
+        )}
+      </ScrollView>
+
+      <BadgeModal badge={selected} onClose={() => setSelected(null)} colors={colors} />
+    </>
   );
 }
 
@@ -227,4 +313,79 @@ const styles = StyleSheet.create({
   emptyIcon:  { fontSize: 48, marginBottom: 12 },
   emptyTitle: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
   emptyDesc:  { fontSize: 14, textAlign: "center", lineHeight: 20 },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 28,
+    alignItems: "center",
+    gap: 10,
+  },
+  modalIconWrap: {
+    marginBottom: 4,
+  },
+  modalImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+  },
+  modalIconEmoji: {
+    fontSize: 80,
+    textAlign: "center",
+  },
+  modalIconLocked: {
+    fontSize: 72,
+    textAlign: "center",
+  },
+  earnedPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  earnedPillText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  modalLabel: {
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center",
+    lineHeight: 28,
+  },
+  modalDesc: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  modalDetail: {
+    fontSize: 15,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  modalLocked: {
+    fontSize: 13,
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  closeBtn: {
+    marginTop: 8,
+    paddingHorizontal: 32,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  closeBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
