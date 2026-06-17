@@ -21,10 +21,14 @@ tags:
     description: Match reports
   - name: photos
     description: Match photos
+  - name: videos
+    description: Match videos
   - name: coaching
     description: Coaching tips
   - name: stats
     description: Aggregated statistics
+  - name: storage
+    description: Object storage upload and serving endpoints
 
 paths:
   /healthz:
@@ -448,6 +452,88 @@ paths:
         "204":
           description: Deleted
 
+  /matches/{matchId}/videos:
+    get:
+      operationId: listMatchVideos
+      tags: [videos]
+      summary: List videos for a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: addMatchVideo
+      tags: [videos]
+      summary: Add a video to a match
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/{videoId}:
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields
+        "500":
+          description: Failed to generate upload URL
+
   /coaching-tips:
     get:
       operationId: listCoachingTips
@@ -799,6 +885,8 @@ components:
           type: ["string", "null"]
         areasToImprove:
           type: ["string", "null"]
+        highlightsUrl:
+          type: ["string", "null"]
         updatedAt:
           type: string
 
@@ -809,6 +897,8 @@ components:
           type: string
         areasToImprove:
           type: string
+        highlightsUrl:
+          type: string
 
     MatchReportUpdate:
       type: object
@@ -816,6 +906,8 @@ components:
         notes:
           type: string
         areasToImprove:
+          type: string
+        highlightsUrl:
           type: string
 
     Photo:
@@ -841,6 +933,52 @@ components:
           type: string
         caption:
           type: string
+
+    Video:
+      type: object
+      required: [id, matchId, objectPath, createdAt]
+      properties:
+        id:
+          type: integer
+        matchId:
+          type: integer
+        objectPath:
+          type: string
+        caption:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    VideoInput:
+      type: object
+      required: [objectPath]
+      properties:
+        objectPath:
+          type: string
+        caption:
+          type: string
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+        contentType:
+          type: string
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
 
     CoachingTip:
       type: object

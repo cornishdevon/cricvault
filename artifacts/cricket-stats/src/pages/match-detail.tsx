@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -8,6 +8,7 @@ import {
   useGetFieldingStats,
   useGetMatchReport,
   useListMatchPhotos,
+  useListMatchVideos,
   useUpdateMatch,
   useDeleteMatch,
   useCreateBattingStats,
@@ -20,15 +21,19 @@ import {
   useUpdateMatchReport,
   useAddMatchPhoto,
   useDeletePhoto,
+  useAddMatchVideo,
+  useDeleteVideo,
   getGetMatchQueryKey,
   getGetBattingStatsQueryKey,
   getGetBowlingStatsQueryKey,
   getGetFieldingStatsQueryKey,
   getGetMatchReportQueryKey,
   getListMatchPhotosQueryKey,
+  getListMatchVideosQueryKey,
   getListMatchesQueryKey,
   getGetStatsSummaryQueryKey,
 } from "@workspace/api-client-react";
+import { useUpload } from "@workspace/object-storage-web";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -363,8 +368,8 @@ function BowlingTab({ matchId }: { matchId: number }) {
               <StatBadge label="Overs" value={stats.overs} />
               <StatBadge label="Maidens" value={stats.maidens} />
               <StatBadge label="Economy" value={economy} />
-              {stats.wides > 0 && <StatBadge label="Wides" value={stats.wides} />}
-              {stats.noBalls > 0 && <StatBadge label="No Balls" value={stats.noBalls} />}
+              {(stats.wides ?? 0) > 0 && <StatBadge label="Wides" value={stats.wides ?? 0} />}
+              {(stats.noBalls ?? 0) > 0 && <StatBadge label="No Balls" value={stats.noBalls ?? 0} />}
               {(stats as any).hatTrick && (
                 <div className="flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2">
                   <span className="text-base">🪄</span>
@@ -519,8 +524,8 @@ function FieldingTab({ matchId }: { matchId: number }) {
             <div className="flex flex-wrap gap-3">
               <StatBadge label="Catches" value={stats.catches} />
               <StatBadge label="Dropped" value={stats.droppedCatches} />
-              <StatBadge label="Run Outs" value={stats.runOuts} />
-              <StatBadge label="Stumpings" value={stats.stumpings} />
+              <StatBadge label="Run Outs" value={stats.runOuts ?? 0} />
+              <StatBadge label="Stumpings" value={stats.stumpings ?? 0} />
               {(stats as any).missedStumpings > 0 && <StatBadge label="Missed St." value={(stats as any).missedStumpings} />}
             </div>
           </CardContent>
@@ -575,25 +580,29 @@ function ReportTab({ matchId }: { matchId: number }) {
   const hasReport = report && (report as any) !== null;
   const [notes, setNotes] = useState("");
   const [areas, setAreas] = useState("");
+  const [highlights, setHighlights] = useState("");
   const [editing, setEditing] = useState(false);
 
   const handleEdit = () => {
     setNotes(hasReport ? (report.notes || "") : "");
     setAreas(hasReport ? (report.areasToImprove || "") : "");
+    setHighlights(hasReport ? ((report as any).highlightsUrl || "") : "");
     setEditing(true);
   };
 
   const handleSave = () => {
-    const payload = { notes, areasToImprove: areas };
+    const payload = { notes, areasToImprove: areas, highlightsUrl: highlights || undefined };
     const invalidate = () => qc.invalidateQueries({ queryKey: getGetMatchReportQueryKey(matchId) });
     if (hasReport) {
-      updateReport.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Report saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
+      updateReport.mutate({ matchId, data: payload as any }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Report saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
     } else {
-      createReport.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Report saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
+      createReport.mutate({ matchId, data: payload as any }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Report saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
     }
   };
 
   if (isLoading) return <Skeleton className="h-48 rounded-xl" />;
+
+  const highlightsUrl = hasReport ? (report as any).highlightsUrl : null;
 
   return (
     <div className="space-y-4">
@@ -601,7 +610,7 @@ function ReportTab({ matchId }: { matchId: number }) {
         <div className="space-y-4">
           {report.notes && (
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-base">Match Report</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Match Notes</CardTitle></CardHeader>
               <CardContent><p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{report.notes}</p></CardContent>
             </Card>
           )}
@@ -611,7 +620,18 @@ function ReportTab({ matchId }: { matchId: number }) {
               <CardContent><p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{report.areasToImprove}</p></CardContent>
             </Card>
           )}
-          {!report.notes && !report.areasToImprove && (
+          {highlightsUrl && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-base">🎬 Highlights</CardTitle></CardHeader>
+              <CardContent>
+                <a href={highlightsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm break-all flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-500 flex-shrink-0"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2H9v.44A4.83 4.83 0 0 1 5.41 6.69a4.83 4.83 0 0 1 0 10.62A4.83 4.83 0 0 1 9 21.56V22h6.82v-.44a4.83 4.83 0 0 1 3.77-4.25 4.83 4.83 0 0 1 0-10.62z"/></svg>
+                  {highlightsUrl}
+                </a>
+              </CardContent>
+            </Card>
+          )}
+          {!report.notes && !report.areasToImprove && !highlightsUrl && (
             <p className="text-muted-foreground text-sm">Report is empty.</p>
           )}
           <Button variant="outline" onClick={handleEdit}>Edit Report</Button>
@@ -638,6 +658,14 @@ function ReportTab({ matchId }: { matchId: number }) {
                 onChange={(e) => setAreas(e.target.value)}
                 rows={4}
                 className="resize-y"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>YouTube / Highlights Link</Label>
+              <Input
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={highlights}
+                onChange={(e) => setHighlights(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
@@ -668,24 +696,40 @@ function PhotosTab({ matchId }: { matchId: number }) {
   });
   const addPhoto = useAddMatchPhoto();
   const deletePhoto = useDeletePhoto();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
   const [adding, setAdding] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  const handleAdd = () => {
-    if (!url.trim()) { toast({ title: "Photo URL is required", variant: "destructive" }); return; }
-    addPhoto.mutate(
-      { matchId, data: { url, caption: caption || undefined } },
-      {
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: getListMatchPhotosQueryKey(matchId) });
-          setUrl(""); setCaption(""); setAdding(false);
-          toast({ title: "Photo added" });
-        },
-        onError: () => toast({ title: "Failed to add photo", variant: "destructive" }),
-      }
-    );
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (res: { objectPath: string }) => {
+      addPhoto.mutate(
+        { matchId, data: { url: `/api/storage${res.objectPath}`, caption: caption || undefined } },
+        {
+          onSuccess: () => {
+            qc.invalidateQueries({ queryKey: getListMatchPhotosQueryKey(matchId) });
+            setCaption(""); setAdding(false); setPreview(null); setPendingFile(null);
+            toast({ title: "Photo added" });
+          },
+          onError: () => toast({ title: "Failed to save photo", variant: "destructive" }),
+        }
+      );
+    },
+    onError: () => toast({ title: "Upload failed", variant: "destructive" }),
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPendingFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleUpload = async () => {
+    if (!pendingFile) { toast({ title: "Pick a photo first", variant: "destructive" }); return; }
+    await uploadFile(pendingFile);
   };
 
   const handleDelete = (photoId: number) => {
@@ -702,20 +746,31 @@ function PhotosTab({ matchId }: { matchId: number }) {
         <Card>
           <CardHeader><CardTitle>Add Photo</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Image URL</Label>
-              <Input placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} />
+            <div
+              className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {preview ? (
+                <img src={preview} alt="preview" className="max-h-48 mx-auto rounded object-contain" />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <p className="text-sm">Click to choose a photo</p>
+                </div>
+              )}
             </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <div className="space-y-1.5">
               <Label>Caption (optional)</Label>
               <Input placeholder="e.g. Taking the catch at mid-off" value={caption} onChange={(e) => setCaption(e.target.value)} />
             </div>
-            {url && (
-              <img src={url} alt="preview" className="rounded-lg max-h-48 object-cover w-full border" onError={(e) => (e.currentTarget.style.display = "none")} />
-            )}
             <div className="flex gap-2">
-              <Button onClick={handleAdd} disabled={addPhoto.isPending}><Save className="h-4 w-4 mr-2" /> Add</Button>
-              <Button variant="outline" onClick={() => setAdding(false)}><X className="h-4 w-4 mr-2" /> Cancel</Button>
+              <Button onClick={handleUpload} disabled={isUploading || addPhoto.isPending || !pendingFile}>
+                <Save className="h-4 w-4 mr-2" /> {isUploading ? "Uploading…" : "Upload"}
+              </Button>
+              <Button variant="outline" onClick={() => { setAdding(false); setPreview(null); setPendingFile(null); setCaption(""); }}>
+                <X className="h-4 w-4 mr-2" /> Cancel
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -748,6 +803,129 @@ function PhotosTab({ matchId }: { matchId: number }) {
   );
 }
 
+// ── Videos Tab ────────────────────────────────────────────────────────────────
+
+function VideosTab({ matchId }: { matchId: number }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: videos, isLoading } = useListMatchVideos(matchId, {
+    query: { queryKey: getListMatchVideosQueryKey(matchId) },
+  });
+  const addVideo = useAddMatchVideo();
+  const deleteVideo = useDeleteVideo();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [caption, setCaption] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingName, setPendingName] = useState("");
+
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (res: { objectPath: string }) => {
+      addVideo.mutate(
+        { matchId, data: { objectPath: res.objectPath, caption: caption || undefined } },
+        {
+          onSuccess: () => {
+            qc.invalidateQueries({ queryKey: getListMatchVideosQueryKey(matchId) });
+            setCaption(""); setAdding(false); setPendingFile(null); setPendingName("");
+            toast({ title: "Video added" });
+          },
+          onError: () => toast({ title: "Failed to save video", variant: "destructive" }),
+        }
+      );
+    },
+    onError: () => toast({ title: "Upload failed", variant: "destructive" }),
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPendingFile(file);
+    setPendingName(file.name);
+  };
+
+  const handleUpload = async () => {
+    if (!pendingFile) { toast({ title: "Pick a video first", variant: "destructive" }); return; }
+    await uploadFile(pendingFile);
+  };
+
+  const handleDelete = (videoId: number) => {
+    deleteVideo.mutate({ videoId }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListMatchVideosQueryKey(matchId) }); toast({ title: "Video removed" }); },
+    });
+  };
+
+  if (isLoading) return <Skeleton className="h-48 rounded-xl" />;
+
+  return (
+    <div className="space-y-4">
+      {adding ? (
+        <Card>
+          <CardHeader><CardTitle>Add Video</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div
+              className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                {pendingName ? (
+                  <p className="text-sm text-foreground font-medium">{pendingName}</p>
+                ) : (
+                  <p className="text-sm">Click to choose a video</p>
+                )}
+              </div>
+            </div>
+            <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
+            <div className="space-y-1.5">
+              <Label>Caption (optional)</Label>
+              <Input placeholder="e.g. Bowling spell from the pavilion end" value={caption} onChange={(e) => setCaption(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleUpload} disabled={isUploading || addVideo.isPending || !pendingFile}>
+                <Save className="h-4 w-4 mr-2" /> {isUploading ? "Uploading…" : "Upload"}
+              </Button>
+              <Button variant="outline" onClick={() => { setAdding(false); setPendingFile(null); setPendingName(""); setCaption(""); }}>
+                <X className="h-4 w-4 mr-2" /> Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Button variant="outline" onClick={() => setAdding(true)}>Add Video</Button>
+      )}
+
+      {videos && videos.length > 0 ? (
+        <div className="space-y-3">
+          {videos.map((video) => (
+            <Card key={video.id}>
+              <CardContent className="p-3">
+                <video
+                  src={`/api/storage${video.objectPath}`}
+                  controls
+                  className="w-full rounded-md max-h-64 bg-black"
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-sm text-muted-foreground">{video.caption || "No caption"}</p>
+                  <button onClick={() => handleDelete(video.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : !adding ? (
+        <Card className="border-dashed bg-transparent shadow-none">
+          <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+            <p className="text-muted-foreground">No videos for this match yet.</p>
+          </CardContent>
+        </Card>
+      ) : null}
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MatchDetail() {
@@ -761,6 +939,7 @@ export default function MatchDetail() {
     query: { enabled: !!matchId, queryKey: getGetMatchQueryKey(matchId) },
   });
   const deleteMatch = useDeleteMatch();
+  const updateMatch = useUpdateMatch();
 
   const handleDelete = () => {
     if (!confirm("Delete this match and all its stats? This cannot be undone.")) return;
@@ -853,18 +1032,20 @@ export default function MatchDetail() {
       </div>
 
       <Tabs defaultValue="batting" className="w-full">
-        <TabsList className="w-full sm:w-auto">
+        <TabsList className="w-full sm:w-auto flex-wrap h-auto gap-1">
           <TabsTrigger value="batting">Batting</TabsTrigger>
           <TabsTrigger value="bowling">Bowling</TabsTrigger>
           <TabsTrigger value="fielding">Fielding</TabsTrigger>
           <TabsTrigger value="report">Report</TabsTrigger>
           <TabsTrigger value="photos">Photos</TabsTrigger>
+          <TabsTrigger value="videos">Videos</TabsTrigger>
         </TabsList>
         <TabsContent value="batting" className="mt-4"><BattingTab matchId={matchId} /></TabsContent>
         <TabsContent value="bowling" className="mt-4"><BowlingTab matchId={matchId} /></TabsContent>
         <TabsContent value="fielding" className="mt-4"><FieldingTab matchId={matchId} /></TabsContent>
         <TabsContent value="report" className="mt-4"><ReportTab matchId={matchId} /></TabsContent>
         <TabsContent value="photos" className="mt-4"><PhotosTab matchId={matchId} /></TabsContent>
+        <TabsContent value="videos" className="mt-4"><VideosTab matchId={matchId} /></TabsContent>
       </Tabs>
     </div>
   );

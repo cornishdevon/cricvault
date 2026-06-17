@@ -414,6 +414,7 @@ export const GetMatchReportResponse = zod.object({
   "matchId": zod.number(),
   "notes": zod.string().nullish(),
   "areasToImprove": zod.string().nullish(),
+  "highlightsUrl": zod.string().nullish(),
   "updatedAt": zod.string().optional()
 })
 
@@ -427,7 +428,8 @@ export const CreateMatchReportParams = zod.object({
 
 export const CreateMatchReportBody = zod.object({
   "notes": zod.string().optional(),
-  "areasToImprove": zod.string().optional()
+  "areasToImprove": zod.string().optional(),
+  "highlightsUrl": zod.string().optional()
 })
 
 
@@ -440,7 +442,8 @@ export const UpdateMatchReportParams = zod.object({
 
 export const UpdateMatchReportBody = zod.object({
   "notes": zod.string().optional(),
-  "areasToImprove": zod.string().optional()
+  "areasToImprove": zod.string().optional(),
+  "highlightsUrl": zod.string().optional()
 })
 
 export const UpdateMatchReportResponse = zod.object({
@@ -448,6 +451,7 @@ export const UpdateMatchReportResponse = zod.object({
   "matchId": zod.number(),
   "notes": zod.string().nullish(),
   "areasToImprove": zod.string().nullish(),
+  "highlightsUrl": zod.string().nullish(),
   "updatedAt": zod.string().optional()
 })
 
@@ -487,6 +491,64 @@ export const AddMatchPhotoBody = zod.object({
  */
 export const DeletePhotoParams = zod.object({
   "photoId": zod.coerce.number()
+})
+
+
+/**
+ * @summary List videos for a match
+ */
+export const ListMatchVideosParams = zod.object({
+  "matchId": zod.coerce.number()
+})
+
+export const ListMatchVideosResponseItem = zod.object({
+  "id": zod.number(),
+  "matchId": zod.number(),
+  "objectPath": zod.string(),
+  "caption": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListMatchVideosResponse = zod.array(ListMatchVideosResponseItem)
+
+
+/**
+ * @summary Add a video to a match
+ */
+export const AddMatchVideoParams = zod.object({
+  "matchId": zod.coerce.number()
+})
+
+export const AddMatchVideoBody = zod.object({
+  "objectPath": zod.string(),
+  "caption": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete a video
+ */
+export const DeleteVideoParams = zod.object({
+  "videoId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string(),
+  "size": zod.number(),
+  "contentType": zod.string()
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string(),
+  "size": zod.number(),
+  "contentType": zod.string()
+}).optional()
 })
 
 

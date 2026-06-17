@@ -77,6 +77,7 @@ export const matchReportsTable = pgTable("match_reports", {
   matchId: integer("match_id").notNull().references(() => matchesTable.id, { onDelete: "cascade" }),
   notes: text("notes"),
   areasToImprove: text("areas_to_improve"),
+  highlightsUrl: text("highlights_url"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -95,6 +96,18 @@ export const photosTable = pgTable("photos", {
 export const insertPhotoSchema = createInsertSchema(photosTable).omit({ id: true, createdAt: true });
 export type InsertPhoto = z.infer<typeof insertPhotoSchema>;
 export type Photo = typeof photosTable.$inferSelect;
+
+export const videosTable = pgTable("videos", {
+  id: serial("id").primaryKey(),
+  matchId: integer("match_id").notNull().references(() => matchesTable.id, { onDelete: "cascade" }),
+  objectPath: text("object_path").notNull(),
+  caption: text("caption"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertVideoSchema = createInsertSchema(videosTable).omit({ id: true, createdAt: true });
+export type InsertVideo = z.infer<typeof insertVideoSchema>;
+export type Video = typeof videosTable.$inferSelect;
 
 export const coachingTipsTable = pgTable("coaching_tips", {
   id: serial("id").primaryKey(),

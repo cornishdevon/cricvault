@@ -5,27 +5,43 @@ import {
   useGetFieldingStats,
   useGetMatchReport,
   useDeleteMatch,
+  useListMatchPhotos,
+  useListMatchVideos,
+  useAddMatchPhoto,
+  useAddMatchVideo,
+  useCreateMatchReport,
+  useUpdateMatchReport,
   getGetPerMatchStatsQueryKey,
   getGetStatsSummaryQueryKey,
   getListMatchesQueryKey,
+  getGetMatchReportQueryKey,
+  getListMatchPhotosQueryKey,
+  getListMatchVideosQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
+  Image,
+  Linking,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
 
 import { useColors } from "@/hooks/useColors";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 function StatRow({
   label,
@@ -65,6 +81,289 @@ function Card({
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>{title}</Text>
       </View>
       <View style={styles.cardBody}>{children}</View>
+    </View>
+  );
+}
+
+async function uploadToPresignedUrl(uri: string, contentType: string): Promise<string | null> {
+  try {
+    const filename = uri.split("/").pop() ?? "upload";
+    const urlRes = await fetch("/api/storage/uploads/request-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: filename, size: 0, contentType }),
+    });
+    if (!urlRes.ok) return null;
+    const { uploadURL, objectPath } = await urlRes.json();
+
+    const fileRes = await fetch(uri);
+    const blob = await fileRes.blob();
+    await fetch(uploadURL, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: blob,
+    });
+    return objectPath as string;
+  } catch {
+    return null;
+  }
+}
+
+function MediaSection({
+  matchId,
+  report,
+  colors,
+}: {
+  matchId: number;
+  report: any;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const qc = useQueryClient();
+  const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [editingHighlights, setEditingHighlights] = useState(false);
+  const [highlightsInput, setHighlightsInput] = useState("");
+
+  const { data: photos } = useListMatchPhotos(matchId, {
+    query: { queryKey: getListMatchPhotosQueryKey(matchId) },
+  });
+  const { data: videos } = useListMatchVideos(matchId, {
+    query: { queryKey: getListMatchVideosQueryKey(matchId) },
+  });
+  const addPhoto = useAddMatchPhoto();
+  const addVideo = useAddMatchVideo();
+  const createReport = useCreateMatchReport();
+  const updateReport = useUpdateMatchReport();
+
+  const highlightsUrl = report ? (report as any).highlightsUrl : null;
+
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  const storageBase = domain ? `https://${domain}` : "";
+
+  const getMediaUrl = (path: string) => {
+    if (path.startsWith("http")) return path;
+    return `${storageBase}${path}`;
+  };
+
+  const handlePickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo access to upload match photos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setUploading(true);
+    try {
+      const contentType = asset.mimeType ?? "image/jpeg";
+      const objectPath = await uploadToPresignedUrl(asset.uri, contentType);
+      if (!objectPath) throw new Error("Upload failed");
+      addPhoto.mutate(
+        { matchId, data: { url: `/api/storage${objectPath}` } },
+        {
+          onSuccess: () => {
+            qc.invalidateQueries({ queryKey: getListMatchPhotosQueryKey(matchId) });
+          },
+          onError: () => Alert.alert("Error", "Failed to save photo."),
+        }
+      );
+    } catch {
+      Alert.alert("Error", "Photo upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePickVideo = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow media access to upload match videos.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setUploadingVideo(true);
+    try {
+      const contentType = asset.mimeType ?? "video/mp4";
+      const objectPath = await uploadToPresignedUrl(asset.uri, contentType);
+      if (!objectPath) throw new Error("Upload failed");
+      addVideo.mutate(
+        { matchId, data: { objectPath: `/api/storage${objectPath}` } },
+        {
+          onSuccess: () => {
+            qc.invalidateQueries({ queryKey: getListMatchVideosQueryKey(matchId) });
+          },
+          onError: () => Alert.alert("Error", "Failed to save video."),
+        }
+      );
+    } catch {
+      Alert.alert("Error", "Video upload failed.");
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  const handleSaveHighlights = () => {
+    const payload = {
+      notes: report?.notes ?? undefined,
+      areasToImprove: report?.areasToImprove ?? undefined,
+      highlightsUrl: highlightsInput.trim() || undefined,
+    };
+    const invalidate = () => qc.invalidateQueries({ queryKey: getGetMatchReportQueryKey(matchId) });
+    if (report) {
+      updateReport.mutate(
+        { matchId, data: payload as any },
+        { onSuccess: () => { invalidate(); setEditingHighlights(false); } }
+      );
+    } else {
+      createReport.mutate(
+        { matchId, data: payload as any },
+        { onSuccess: () => { invalidate(); setEditingHighlights(false); } }
+      );
+    }
+  };
+
+  const hasMedia = (photos && photos.length > 0) || (videos && videos.length > 0) || highlightsUrl;
+
+  return (
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.cardHeader}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.secondary }]}>
+          <Feather name="film" size={16} color={colors.primary} />
+        </View>
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>Media</Text>
+      </View>
+
+      {/* Highlights URL */}
+      <View style={[styles.mediaSectionBlock, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.mediaSectionTitle, { color: colors.mutedForeground }]}>🎬 Highlights</Text>
+        {editingHighlights ? (
+          <View style={styles.highlightsEdit}>
+            <TextInput
+              style={[styles.highlightsInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              placeholder="https://www.youtube.com/watch?v=..."
+              placeholderTextColor={colors.mutedForeground}
+              value={highlightsInput}
+              onChangeText={setHighlightsInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <View style={styles.highlightsBtns}>
+              <TouchableOpacity
+                style={[styles.smallBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSaveHighlights}
+              >
+                <Text style={styles.smallBtnText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.smallBtn, { backgroundColor: colors.secondary }]}
+                onPress={() => setEditingHighlights(false)}
+              >
+                <Text style={[styles.smallBtnText, { color: colors.foreground }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : highlightsUrl ? (
+          <TouchableOpacity
+            onPress={() => Linking.openURL(highlightsUrl)}
+            style={styles.highlightsRow}
+          >
+            <Feather name="youtube" size={16} color="#ff0000" />
+            <Text style={[styles.highlightsLink, { color: colors.primary }]} numberOfLines={1}>
+              {highlightsUrl}
+            </Text>
+            <Feather name="external-link" size={13} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => { setHighlightsInput(""); setEditingHighlights(true); }}
+            style={styles.addMediaBtn}
+          >
+            <Feather name="plus" size={14} color={colors.primary} />
+            <Text style={[styles.addMediaText, { color: colors.primary }]}>Add YouTube / highlights link</Text>
+          </TouchableOpacity>
+        )}
+        {highlightsUrl && !editingHighlights && (
+          <TouchableOpacity
+            onPress={() => { setHighlightsInput(highlightsUrl); setEditingHighlights(true); }}
+            style={{ marginTop: 6, marginLeft: 2 }}
+          >
+            <Text style={[styles.editLink, { color: colors.mutedForeground }]}>Edit link</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Photos */}
+      <View style={[styles.mediaSectionBlock, { borderBottomColor: colors.border }]}>
+        <View style={styles.mediaSectionRow}>
+          <Text style={[styles.mediaSectionTitle, { color: colors.mutedForeground }]}>📷 Photos</Text>
+          <TouchableOpacity onPress={handlePickPhoto} disabled={uploading} style={styles.addMediaBtn}>
+            {uploading ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <Feather name="plus" size={14} color={colors.primary} />
+                <Text style={[styles.addMediaText, { color: colors.primary }]}>Add</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+        {photos && photos.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photosScroll} contentContainerStyle={styles.photosContainer}>
+            {photos.map((photo) => (
+              <Image
+                key={photo.id}
+                source={{ uri: getMediaUrl(photo.url) }}
+                style={styles.photoThumb}
+                resizeMode="cover"
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <Text style={[styles.emptyMediaText, { color: colors.mutedForeground }]}>No photos yet</Text>
+        )}
+      </View>
+
+      {/* Videos */}
+      <View style={styles.mediaSectionBlock}>
+        <View style={styles.mediaSectionRow}>
+          <Text style={[styles.mediaSectionTitle, { color: colors.mutedForeground }]}>🎥 Videos</Text>
+          <TouchableOpacity onPress={handlePickVideo} disabled={uploadingVideo} style={styles.addMediaBtn}>
+            {uploadingVideo ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <Feather name="plus" size={14} color={colors.primary} />
+                <Text style={[styles.addMediaText, { color: colors.primary }]}>Add</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+        {videos && videos.length > 0 ? (
+          <View style={styles.videosList}>
+            {videos.map((video, i) => (
+              <View key={video.id} style={[styles.videoItem, { borderColor: colors.border }]}>
+                <Feather name="video" size={18} color={colors.primary} />
+                <Text style={[styles.videoCaption, { color: colors.foreground }]} numberOfLines={1}>
+                  {video.caption || `Video ${i + 1}`}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={[styles.emptyMediaText, { color: colors.mutedForeground }]}>No videos yet</Text>
+        )}
+      </View>
     </View>
   );
 }
@@ -247,6 +546,9 @@ export default function MatchDetailScreen() {
         </Card>
       ) : null}
 
+      {/* Media Section */}
+      <MediaSection matchId={matchId} report={report} colors={colors} />
+
       {!batting && !bowling && !fielding && !report ? (
         <View style={styles.noStats}>
           <Feather name="info" size={24} color={colors.mutedForeground} />
@@ -258,6 +560,8 @@ export default function MatchDetailScreen() {
     </ScrollView>
   );
 }
+
+const PHOTO_SIZE = (SCREEN_WIDTH - 32 - 28 - 24) / 3;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -331,4 +635,83 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   reportText: { fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 20 },
+
+  // Media section
+  mediaSectionBlock: {
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 0,
+  },
+  mediaSectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  mediaSectionTitle: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  addMediaBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  addMediaText: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  emptyMediaText: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 4 },
+
+  // Highlights
+  highlightsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 4,
+  },
+  highlightsLink: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    flex: 1,
+  },
+  highlightsEdit: { gap: 8 },
+  highlightsInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+  highlightsBtns: { flexDirection: "row", gap: 8 },
+  smallBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  smallBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#fff" },
+  editLink: { fontSize: 12, fontFamily: "Inter_400Regular", textDecorationLine: "underline" },
+
+  // Photos
+  photosScroll: { marginTop: 4 },
+  photosContainer: { gap: 6 },
+  photoThumb: {
+    width: PHOTO_SIZE,
+    height: PHOTO_SIZE,
+    borderRadius: 8,
+  },
+
+  // Videos
+  videosList: { gap: 8, marginTop: 4 },
+  videoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  videoCaption: { fontSize: 13, fontFamily: "Inter_400Regular", flex: 1 },
 });

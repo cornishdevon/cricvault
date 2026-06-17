@@ -307,17 +307,21 @@ export interface MatchReport {
   notes?: string | null;
   /** @nullable */
   areasToImprove?: string | null;
+  /** @nullable */
+  highlightsUrl?: string | null;
   updatedAt?: string;
 }
 
 export interface MatchReportInput {
   notes?: string;
   areasToImprove?: string;
+  highlightsUrl?: string;
 }
 
 export interface MatchReportUpdate {
   notes?: string;
   areasToImprove?: string;
+  highlightsUrl?: string;
 }
 
 export interface Photo {
@@ -332,6 +336,32 @@ export interface Photo {
 export interface PhotoInput {
   url: string;
   caption?: string;
+}
+
+export interface Video {
+  id: number;
+  matchId: number;
+  objectPath: string;
+  /** @nullable */
+  caption?: string | null;
+  createdAt: string;
+}
+
+export interface VideoInput {
+  objectPath: string;
+  caption?: string;
+}
+
+export interface UploadUrlRequest {
+  name: string;
+  size: number;
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
 }
 
 export type CoachingTipCategory = typeof CoachingTipCategory[keyof typeof CoachingTipCategory];

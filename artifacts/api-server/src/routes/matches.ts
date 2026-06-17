@@ -7,6 +7,7 @@ import {
   fieldingStatsTable,
   matchReportsTable,
   photosTable,
+  videosTable,
   coachingTipsTable,
 } from "@workspace/db";
 import { eq, desc, sum, max, count } from "drizzle-orm";
@@ -286,10 +287,11 @@ router.post("/matches/:matchId/report", async (req, res) => {
 
 router.patch("/matches/:matchId/report", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { notes, areasToImprove } = req.body;
+  const { notes, areasToImprove, highlightsUrl } = req.body;
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (notes !== undefined) updates.notes = notes;
   if (areasToImprove !== undefined) updates.areasToImprove = areasToImprove;
+  if (highlightsUrl !== undefined) updates.highlightsUrl = highlightsUrl;
   const [row] = await db
     .update(matchReportsTable)
     .set(updates)
@@ -325,6 +327,35 @@ router.post("/matches/:matchId/photos", async (req, res) => {
 router.delete("/photos/:photoId", async (req, res) => {
   const photoId = Number(req.params.photoId);
   await db.delete(photosTable).where(eq(photosTable.id, photoId));
+  res.status(204).send();
+});
+
+// ── Videos ────────────────────────────────────────────────────────────────────
+
+router.get("/matches/:matchId/videos", async (req, res) => {
+  const matchId = Number(req.params.matchId);
+  const rows = await db
+    .select()
+    .from(videosTable)
+    .where(eq(videosTable.matchId, matchId))
+    .orderBy(desc(videosTable.createdAt));
+  res.json(rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })));
+});
+
+router.post("/matches/:matchId/videos", async (req, res) => {
+  const matchId = Number(req.params.matchId);
+  const { objectPath, caption } = req.body;
+  if (!objectPath) return res.status(400).json({ error: "objectPath is required" });
+  const [row] = await db
+    .insert(videosTable)
+    .values({ matchId, objectPath, caption: caption ?? null })
+    .returning();
+  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+});
+
+router.delete("/videos/:videoId", async (req, res) => {
+  const videoId = Number(req.params.videoId);
+  await db.delete(videosTable).where(eq(videosTable.id, videoId));
   res.status(204).send();
 });
 

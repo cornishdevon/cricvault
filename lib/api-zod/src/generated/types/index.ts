@@ -41,3 +41,7 @@ export * from './statsSummary';
 export * from './statsSummaryBatting';
 export * from './statsSummaryBowling';
 export * from './statsSummaryFielding';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';
+export * from './video';
+export * from './videoInput';

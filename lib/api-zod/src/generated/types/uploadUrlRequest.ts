@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface MatchReportInput {
-  notes?: string;
-  areasToImprove?: string;
-  highlightsUrl?: string;
+export interface UploadUrlRequest {
+  name: string;
+  size: number;
+  contentType: string;
 }

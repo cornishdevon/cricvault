@@ -41,7 +41,11 @@ import type {
   PerMatchStat,
   Photo,
   PhotoInput,
-  StatsSummary
+  StatsSummary,
+  UploadUrlRequest,
+  UploadUrlResponse,
+  Video,
+  VideoInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1601,6 +1605,296 @@ export const useDeletePhoto = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeletePhotoMutationOptions(options));
+    }
+
+export const getListMatchVideosUrl = (matchId: number,) => {
+
+
+
+
+  return `/api/matches/${matchId}/videos`
+}
+
+/**
+ * @summary List videos for a match
+ */
+export const listMatchVideos = async (matchId: number, options?: RequestInit): Promise<Video[]> => {
+
+  return customFetch<Video[]>(getListMatchVideosUrl(matchId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMatchVideosQueryKey = (matchId: number,) => {
+    return [
+    `/api/matches/${matchId}/videos`
+    ] as const;
+    }
+
+
+export const getListMatchVideosQueryOptions = <TData = Awaited<ReturnType<typeof listMatchVideos>>, TError = ErrorType<unknown>>(matchId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMatchVideos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMatchVideosQueryKey(matchId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMatchVideos>>> = ({ signal }) => listMatchVideos(matchId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(matchId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMatchVideos>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMatchVideosQueryResult = NonNullable<Awaited<ReturnType<typeof listMatchVideos>>>
+export type ListMatchVideosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List videos for a match
+ */
+
+export function useListMatchVideos<TData = Awaited<ReturnType<typeof listMatchVideos>>, TError = ErrorType<unknown>>(
+ matchId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMatchVideos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMatchVideosQueryOptions(matchId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAddMatchVideoUrl = (matchId: number,) => {
+
+
+
+
+  return `/api/matches/${matchId}/videos`
+}
+
+/**
+ * @summary Add a video to a match
+ */
+export const addMatchVideo = async (matchId: number,
+    videoInput: VideoInput, options?: RequestInit): Promise<Video> => {
+
+  return customFetch<Video>(getAddMatchVideoUrl(matchId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      videoInput,)
+  }
+);}
+
+
+
+
+export const getAddMatchVideoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addMatchVideo>>, TError,{matchId: number;data: BodyType<VideoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addMatchVideo>>, TError,{matchId: number;data: BodyType<VideoInput>}, TContext> => {
+
+const mutationKey = ['addMatchVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addMatchVideo>>, {matchId: number;data: BodyType<VideoInput>}> = (props) => {
+          const {matchId,data} = props ?? {};
+
+          return  addMatchVideo(matchId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddMatchVideoMutationResult = NonNullable<Awaited<ReturnType<typeof addMatchVideo>>>
+    export type AddMatchVideoMutationBody = BodyType<VideoInput>
+    export type AddMatchVideoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a video to a match
+ */
+export const useAddMatchVideo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addMatchVideo>>, TError,{matchId: number;data: BodyType<VideoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addMatchVideo>>,
+        TError,
+        {matchId: number;data: BodyType<VideoInput>},
+        TContext
+      > => {
+      return useMutation(getAddMatchVideoMutationOptions(options));
+    }
+
+export const getDeleteVideoUrl = (videoId: number,) => {
+
+
+
+
+  return `/api/videos/${videoId}`
+}
+
+/**
+ * @summary Delete a video
+ */
+export const deleteVideo = async (videoId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteVideoUrl(videoId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteVideoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{videoId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{videoId: number}, TContext> => {
+
+const mutationKey = ['deleteVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVideo>>, {videoId: number}> = (props) => {
+          const {videoId} = props ?? {};
+
+          return  deleteVideo(videoId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteVideoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVideo>>>
+
+    export type DeleteVideoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a video
+ */
+export const useDeleteVideo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVideo>>, TError,{videoId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteVideo>>,
+        TError,
+        {videoId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteVideoMutationOptions(options));
+    }
+
+export const getRequestUploadUrlUrl = () => {
+
+
+
+
+  return `/api/storage/uploads/request-url`
+}
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+export const requestUploadUrl = async (uploadUrlRequest: UploadUrlRequest, options?: RequestInit): Promise<UploadUrlResponse> => {
+
+  return customFetch<UploadUrlResponse>(getRequestUploadUrlUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      uploadUrlRequest,)
+  }
+);}
+
+
+
+
+export const getRequestUploadUrlMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<UploadUrlRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<UploadUrlRequest>}, TContext> => {
+
+const mutationKey = ['requestUploadUrl'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestUploadUrl>>, {data: BodyType<UploadUrlRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestUploadUrl(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestUploadUrlMutationResult = NonNullable<Awaited<ReturnType<typeof requestUploadUrl>>>
+    export type RequestUploadUrlMutationBody = BodyType<UploadUrlRequest>
+    export type RequestUploadUrlMutationError = ErrorType<void>
+
+    /**
+ * @summary Request a presigned URL for file upload
+ */
+export const useRequestUploadUrl = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestUploadUrl>>, TError,{data: BodyType<UploadUrlRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestUploadUrl>>,
+        TError,
+        {data: BodyType<UploadUrlRequest>},
+        TContext
+      > => {
+      return useMutation(getRequestUploadUrlMutationOptions(options));
     }
 
 export const getListCoachingTipsUrl = (params?: ListCoachingTipsParams,) => {

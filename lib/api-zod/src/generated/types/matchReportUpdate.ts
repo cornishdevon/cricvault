@@ -9,4 +9,5 @@
 export interface MatchReportUpdate {
   notes?: string;
   areasToImprove?: string;
+  highlightsUrl?: string;
 }

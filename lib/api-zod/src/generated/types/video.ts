@@ -6,14 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface MatchReport {
+export interface Video {
   id: number;
   matchId: number;
+  objectPath: string;
   /** @nullable */
-  notes?: string | null;
-  /** @nullable */
-  areasToImprove?: string | null;
-  /** @nullable */
-  highlightsUrl?: string | null;
-  updatedAt?: string;
+  caption?: string | null;
+  createdAt: string;
 }
