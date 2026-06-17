@@ -187,6 +187,9 @@ export default function MatchDetailScreen() {
           {batting.badUmpireDecision ? (
             <StatRow label="Bad Umpire Decision" value="Yes" colors={colors} />
           ) : null}
+          <StatRow label="Balls to 50" value={batting.ballsToFifty ?? undefined} colors={colors} />
+          <StatRow label="Balls to 100" value={batting.ballsToHundred ?? undefined} colors={colors} />
+          <StatRow label="Balls to 150" value={batting.ballsToHundredFifty ?? undefined} colors={colors} />
         </Card>
       ) : null}
 

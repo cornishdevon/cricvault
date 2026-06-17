@@ -139,6 +139,21 @@ export interface BattingStats {
   battingPosition?: number | null;
   /** @nullable */
   howOut?: BattingStatsHowOut;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToFifty?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToHundred?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToHundredFifty?: number | null;
 }
 
 export type BattingStatsInputHowOut = typeof BattingStatsInputHowOut[keyof typeof BattingStatsInputHowOut];
@@ -167,6 +182,12 @@ export interface BattingStatsInput {
   /** @minimum 1 */
   battingPosition?: number;
   howOut?: BattingStatsInputHowOut;
+  /** @minimum 0 */
+  ballsToFifty?: number;
+  /** @minimum 0 */
+  ballsToHundred?: number;
+  /** @minimum 0 */
+  ballsToHundredFifty?: number;
 }
 
 export type BattingStatsUpdateHowOut = typeof BattingStatsUpdateHowOut[keyof typeof BattingStatsUpdateHowOut];
@@ -195,6 +216,12 @@ export interface BattingStatsUpdate {
   /** @minimum 1 */
   battingPosition?: number;
   howOut?: BattingStatsUpdateHowOut;
+  /** @minimum 0 */
+  ballsToFifty?: number;
+  /** @minimum 0 */
+  ballsToHundred?: number;
+  /** @minimum 0 */
+  ballsToHundredFifty?: number;
 }
 
 export interface BowlingStats {

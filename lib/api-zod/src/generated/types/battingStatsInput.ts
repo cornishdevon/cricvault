@@ -19,4 +19,10 @@ export interface BattingStatsInput {
   /** @minimum 1 */
   battingPosition?: number;
   howOut?: BattingStatsInputHowOut;
+  /** @minimum 0 */
+  ballsToFifty?: number;
+  /** @minimum 0 */
+  ballsToHundred?: number;
+  /** @minimum 0 */
+  ballsToHundredFifty?: number;
 }

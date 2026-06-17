@@ -590,6 +590,15 @@ components:
         howOut:
           type: ["string", "null"]
           enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired, null]
+        ballsToFifty:
+          type: ["integer", "null"]
+          minimum: 0
+        ballsToHundred:
+          type: ["integer", "null"]
+          minimum: 0
+        ballsToHundredFifty:
+          type: ["integer", "null"]
+          minimum: 0
 
     BattingStatsInput:
       type: object
@@ -613,6 +622,15 @@ components:
         howOut:
           type: string
           enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+        ballsToFifty:
+          type: integer
+          minimum: 0
+        ballsToHundred:
+          type: integer
+          minimum: 0
+        ballsToHundredFifty:
+          type: integer
+          minimum: 0
 
     BattingStatsUpdate:
       type: object
@@ -635,6 +653,15 @@ components:
         howOut:
           type: string
           enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+        ballsToFifty:
+          type: integer
+          minimum: 0
+        ballsToHundred:
+          type: integer
+          minimum: 0
+        ballsToHundredFifty:
+          type: integer
+          minimum: 0
 
     BowlingStats:
       type: object

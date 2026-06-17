@@ -19,4 +19,10 @@ export interface BattingStatsUpdate {
   /** @minimum 1 */
   battingPosition?: number;
   howOut?: BattingStatsUpdateHowOut;
+  /** @minimum 0 */
+  ballsToFifty?: number;
+  /** @minimum 0 */
+  ballsToHundred?: number;
+  /** @minimum 0 */
+  ballsToHundredFifty?: number;
 }

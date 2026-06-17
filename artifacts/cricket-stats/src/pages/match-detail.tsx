@@ -84,6 +84,9 @@ function BattingTab({ matchId }: { matchId: number }) {
     battingPosition: "",
     howOut: "",
     badUmpireDecision: "" as "" | "yes" | "no",
+    ballsToFifty: "",
+    ballsToHundred: "",
+    ballsToHundredFifty: "",
   });
   const [editing, setEditing] = useState(false);
 
@@ -102,6 +105,9 @@ function BattingTab({ matchId }: { matchId: number }) {
           (stats as any).badUmpireDecision === true ? "no"
           : (stats as any).badUmpireDecision === false ? "yes"
           : "",
+        ballsToFifty: stats.ballsToFifty != null ? String(stats.ballsToFifty) : "",
+        ballsToHundred: stats.ballsToHundred != null ? String(stats.ballsToHundred) : "",
+        ballsToHundredFifty: stats.ballsToHundredFifty != null ? String(stats.ballsToHundredFifty) : "",
       });
     }
     setEditing(true);
@@ -123,6 +129,9 @@ function BattingTab({ matchId }: { matchId: number }) {
         ["LBW", "Caught Behind"].includes(form.howOut) && form.badUmpireDecision !== ""
           ? form.badUmpireDecision === "no"
           : undefined,
+      ballsToFifty: form.ballsToFifty ? Number(form.ballsToFifty) : undefined,
+      ballsToHundred: form.ballsToHundred ? Number(form.ballsToHundred) : undefined,
+      ballsToHundredFifty: form.ballsToHundredFifty ? Number(form.ballsToHundredFifty) : undefined,
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
@@ -185,6 +194,13 @@ function BattingTab({ matchId }: { matchId: number }) {
                   )}
               </div>
             )}
+            {(stats.ballsToFifty != null || stats.ballsToHundred != null || stats.ballsToHundredFifty != null) && (
+              <div className="flex flex-wrap gap-3 pt-1">
+                {stats.ballsToFifty != null && <StatBadge label="Balls to 50" value={stats.ballsToFifty} />}
+                {stats.ballsToHundred != null && <StatBadge label="Balls to 100" value={stats.ballsToHundred} />}
+                {stats.ballsToHundredFifty != null && <StatBadge label="Balls to 150" value={stats.ballsToHundredFifty} />}
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : editing ? (
@@ -200,6 +216,9 @@ function BattingTab({ matchId }: { matchId: number }) {
                 { id: "fours", label: "Fours" },
                 { id: "sixes", label: "Sixes" },
                 { id: "battingPosition", label: "Bat Position" },
+                { id: "ballsToFifty", label: "Balls to 50" },
+                { id: "ballsToHundred", label: "Balls to 100" },
+                { id: "ballsToHundredFifty", label: "Balls to 150" },
               ].map(({ id, label }) => (
                 <div key={id} className="space-y-1.5">
                   <Label htmlFor={id}>{label}</Label>

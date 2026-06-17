@@ -92,7 +92,7 @@ router.get("/matches/:matchId/batting", async (req, res) => {
 
 router.post("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision } = req.body;
+  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty } = req.body;
   const strikeRate = calcStrikeRate(runs, ballsFaced);
   const [row] = await db
     .insert(battingStatsTable)
@@ -106,6 +106,9 @@ router.post("/matches/:matchId/batting", async (req, res) => {
       battingPosition: battingPosition ?? null,
       howOut: howOut ?? null,
       badUmpireDecision: badUmpireDecision ?? null,
+      ballsToFifty: ballsToFifty ?? null,
+      ballsToHundred: ballsToHundred ?? null,
+      ballsToHundredFifty: ballsToHundredFifty ?? null,
     })
     .returning();
   res.status(201).json({ ...row, strikeRate: Number(row.strikeRate) });
@@ -113,7 +116,7 @@ router.post("/matches/:matchId/batting", async (req, res) => {
 
 router.patch("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision } = req.body;
+  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty } = req.body;
   const [existing] = await db
     .select()
     .from(battingStatsTable)
@@ -127,6 +130,9 @@ router.patch("/matches/:matchId/batting", async (req, res) => {
   if (battingPosition !== undefined) updates.battingPosition = battingPosition;
   if (howOut !== undefined) updates.howOut = howOut;
   if (badUmpireDecision !== undefined) updates.badUmpireDecision = badUmpireDecision;
+  if (ballsToFifty !== undefined) updates.ballsToFifty = ballsToFifty;
+  if (ballsToHundred !== undefined) updates.ballsToHundred = ballsToHundred;
+  if (ballsToHundredFifty !== undefined) updates.ballsToHundredFifty = ballsToHundredFifty;
   const newRuns = runs ?? existing.runs;
   const newBalls = ballsFaced ?? existing.ballsFaced;
   updates.strikeRate = String(calcStrikeRate(newRuns, newBalls));

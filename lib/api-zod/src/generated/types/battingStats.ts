@@ -19,4 +19,19 @@ export interface BattingStats {
   battingPosition?: number | null;
   /** @nullable */
   howOut?: BattingStatsHowOut;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToFifty?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToHundred?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  ballsToHundredFifty?: number | null;
 }

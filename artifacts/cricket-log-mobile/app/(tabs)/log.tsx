@@ -49,6 +49,9 @@ type BattingForm = {
   battingPosition: string;
   howOut: string;
   badUmpireDecision: boolean;
+  ballsToFifty: string;
+  ballsToHundred: string;
+  ballsToHundredFifty: string;
 };
 
 type BowlingForm = {
@@ -103,6 +106,9 @@ const defaultBatting: BattingForm = {
   battingPosition: "",
   howOut: "",
   badUmpireDecision: false,
+  ballsToFifty: "",
+  ballsToHundred: "",
+  ballsToHundredFifty: "",
 };
 
 const defaultBowling: BowlingForm = {
@@ -384,6 +390,9 @@ export default function LogMatchScreen() {
               battingPosition: battingForm.battingPosition ? Number(battingForm.battingPosition) : undefined,
               howOut: battingForm.howOut || undefined,
               badUmpireDecision: battingForm.badUmpireDecision,
+              ballsToFifty: battingForm.ballsToFifty ? Number(battingForm.ballsToFifty) : undefined,
+              ballsToHundred: battingForm.ballsToHundred ? Number(battingForm.ballsToHundred) : undefined,
+              ballsToHundredFifty: battingForm.ballsToHundredFifty ? Number(battingForm.ballsToHundredFifty) : undefined,
             },
           })
         );
@@ -622,6 +631,33 @@ export default function LogMatchScreen() {
             value={battingForm.badUmpireDecision}
             onValueChange={(v) => updateBatting("badUmpireDecision", v)}
           />
+
+          <Field label="Balls to Reach 50">
+            <Input
+              value={battingForm.ballsToFifty}
+              onChangeText={(v) => updateBatting("ballsToFifty", v)}
+              placeholder="e.g. 48"
+              keyboardType="numeric"
+            />
+          </Field>
+
+          <Field label="Balls to Reach 100">
+            <Input
+              value={battingForm.ballsToHundred}
+              onChangeText={(v) => updateBatting("ballsToHundred", v)}
+              placeholder="e.g. 82"
+              keyboardType="numeric"
+            />
+          </Field>
+
+          <Field label="Balls to Reach 150">
+            <Input
+              value={battingForm.ballsToHundredFifty}
+              onChangeText={(v) => updateBatting("ballsToHundredFifty", v)}
+              placeholder="e.g. 121"
+              keyboardType="numeric"
+            />
+          </Field>
         </SectionCard>
 
         {/* ── Bowling ── */}

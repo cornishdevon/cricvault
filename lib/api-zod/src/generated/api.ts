@@ -107,6 +107,14 @@ export const GetBattingStatsParams = zod.object({
   "matchId": zod.coerce.number()
 })
 
+export const getBattingStatsResponseBallsToFiftyMin = 0;
+
+export const getBattingStatsResponseBallsToHundredMin = 0;
+
+export const getBattingStatsResponseBallsToHundredFiftyMin = 0;
+
+
+
 export const GetBattingStatsResponse = zod.object({
   "id": zod.number(),
   "matchId": zod.number(),
@@ -116,7 +124,10 @@ export const GetBattingStatsResponse = zod.object({
   "sixes": zod.number(),
   "strikeRate": zod.number(),
   "battingPosition": zod.number().nullish(),
-  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish()
+  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish(),
+  "ballsToFifty": zod.number().min(getBattingStatsResponseBallsToFiftyMin).nullish(),
+  "ballsToHundred": zod.number().min(getBattingStatsResponseBallsToHundredMin).nullish(),
+  "ballsToHundredFifty": zod.number().min(getBattingStatsResponseBallsToHundredFiftyMin).nullish()
 })
 
 
@@ -136,6 +147,12 @@ export const createBattingStatsBodyFoursMin = 0;
 export const createBattingStatsBodySixesMin = 0;
 
 
+export const createBattingStatsBodyBallsToFiftyMin = 0;
+
+export const createBattingStatsBodyBallsToHundredMin = 0;
+
+export const createBattingStatsBodyBallsToHundredFiftyMin = 0;
+
 
 
 export const CreateBattingStatsBody = zod.object({
@@ -144,7 +161,10 @@ export const CreateBattingStatsBody = zod.object({
   "fours": zod.number().min(createBattingStatsBodyFoursMin),
   "sixes": zod.number().min(createBattingStatsBodySixesMin),
   "battingPosition": zod.number().min(1).optional(),
-  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional()
+  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional(),
+  "ballsToFifty": zod.number().min(createBattingStatsBodyBallsToFiftyMin).optional(),
+  "ballsToHundred": zod.number().min(createBattingStatsBodyBallsToHundredMin).optional(),
+  "ballsToHundredFifty": zod.number().min(createBattingStatsBodyBallsToHundredFiftyMin).optional()
 })
 
 
@@ -164,6 +184,12 @@ export const updateBattingStatsBodyFoursMin = 0;
 export const updateBattingStatsBodySixesMin = 0;
 
 
+export const updateBattingStatsBodyBallsToFiftyMin = 0;
+
+export const updateBattingStatsBodyBallsToHundredMin = 0;
+
+export const updateBattingStatsBodyBallsToHundredFiftyMin = 0;
+
 
 
 export const UpdateBattingStatsBody = zod.object({
@@ -172,8 +198,19 @@ export const UpdateBattingStatsBody = zod.object({
   "fours": zod.number().min(updateBattingStatsBodyFoursMin).optional(),
   "sixes": zod.number().min(updateBattingStatsBodySixesMin).optional(),
   "battingPosition": zod.number().min(1).optional(),
-  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional()
+  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional(),
+  "ballsToFifty": zod.number().min(updateBattingStatsBodyBallsToFiftyMin).optional(),
+  "ballsToHundred": zod.number().min(updateBattingStatsBodyBallsToHundredMin).optional(),
+  "ballsToHundredFifty": zod.number().min(updateBattingStatsBodyBallsToHundredFiftyMin).optional()
 })
+
+export const updateBattingStatsResponseBallsToFiftyMin = 0;
+
+export const updateBattingStatsResponseBallsToHundredMin = 0;
+
+export const updateBattingStatsResponseBallsToHundredFiftyMin = 0;
+
+
 
 export const UpdateBattingStatsResponse = zod.object({
   "id": zod.number(),
@@ -184,7 +221,10 @@ export const UpdateBattingStatsResponse = zod.object({
   "sixes": zod.number(),
   "strikeRate": zod.number(),
   "battingPosition": zod.number().nullish(),
-  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish()
+  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish(),
+  "ballsToFifty": zod.number().min(updateBattingStatsResponseBallsToFiftyMin).nullish(),
+  "ballsToHundred": zod.number().min(updateBattingStatsResponseBallsToHundredMin).nullish(),
+  "ballsToHundredFifty": zod.number().min(updateBattingStatsResponseBallsToHundredFiftyMin).nullish()
 })
 
 
