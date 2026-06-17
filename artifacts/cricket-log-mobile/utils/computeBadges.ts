@@ -29,6 +29,7 @@ export type Badge = {
   label: string;
   description: string;
   icon: string;
+  imageKey?: string;
   earned: boolean;
   detail?: string;
   isNegative?: boolean;
@@ -166,7 +167,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
 
     { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",      icon: "🏏", earned: !!first50, detail: first50 ? `${first50.runs} vs ${first50.opponent}` : undefined },
     { id: "first100",      label: "Century",         description: "100+ runs in an innings",       icon: "💯", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
-    { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
+    { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
     { id: "oneShort",      label: "One Short",       description: "Out on 49, 99, 149…",           icon: "1️⃣", earned: oneShortCount >= 1, detail: oneShortCount > 1 ? `${oneShortCount} times` : undefined },
     { id: "consistent",    label: "Consistent",      description: "5 consecutive innings of 25+",  icon: "📈", earned: consistentEarned },

@@ -33,6 +33,7 @@ type Badge = {
   label: string;
   description: string;
   icon: string;
+  imageKey?: string;
   earned: boolean;
   matchId?: number;
   opponent?: string;
@@ -290,6 +291,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Pinch Hitter",
       description: "50 runs in fewer than 20 balls",
       icon: "⚡",
+      imageKey: "pinch-hitter",
       earned: !!pinchHitterMatch,
       matchId: pinchHitterMatch?.matchId,
       opponent: pinchHitterMatch?.opponent,
@@ -698,9 +700,17 @@ function BadgeCard({ badge }: { badge: Badge }) {
           : "bg-zinc-800 border-zinc-700"
       }`}
     >
-      <span className="text-2xl" role="img" aria-label={badge.label}>
-        {badge.earned ? badge.icon : "🔒"}
-      </span>
+      {badge.earned && badge.imageKey ? (
+        <img
+          src={`/badges/${badge.imageKey}.png`}
+          alt={badge.label}
+          className="w-10 h-10 object-contain rounded-full"
+        />
+      ) : (
+        <span className="text-2xl" role="img" aria-label={badge.label}>
+          {badge.earned ? badge.icon : "🔒"}
+        </span>
+      )}
       <div>
         <p className={`font-semibold text-xs leading-tight ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-zinc-400"}`}>
           {badge.label}

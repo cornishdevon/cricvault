@@ -2,6 +2,7 @@ import { useGetPerMatchStats } from "@workspace/api-client-react";
 import React, { useMemo } from "react";
 import {
   ActivityIndicator,
+  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { computeBadges, type PerMatchStat, type Badge } from "@/utils/computeBadges";
 
+const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
+  "pinch-hitter": require("@/assets/badges/pinch-hitter.png"),
+};
+
 function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof useColors> }) {
   const isLocked = !badge.earned;
   const bgColor  = isLocked ? "#3f3f46" : badge.isNegative ? "#3d1515" : colors.card;
@@ -21,9 +26,17 @@ function BadgeTile({ badge, colors }: { badge: Badge; colors: ReturnType<typeof 
   const descColor   = isLocked ? "#71717a" : colors.mutedForeground;
   const detailColor = badge.isNegative ? "#f87171" : colors.primary;
 
+  const imageSource = badge.imageKey ? BADGE_IMAGES[badge.imageKey] : null;
+
   return (
     <View style={[styles.tile, { backgroundColor: bgColor, borderColor }]}>
-      <Text style={styles.icon}>{isLocked ? "🔒" : badge.icon}</Text>
+      {isLocked ? (
+        <Text style={styles.icon}>🔒</Text>
+      ) : imageSource ? (
+        <Image source={imageSource} style={styles.badgeImage} resizeMode="contain" />
+      ) : (
+        <Text style={styles.icon}>{badge.icon}</Text>
+      )}
       <Text style={[styles.tileLabel, { color: labelColor }]} numberOfLines={2}>
         {badge.label}
       </Text>
@@ -196,6 +209,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   icon:       { fontSize: 24, textAlign: "center" },
+  badgeImage: { width: 44, height: 44, borderRadius: 22 },
   tileLabel:  { fontSize: 10, fontWeight: "700", textAlign: "center", lineHeight: 13 },
   tileDesc:   { fontSize: 9,  textAlign: "center", lineHeight: 12 },
   tileDetail: { fontSize: 9,  fontWeight: "700", textAlign: "center", marginTop: "auto" as any },
