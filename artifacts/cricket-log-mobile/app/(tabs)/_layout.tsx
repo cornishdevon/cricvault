@@ -24,6 +24,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
         <Label>Achievements</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="coaching">
+        <Icon sf={{ default: "book.open", selected: "book.open.fill" }} />
+        <Label>Coaching</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="log">
         <Icon sf={{ default: "plus.circle", selected: "plus.circle.fill" }} />
         <Label>Log Match</Label>
@@ -104,6 +108,18 @@ function ClassicTabLayout() {
               <SymbolView name="trophy.fill" tintColor={color} size={22} />
             ) : (
               <Feather name="award" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="coaching"
+        options={{
+          title: "Coaching",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="book.fill" tintColor={color} size={22} />
+            ) : (
+              <Feather name="book-open" size={22} color={color} />
             ),
         }}
       />
