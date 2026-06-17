@@ -1,4 +1,11 @@
-import { useListMatches, useDeleteMatch } from "@workspace/api-client-react";
+import {
+  useListMatches,
+  useDeleteMatch,
+  getGetPerMatchStatsQueryKey,
+  getGetStatsSummaryQueryKey,
+  getListMatchesQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
@@ -99,17 +106,27 @@ export default function MatchesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const queryClient = useQueryClient();
   const { data: matches, isLoading, refetch, isRefetching } = useListMatches();
   const { mutate: deleteMatch } = useDeleteMatch();
 
   const handleDelete = (id: number, opponent: string) => {
-    Alert.alert("Delete Match", `Remove match vs ${opponent}? This cannot be undone.`, [
+    Alert.alert("Delete Match", `Remove match vs ${opponent}?\n\nThis cannot be undone.`, [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: () =>
-          deleteMatch({ matchId: id }, { onSuccess: () => refetch() }),
+          deleteMatch(
+            { matchId: id },
+            {
+              onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
+                queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
+                queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+              },
+            },
+          ),
       },
     ]);
   };

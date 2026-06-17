@@ -4,16 +4,23 @@ import {
   useGetBowlingStats,
   useGetFieldingStats,
   useGetMatchReport,
+  useDeleteMatch,
+  getGetPerMatchStatsQueryKey,
+  getGetStatsSummaryQueryKey,
+  getListMatchesQueryKey,
 } from "@workspace/api-client-react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -68,16 +75,53 @@ export default function MatchDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: match, isLoading: matchLoading, refetch } = useGetMatch(matchId);
   const { data: batting } = useGetBattingStats(matchId);
   const { data: bowling } = useGetBowlingStats(matchId);
   const { data: fielding } = useGetFieldingStats(matchId);
   const { data: report } = useGetMatchReport(matchId);
+  const { mutate: deleteMatch } = useDeleteMatch();
+
+  const handleDelete = () => {
+    const label = match ? `vs ${match.opponent}` : "this match";
+    Alert.alert("Delete Match", `Remove ${label}?\n\nThis cannot be undone.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () =>
+          deleteMatch(
+            { matchId },
+            {
+              onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
+                queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
+                queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+                router.back();
+              },
+            },
+          ),
+      },
+    ]);
+  };
 
   useEffect(() => {
     if (match) {
-      navigation.setOptions({ title: `vs ${match.opponent}` });
+      navigation.setOptions({
+        title: `vs ${match.opponent}`,
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={handleDelete}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={{ marginRight: 4 }}
+          >
+            <Feather name="trash-2" size={18} color="#ef4444" />
+          </TouchableOpacity>
+        ),
+      });
     }
   }, [match, navigation]);
 
