@@ -926,6 +926,19 @@ function VideosTab({ matchId }: { matchId: number }) {
   );
 }
 
+// ── Media Tab (combined photos + videos) ──────────────────────────────────────
+
+function MediaTab({ matchId }: { matchId: number }) {
+  return (
+    <div className="space-y-6">
+      <PhotosTab matchId={matchId} />
+      <div className="border-t pt-6">
+        <VideosTab matchId={matchId} />
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MatchDetail() {
@@ -1037,15 +1050,13 @@ export default function MatchDetail() {
           <TabsTrigger value="bowling">Bowling</TabsTrigger>
           <TabsTrigger value="fielding">Fielding</TabsTrigger>
           <TabsTrigger value="report">Report</TabsTrigger>
-          <TabsTrigger value="photos">Photos</TabsTrigger>
-          <TabsTrigger value="videos">Videos</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
         </TabsList>
         <TabsContent value="batting" className="mt-4"><BattingTab matchId={matchId} /></TabsContent>
         <TabsContent value="bowling" className="mt-4"><BowlingTab matchId={matchId} /></TabsContent>
         <TabsContent value="fielding" className="mt-4"><FieldingTab matchId={matchId} /></TabsContent>
         <TabsContent value="report" className="mt-4"><ReportTab matchId={matchId} /></TabsContent>
-        <TabsContent value="photos" className="mt-4"><PhotosTab matchId={matchId} /></TabsContent>
-        <TabsContent value="videos" className="mt-4"><VideosTab matchId={matchId} /></TabsContent>
+        <TabsContent value="media" className="mt-4"><MediaTab matchId={matchId} /></TabsContent>
       </Tabs>
     </div>
   );
