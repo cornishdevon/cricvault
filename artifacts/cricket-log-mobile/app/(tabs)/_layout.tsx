@@ -5,32 +5,49 @@ import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View, useColorScheme } from "react-native";
+import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
+import { useTabLabels } from "@/hooks/useTabLabels";
+
+function GearButton() {
+  const router = useRouter();
+  const colors = useColors();
+  return (
+    <TouchableOpacity
+      onPress={() => router.push("/settings-modal")}
+      style={{ paddingHorizontal: 14, paddingVertical: 6 }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Feather name="settings" size={20} color={colors.foreground} />
+    </TouchableOpacity>
+  );
+}
 
 function NativeTabLayout() {
+  const { labels } = useTabLabels();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} />
-        <Label>Dashboard</Label>
+        <Label>{labels.index}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="matches">
         <Icon sf={{ default: "list.bullet", selected: "list.bullet" }} />
-        <Label>Matches</Label>
+        <Label>{labels.matches}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="achievements">
         <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
-        <Label>Achievements</Label>
+        <Label>{labels.achievements}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="coaching">
         <Icon sf={{ default: "book.open", selected: "book.open.fill" }} />
-        <Label>Coaching</Label>
+        <Label>{labels.coaching}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="log">
         <Icon sf={{ default: "plus.circle", selected: "plus.circle.fill" }} />
-        <Label>Log Match</Label>
+        <Label>{labels.log}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -42,6 +59,7 @@ function ClassicTabLayout() {
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  const { labels } = useTabLabels();
 
   return (
     <Tabs
@@ -78,7 +96,8 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: labels.index,
+          headerRight: () => <GearButton />,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="chart.bar.fill" tintColor={color} size={22} />
@@ -90,7 +109,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="matches"
         options={{
-          title: "Matches",
+          title: labels.matches,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="list.bullet" tintColor={color} size={22} />
@@ -102,7 +121,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="achievements"
         options={{
-          title: "Achievements",
+          title: labels.achievements,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="trophy.fill" tintColor={color} size={22} />
@@ -114,7 +133,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="coaching"
         options={{
-          title: "Coaching",
+          title: labels.coaching,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="book.fill" tintColor={color} size={22} />
@@ -126,7 +145,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="log"
         options={{
-          title: "Log Match",
+          title: labels.log,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="plus.circle.fill" tintColor={color} size={22} />

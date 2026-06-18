@@ -40,6 +40,10 @@ function RootLayoutNav() {
         name="match/[id]"
         options={{ title: "Match Details", headerBackTitle: "Back" }}
       />
+      <Stack.Screen
+        name="settings-modal"
+        options={{ title: "Rename Tabs", presentation: "modal", headerBackTitle: "Cancel" }}
+      />
     </Stack>
   );
 }
