@@ -201,7 +201,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "matchWinner", label: "Match Winner",         description: "8 wins in any 10-match window",        icon: "🥇", earned: matchWinnerEarned, detail: matchWinnerDetail || undefined },
 
     { id: "triggered",       label: "Triggered",        description: "Given out LBW 3 times",     icon: "🫵", earned: lbwOuts >= 3, detail: lbwOuts >= 3 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
-    { id: "goldenDuck",      label: "Golden Duck",      description: "Out first ball for a duck", icon: "🦆", earned: goldenDuckEarned, isNegative: true },
+    { id: "goldenDuck",      label: "Golden Duck",      description: "Out first ball for a duck", icon: "🦆", imageKey: "goldenDuck", earned: goldenDuckEarned, isNegative: true },
     { id: "duckHunting",     label: "Duck Hunting ×5",  description: "5+ career ducks",           icon: "🦆", earned: duckCount >= 5, detail: duckCount >= 5 ? `${duckCount} ducks` : undefined, isNegative: true },
     { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
     { id: "gardenGate",      label: "Garden Gate",      description: "Out bowled 5 times",         icon: "🚪", earned: bowledOuts >= 5, detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined, isNegative: true },

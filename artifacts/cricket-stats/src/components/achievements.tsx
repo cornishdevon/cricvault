@@ -593,6 +593,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Golden Duck",
       description: "Out first ball for a duck",
       icon: "🦆",
+      imageKey: "goldenDuck",
       earned: !!goldenDuckMatch,
       matchId: goldenDuckMatch?.matchId,
       opponent: goldenDuckMatch?.opponent,
