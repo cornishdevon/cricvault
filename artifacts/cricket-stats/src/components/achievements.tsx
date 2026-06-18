@@ -298,6 +298,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "150 Club",
       description: "Scored 150+ runs in an innings",
       icon: "💎",
+      imageKey: "150club",
       earned: !!first150,
       matchId: first150?.matchId,
       opponent: first150?.opponent,
