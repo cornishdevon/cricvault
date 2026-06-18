@@ -1,5 +1,6 @@
 import {
   useGetStatsSummary,
+  useGetPerMatchStats,
   useListMatches,
 } from "@workspace/api-client-react";
 import { useRouter } from "expo-router";
@@ -16,6 +17,96 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+
+// ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
+
+const BAR_AREA_H = 120; // fixed pixel height for the bars region
+const X_LABEL_H = 22;
+const Y_LABEL_W = 30;
+
+function BarChart({
+  data,
+  barColor,
+  colors,
+}: {
+  data: { label: string; value: number }[];
+  barColor: string;
+  colors: ReturnType<typeof useColors>;
+}) {
+  if (!data.length) return null;
+
+  const maxVal = Math.max(...data.map((d) => d.value), 1);
+  // grid at 0%, 50%, 100% of maxVal
+  const gridTops = [0, BAR_AREA_H / 2, BAR_AREA_H]; // pixel positions from top
+
+  return (
+    <View>
+      <View style={{ flexDirection: "row" }}>
+        {/* Y-axis labels */}
+        <View style={{ width: Y_LABEL_W, height: BAR_AREA_H, justifyContent: "space-between", alignItems: "flex-end", paddingRight: 4 }}>
+          <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>{maxVal}</Text>
+          <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>{Math.round(maxVal / 2)}</Text>
+          <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>0</Text>
+        </View>
+
+        {/* Bars + grid */}
+        <View style={{ flex: 1, height: BAR_AREA_H, position: "relative" }}>
+          {/* Grid lines */}
+          {gridTops.map((top, i) => (
+            <View
+              key={i}
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top,
+                height: StyleSheet.hairlineWidth,
+                backgroundColor: colors.border,
+              }}
+            />
+          ))}
+
+          {/* Bars */}
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-end", paddingBottom: 1 }}>
+            {data.map((d, i) => {
+              const pct = maxVal > 0 ? d.value / maxVal : 0;
+              const barH = Math.max(Math.round(pct * BAR_AREA_H), d.value > 0 ? 2 : 0);
+              return (
+                <View key={i} style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", height: BAR_AREA_H }}>
+                  {d.value > 0 && barH > 18 && (
+                    <Text style={{ fontSize: 9, fontFamily: "Inter_700Bold", color: barColor, marginBottom: 2 }}>
+                      {d.value}
+                    </Text>
+                  )}
+                  <View
+                    style={{
+                      width: "60%",
+                      height: barH,
+                      backgroundColor: barColor,
+                      borderRadius: 3,
+                      opacity: 0.88,
+                    }}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+
+      {/* X-axis labels */}
+      <View style={{ flexDirection: "row", marginLeft: Y_LABEL_W, height: X_LABEL_H, marginTop: 4 }}>
+        {data.map((d, i) => (
+          <Text key={i} style={[styles.xLabel, { color: colors.mutedForeground, flex: 1 }]} numberOfLines={1}>
+            {d.label}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// ── Shared sub-components ─────────────────────────────────────────────────────
 
 function StatCard({
   label,
@@ -53,6 +144,8 @@ function ResultBadge({
   );
 }
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -72,8 +165,14 @@ export default function DashboardScreen() {
     isRefetching: matchesRefetching,
   } = useListMatches();
 
+  const {
+    data: perMatch,
+    refetch: refetchPerMatch,
+    isRefetching: perMatchRefetching,
+  } = useGetPerMatchStats();
+
   const isLoading = summaryLoading || matchesLoading;
-  const isRefreshing = summaryRefetching || matchesRefetching;
+  const isRefreshing = summaryRefetching || matchesRefetching || perMatchRefetching;
 
   const recentMatches = matches?.slice(0, 5) ?? [];
 
@@ -81,6 +180,21 @@ export default function DashboardScreen() {
     summary && summary.batting.innings > 0
       ? (summary.batting.totalRuns / summary.batting.innings).toFixed(1)
       : "—";
+
+  // Last 12 matches for charts
+  const chartMatches = (perMatch ?? []).slice(-12);
+
+  const runsData = chartMatches.map((m) => ({
+    label: m.opponent.slice(0, 3).toUpperCase(),
+    value: m.runs ?? 0,
+  }));
+
+  const wicketsData = chartMatches.map((m) => ({
+    label: m.opponent.slice(0, 3).toUpperCase(),
+    value: m.wickets ?? 0,
+  }));
+
+  const hasChartData = chartMatches.length > 0;
 
   return (
     <ScrollView
@@ -92,6 +206,7 @@ export default function DashboardScreen() {
           onRefresh={() => {
             refetchSummary();
             refetchMatches();
+            refetchPerMatch();
           }}
           tintColor={colors.primary}
         />
@@ -158,6 +273,25 @@ export default function DashboardScreen() {
               colors={colors}
             />
           </View>
+
+          {/* ── Charts ── */}
+          {hasChartData && (
+            <>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                Runs Scored
+              </Text>
+              <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <BarChart data={runsData} barColor={colors.primary} colors={colors} />
+              </View>
+
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                Wickets Taken
+              </Text>
+              <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <BarChart data={wicketsData} barColor="#8b5cf6" colors={colors} />
+              </View>
+            </>
+          )}
         </>
       ) : null}
 
@@ -203,6 +337,7 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 13, fontFamily: "Inter_500Medium", marginBottom: 4 },
   heroTitle: { fontSize: 32, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   heroSub: { fontSize: 14, fontFamily: "Inter_400Regular", marginTop: 4 },
+
   sectionTitle: {
     fontSize: 16,
     fontFamily: "Inter_600SemiBold",
@@ -226,12 +361,82 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statValue: { fontSize: 22, fontFamily: "Inter_700Bold" },
-  statLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    marginTop: 2,
-    textAlign: "center",
+  statLabel: { fontSize: 11, fontFamily: "Inter_500Medium", marginTop: 2, textAlign: "center" },
+
+  // Chart
+  chartCard: {
+    marginHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
   },
+  chartOuter: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  yAxis: {
+    width: Y_LABEL_W,
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingRight: 4,
+    paddingBottom: 2,
+  },
+  yLabel: {
+    fontSize: 10,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 12,
+  },
+  barsArea: {
+    flex: 1,
+    position: "relative",
+  },
+  gridLine: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  barsRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingBottom: 2,
+  },
+  barCol: {
+    flex: 1,
+    alignItems: "center",
+    height: "100%",
+    justifyContent: "flex-end",
+    paddingHorizontal: 2,
+  },
+  barTrack: {
+    flex: 1,
+    width: "70%",
+    justifyContent: "flex-end",
+  },
+  bar: {
+    width: "100%",
+    borderRadius: 4,
+    minHeight: 2,
+  },
+  barValueLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    position: "absolute",
+    top: 0,
+  },
+  xLabels: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
+  xLabel: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 9,
+    fontFamily: "Inter_400Regular",
+  },
+
+  // Recent matches
   matchRow: {
     marginHorizontal: 16,
     marginBottom: 8,
@@ -245,19 +450,9 @@ const styles = StyleSheet.create({
   matchRowLeft: { flex: 1 },
   matchOpponent: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   matchMeta: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginLeft: 8,
-  },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginLeft: 8 },
   badgeText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   emptyState: { alignItems: "center", marginTop: 60, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", marginBottom: 6 },
-  emptySub: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    textAlign: "center",
-    lineHeight: 20,
-  },
+  emptySub: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
 });
