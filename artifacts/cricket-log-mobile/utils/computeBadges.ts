@@ -22,6 +22,8 @@ export type PerMatchStat = {
   hatTrick?: boolean | null;
   result?: string | null;
   playerOfTheMatch?: boolean | null;
+  badUmpireDecision?: boolean | null;
+  wouldHaveReferred?: boolean | null;
 };
 
 export type Badge = {
@@ -76,7 +78,6 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const raiseTheBatEarned = Object.values(fiftiesBySeason).some((c) => c >= 5);
   const raiseTheBatSeason = Object.entries(fiftiesBySeason).find(([, c]) => c >= 5)?.[0];
 
-  // Escalation: Half-Century fires for 50–99, Century for 100–149, 150 Club for 150+.
   const first50  = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 50 && r < 100; });
   const first100 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 100 && r < 150; });
   const first150 = battingInnings.find((d) => (d.runs ?? 0) >= 150);
@@ -143,22 +144,34 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     (d) => (d.runs ?? 0) === 0 && (d.ballsFaced ?? 0) === 1 && isDismissed(d)
   );
   const duckCount  = battingInnings.filter((d) => (d.runs ?? 0) === 0 && isDismissed(d)).length;
+
   const nervousEarned = battingInnings.some(
     (d) => (d.runs ?? 0) >= 90 && (d.runs ?? 0) <= 99 && isDismissed(d)
   );
   const nervousRuns = battingInnings.find(
     (d) => (d.runs ?? 0) >= 90 && (d.runs ?? 0) <= 99 && isDismissed(d)
   )?.runs;
+
   const lbwOuts    = battingInnings.filter((d) => d.howOut?.toLowerCase() === "lbw").length;
   const bowledOuts = battingInnings.filter((d) => d.howOut?.toLowerCase() === "bowled").length;
   const caughtOuts = battingInnings.filter((d) => (d.howOut?.toLowerCase() ?? "").includes("caught")).length;
   const runOutOuts = battingInnings.filter((d) => d.howOut?.toLowerCase() === "run out").length;
   const teflonEarned = sorted.some((d) => (d.droppedCatches ?? 0) >= 2);
 
-  const oneShortCount = battingInnings.filter((d) => {
+  const oneShortMatches = battingInnings.filter((d) => {
     const r = d.runs ?? 0;
     return r >= 49 && r % 50 === 49 && isDismissed(d);
-  }).length;
+  });
+  const oneShortCount = oneShortMatches.length;
+  const oneShortFirst = oneShortMatches[0];
+
+  const triggeredMatches = sorted.filter((d) => d.badUmpireDecision === true);
+  const triggeredCount   = triggeredMatches.length;
+  const triggeredFirst   = triggeredMatches[0];
+
+  const drsMatches = sorted.filter((d) => d.wouldHaveReferred === true);
+  const drsCount   = drsMatches.length;
+  const drsFirst   = drsMatches[0];
 
   const badges: Badge[] = [
     { id: "debut",     label: "Debut",               description: "First match logged",            icon: "🎖️", earned: sorted.length >= 1 },
@@ -170,7 +183,23 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "first150",      label: "150 Club",        description: "150+ runs in an innings",        icon: "💎", earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined },
     { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
-    { id: "oneShort",      label: "One Short",       description: "Out on 49, 99, 149…",           icon: "1️⃣", earned: oneShortCount >= 1, detail: oneShortCount > 1 ? `${oneShortCount} times` : undefined },
+
+    // One Short milestones — 49, 99, 149… out on the last before a milestone
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `oneShort_${milestone}`,
+      label: milestone === 1 ? "One Short" : `One Short ×${milestone}`,
+      description: milestone === 1
+        ? "Out one run short of a milestone (49, 99, 149…)"
+        : `One short of a milestone ${milestone} times`,
+      icon: "1️⃣",
+      earned: oneShortCount >= milestone,
+      detail: oneShortCount >= milestone
+        ? milestone === 1
+          ? `${oneShortFirst?.runs} runs`
+          : `${oneShortCount} times`
+        : undefined,
+    })),
+
     { id: "consistent",    label: "Consistent",      description: "5 consecutive innings of 25+",  icon: "📈", earned: consistentEarned },
     { id: "raisethebat",   label: "Raise the Bat",   description: "5 fifties in a single season",  icon: "🏏", earned: raiseTheBatEarned, detail: raiseTheBatSeason ? `${raiseTheBatSeason} season` : undefined },
     { id: "doffhelmet",    label: "Doff Your Helmet", description: "3 centuries in your career",   icon: "⛑️", earned: careerHundreds.length >= 3, detail: careerHundreds.length >= 3 ? `${careerHundreds.length} hundreds` : undefined },
@@ -200,9 +229,49 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "allRounder",  label: "All Rounder",         description: "30 runs & 3 wkts in one game",         icon: "🌟", earned: allRounderEarned },
     { id: "matchWinner", label: "Match Winner",         description: "8 wins in any 10-match window",        icon: "🥇", earned: matchWinnerEarned, detail: matchWinnerDetail || undefined },
 
-    { id: "triggered",       label: "Triggered",        description: "Given out LBW 3 times",     icon: "🫵", earned: lbwOuts >= 3, detail: lbwOuts >= 3 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
+    // Triggered milestones — bad umpire decisions (LBW / caught behind)
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `triggered_${milestone}`,
+      label: milestone === 1 ? "Triggered" : `Triggered ×${milestone}`,
+      description: milestone === 1
+        ? "Given out on a bad umpire decision (LBW or caught behind)"
+        : `Robbed by the umpire ${milestone} times`,
+      icon: "😤",
+      earned: triggeredCount >= milestone,
+      detail: triggeredCount >= milestone && triggeredCount > milestone
+        ? `${triggeredCount} times total`
+        : undefined,
+      isNegative: true as const,
+    })),
+
+    // DRS milestones — would have referred a not-out while bowling
+    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `drs_${milestone}`,
+      label: milestone === 1 ? "DRS" : `DRS ×${milestone}`,
+      description: milestone === 1
+        ? "Would have referred a not-out decision while bowling"
+        : `Would have referred ${milestone} not-out decisions`,
+      icon: "📺",
+      earned: drsCount >= milestone,
+      detail: drsCount >= milestone && drsCount > milestone
+        ? `${drsCount} times total`
+        : undefined,
+      isNegative: true as const,
+    })),
+
     { id: "goldenDuck",      label: "Golden Duck",      description: "Out first ball for a duck", icon: "🦆", imageKey: "goldenDuck", earned: goldenDuckEarned, isNegative: true },
-    { id: "duckHunting",     label: "Duck Hunting ×5",  description: "5+ career ducks",           icon: "🦆", earned: duckCount >= 5, detail: duckCount >= 5 ? `${duckCount} ducks` : undefined, isNegative: true },
+
+    // Duck Hunting milestones — every 5 ducks
+    ...[5, 10, 15, 20, 25, 30].map((milestone) => ({
+      id: `duckHunting_${milestone}`,
+      label: `Duck Hunting ×${milestone}`,
+      description: `${milestone} ducks in your career`,
+      icon: "🦆",
+      earned: duckCount >= milestone,
+      detail: duckCount >= milestone ? `${duckCount} ducks total` : undefined,
+      isNegative: true as const,
+    })),
+
     { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
     { id: "gardenGate",      label: "Garden Gate",      description: "Out bowled 5 times",         icon: "🚪", earned: bowledOuts >= 5, detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined, isNegative: true },
     { id: "catchingPractice", label: "Catching Practice", description: "Out caught 10 times",    icon: "🙈", earned: caughtOuts >= 10, detail: caughtOuts >= 10 ? `${caughtOuts}× caught` : undefined, isNegative: true },
