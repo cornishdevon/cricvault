@@ -911,7 +911,7 @@ export function Achievements({ data }: { data: PerMatchStat[] }) {
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-          {positive.map((badge, i) => (
+          {positive.filter((b) => b.earned || !/^(oneShort|triggered|drs|duckHunting)_\d+$/.test(b.id)).map((badge, i) => (
             <div
               key={badge.id}
               className="animate-in fade-in slide-in-from-bottom-2"

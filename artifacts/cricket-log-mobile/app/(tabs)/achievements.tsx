@@ -213,7 +213,7 @@ export default function AchievementsScreen() {
 
             {/* Positive badges */}
             <View style={styles.grid}>
-              {positive.map((badge) => (
+              {positive.filter((b) => b.earned || !/^(oneShort|triggered|drs|duckHunting)_\d+$/.test(b.id)).map((badge) => (
                 <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
               ))}
             </View>
