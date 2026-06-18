@@ -8,7 +8,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/", label: "Dashboard", icon: Activity, exact: true },
     { href: "/matches", label: "Matches", icon: ListChecks, exact: false },
-    { href: "/achievements", label: "Achievements", icon: Medal, exact: false },
+    { href: "/achievements", label: "Badges", icon: Medal, exact: false },
     { href: "/coaching", label: "Coaching", icon: BookOpen, exact: false },
     { href: "/matches/new", label: "Log Match", icon: PlusCircle, exact: true },
   ];

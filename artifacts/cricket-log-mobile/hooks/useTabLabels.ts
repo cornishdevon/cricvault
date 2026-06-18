@@ -6,7 +6,7 @@ const STORAGE_KEY = "@cricvault:tab_labels";
 export const DEFAULT_LABELS = {
   index:        "Dashboard",
   matches:      "Matches",
-  achievements: "Achievements",
+  achievements: "Badges",
   coaching:     "Coaching",
   media:        "Media",
   log:          "Log Match",
