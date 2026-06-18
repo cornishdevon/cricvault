@@ -922,11 +922,11 @@ export function Achievements({ data }: { data: PerMatchStat[] }) {
           ))}
         </div>
 
-        {negative.some((b) => b.earned) && (
+        {negative.length > 0 && (
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">Unlucky badges</p>
             <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-              {negative.filter((b) => b.earned).map((badge, i) => (
+              {negative.filter((b) => b.earned || !/^duckHunting_\d+$/.test(b.id)).map((badge, i) => (
                 <div
                   key={badge.id}
                   className="animate-in fade-in slide-in-from-bottom-2"
