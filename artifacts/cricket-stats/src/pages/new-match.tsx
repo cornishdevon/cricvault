@@ -270,6 +270,15 @@ export default function NewMatch() {
   const [createdMatchId, setCreatedMatchId] = useState<number | null>(null);
   const [createdOpponent, setCreatedOpponent] = useState("");
 
+  function isoToDisplay(iso: string) {
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  }
+  function displayToIso(display: string) {
+    const m = display.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : display;
+  }
+
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     opponent: "",
@@ -357,9 +366,10 @@ export default function NewMatch() {
                   <Label htmlFor="date">Date</Label>
                   <Input
                     id="date"
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    type="text"
+                    value={isoToDisplay(form.date)}
+                    onChange={(e) => setForm({ ...form, date: displayToIso(e.target.value) })}
+                    placeholder="DD/MM/YYYY"
                     required
                   />
                 </div>

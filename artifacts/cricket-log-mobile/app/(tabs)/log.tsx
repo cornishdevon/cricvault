@@ -98,6 +98,15 @@ const HOW_OUT_OPTIONS = [
   "Retired",
 ];
 
+function isoToDisplay(iso: string) {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+function displayToIso(display: string) {
+  const m = display.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : display;
+}
+
 const defaultMatch: MatchForm = {
   date: new Date().toISOString().split("T")[0],
   opponent: "",
@@ -970,9 +979,10 @@ export default function LogMatchScreen() {
         <SectionCard icon="🏏" title="Match Info" enabled alwaysOpen>
           <Field label="Date">
             <Input
-              value={matchForm.date}
-              onChangeText={(v) => updateMatch("date", v)}
-              placeholder="YYYY-MM-DD"
+              value={isoToDisplay(matchForm.date)}
+              onChangeText={(v) => updateMatch("date", displayToIso(v))}
+              placeholder="DD/MM/YYYY"
+              keyboardType="numbers-and-punctuation"
             />
           </Field>
 
