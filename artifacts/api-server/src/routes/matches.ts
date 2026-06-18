@@ -506,4 +506,40 @@ router.get("/stats/summary", async (req, res) => {
   });
 });
 
+// ── Global media gallery ──────────────────────────────────────────────────────
+
+router.get("/media/photos", async (req, res) => {
+  const photos = await db
+    .select({
+      id: photosTable.id,
+      matchId: photosTable.matchId,
+      url: photosTable.url,
+      caption: photosTable.caption,
+      opponent: matchesTable.opponent,
+      date: matchesTable.date,
+      matchType: matchesTable.matchType,
+    })
+    .from(photosTable)
+    .innerJoin(matchesTable, eq(photosTable.matchId, matchesTable.id))
+    .orderBy(desc(matchesTable.date));
+  res.json(photos);
+});
+
+router.get("/media/videos", async (req, res) => {
+  const videos = await db
+    .select({
+      id: videosTable.id,
+      matchId: videosTable.matchId,
+      objectPath: videosTable.objectPath,
+      caption: videosTable.caption,
+      opponent: matchesTable.opponent,
+      date: matchesTable.date,
+      matchType: matchesTable.matchType,
+    })
+    .from(videosTable)
+    .innerJoin(matchesTable, eq(videosTable.matchId, matchesTable.id))
+    .orderBy(desc(matchesTable.date));
+  res.json(videos);
+});
+
 export default router;

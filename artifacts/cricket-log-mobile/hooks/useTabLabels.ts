@@ -8,6 +8,7 @@ export const DEFAULT_LABELS = {
   matches:      "Matches",
   achievements: "Achievements",
   coaching:     "Coaching",
+  media:        "Media",
   log:          "Log Match",
 } as const;
 

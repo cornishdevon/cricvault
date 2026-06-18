@@ -45,6 +45,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "book.open", selected: "book.open.fill" }} />
         <Label>{labels.coaching}</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="media">
+        <Icon sf={{ default: "photo.stack", selected: "photo.stack.fill" }} />
+        <Label>{labels.media}</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="log">
         <Icon sf={{ default: "plus.circle", selected: "plus.circle.fill" }} />
         <Label>{labels.log}</Label>
@@ -78,7 +82,7 @@ function ClassicTabLayout() {
           elevation: 0,
           ...(isWeb ? { height: 84 } : {}),
         },
-        tabBarLabelStyle: { fontFamily: "Inter_500Medium", fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: "Inter_500Medium", fontSize: 10 },
         tabBarBackground: () =>
           isIOS ? (
             <BlurView
@@ -139,6 +143,18 @@ function ClassicTabLayout() {
               <SymbolView name="book.fill" tintColor={color} size={22} />
             ) : (
               <Feather name="book-open" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="media"
+        options={{
+          title: labels.media,
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="photo.stack" tintColor={color} size={22} />
+            ) : (
+              <Feather name="image" size={22} color={color} />
             ),
         }}
       />

@@ -20,6 +20,7 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
   { key: "matches",      icon: "list",        hint: "Match history list" },
   { key: "achievements", icon: "award",       hint: "Badges & milestones" },
   { key: "coaching",     icon: "book-open",   hint: "Coaching tips & notes" },
+  { key: "media",        icon: "image",       hint: "Photos, videos & cuttings" },
   { key: "log",          icon: "plus-circle", hint: "Log a new match" },
 ];
 
