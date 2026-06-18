@@ -29,6 +29,7 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  LabelList,
 } from "recharts";
 
 type PerMatchStat = {
@@ -200,6 +201,62 @@ function RunsChart({ data }: { data: PerMatchStat[] }) {
   );
 }
 
+// ── Cricket ball SVG label (shown above bars where catches > 0) ───────────────
+
+function CricketBallLabel(props: any) {
+  const { x, y, width, value } = props;
+  if (!value || value === 0) return null;
+
+  const r = 7;
+  const count = Math.min(value as number, 5);
+  const gap = 2;
+  const totalW = count * (r * 2) + (count - 1) * gap;
+  const startX = (x as number) + (width as number) / 2 - totalW / 2 + r;
+  const ballY = (y as number) - r - 5;
+
+  return (
+    <g>
+      {Array.from({ length: count }).map((_, i) => {
+        const bx = startX + i * (r * 2 + gap);
+        return (
+          <g key={i} transform={`translate(${bx},${ballY})`}>
+            {/* Ball body */}
+            <circle r={r} fill="#c0392b" />
+            {/* Highlight */}
+            <circle r={r} fill="url(#ballGrad)" />
+            {/* Left seam arc */}
+            <path d="M-2,-5.5 Q-5.5,0 -2,5.5" stroke="white" strokeWidth="1.1" fill="none" opacity={0.85} />
+            {/* Right seam arc */}
+            <path d="M2,-5.5 Q5.5,0 2,5.5" stroke="white" strokeWidth="1.1" fill="none" opacity={0.85} />
+            {/* Horizontal seam line */}
+            <line x1="-5" y1="0" x2="5" y2="0" stroke="white" strokeWidth="0.7" opacity={0.5} />
+          </g>
+        );
+      })}
+      {/* Show overflow count if > 5 catches */}
+      {(value as number) > 5 && (
+        <text
+          x={(x as number) + (width as number) / 2}
+          y={ballY - r - 2}
+          textAnchor="middle"
+          fontSize={9}
+          fill="#c0392b"
+          fontWeight="bold"
+        >
+          +{(value as number) - 5}
+        </text>
+      )}
+      {/* Gradient definition (rendered once but harmless when repeated) */}
+      <defs>
+        <radialGradient id="ballGrad" cx="35%" cy="35%" r="55%">
+          <stop offset="0%" stopColor="white" stopOpacity={0.25} />
+          <stop offset="100%" stopColor="transparent" stopOpacity={0} />
+        </radialGradient>
+      </defs>
+    </g>
+  );
+}
+
 // ── Wickets Chart ──────────────────────────────────────────────────────────────
 
 function WicketsChart({ data }: { data: PerMatchStat[] }) {
@@ -211,10 +268,13 @@ function WicketsChart({ data }: { data: PerMatchStat[] }) {
     (innings.reduce((s, d) => s + (d.wickets ?? 0), 0) / innings.length).toFixed(1)
   );
 
+  const hasCatches = innings.some((d) => (d.catches ?? 0) > 0);
+
   const chartData = innings.map((d, i) => ({
     label: `vs ${d.opponent}`,
     Wickets: d.wickets ?? 0,
     Avg: avg[i],
+    catches: d.catches ?? 0,
   }));
 
   return (
@@ -225,15 +285,27 @@ function WicketsChart({ data }: { data: PerMatchStat[] }) {
             <CardTitle>Wickets Taken</CardTitle>
             <p className="text-sm text-muted-foreground mt-0.5">Per spell · {innings.length} logged</p>
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold" style={{ color: "hsl(var(--secondary))" }}>{overallAvg}</p>
-            <p className="text-xs text-muted-foreground">avg per spell</p>
+          <div className="flex items-center gap-4">
+            {hasCatches && (
+              <div className="flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="-7 -7 14 14">
+                  <circle r="6" fill="#c0392b" />
+                  <path d="M-1.5,-4.5 Q-4.5,0 -1.5,4.5" stroke="white" strokeWidth="1" fill="none" opacity={0.85} />
+                  <path d="M1.5,-4.5 Q4.5,0 1.5,4.5" stroke="white" strokeWidth="1" fill="none" opacity={0.85} />
+                </svg>
+                <span className="text-xs text-muted-foreground">= catches taken</span>
+              </div>
+            )}
+            <div className="text-right">
+              <p className="text-2xl font-bold" style={{ color: "hsl(var(--secondary))" }}>{overallAvg}</p>
+              <p className="text-xs text-muted-foreground">avg per spell</p>
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+        <ResponsiveContainer width="100%" height={260}>
+          <ComposedChart data={chartData} margin={{ top: 28, right: 8, left: 0, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="label" {...xAxisProps(chartData.length)} />
             <YAxis {...yAxisProps()} allowDecimals={false} />
@@ -242,10 +314,13 @@ function WicketsChart({ data }: { data: PerMatchStat[] }) {
               contentStyle={TOOLTIP_STYLE}
               formatter={(value: any, name: string) => {
                 if (name === "Avg") return [`${value} (3-match avg)`, "Trend"];
+                if (name === "catches") return [value, "Catches"];
                 return [value, name];
               }}
             />
-            <Bar dataKey="Wickets" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} maxBarSize={44} opacity={0.85} />
+            <Bar dataKey="Wickets" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} maxBarSize={44} opacity={0.85}>
+              <LabelList dataKey="catches" content={CricketBallLabel} />
+            </Bar>
             <Line
               dataKey="Avg"
               type="monotone"
