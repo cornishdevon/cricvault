@@ -218,33 +218,6 @@ export default function AchievementsScreen() {
               ))}
             </View>
 
-            {/* Hall of shame */}
-            {negative.some((b) => b.earned) && (
-              <>
-                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                  Hall of Shame
-                </Text>
-                <View style={styles.grid}>
-                  {negative.filter((b) => b.earned).map((badge) => (
-                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
-                  ))}
-                </View>
-              </>
-            )}
-
-            {/* Locked shame badges (shown dimly) */}
-            {negative.some((b) => !b.earned) && (
-              <>
-                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                  Shame badges (locked)
-                </Text>
-                <View style={styles.grid}>
-                  {negative.filter((b) => !b.earned).map((badge) => (
-                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
-                  ))}
-                </View>
-              </>
-            )}
           </>
         )}
       </ScrollView>
