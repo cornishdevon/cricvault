@@ -7,8 +7,10 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -125,6 +127,17 @@ function BadgeModal({
           {!badge.earned && (
             <Text style={[styles.modalLocked, { color: "#71717a" }]}>Keep playing to unlock this badge</Text>
           )}
+
+          {badge.earned && badge.shareText ? (
+            <TouchableOpacity
+              onPress={async () => {
+                try { await Share.share({ message: badge.shareText! }); } catch {}
+              }}
+              style={[styles.shareBtn, { backgroundColor: accentColor + "22", borderColor: accentColor + "55" }]}
+            >
+              <Text style={[styles.shareBtnText, { color: accentColor }]}>Share Badge ↗</Text>
+            </TouchableOpacity>
+          ) : null}
 
           <Pressable onPress={onClose} style={[styles.closeBtn, { borderColor: colors.border }]}>
             <Text style={[styles.closeBtnText, { color: colors.mutedForeground }]}>Close</Text>
@@ -378,8 +391,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontStyle: "italic",
   },
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  shareBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
   closeBtn: {
-    marginTop: 8,
+    marginTop: 4,
     paddingHorizontal: 32,
     paddingVertical: 10,
     borderRadius: 12,

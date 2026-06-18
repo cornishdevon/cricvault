@@ -40,6 +40,7 @@ type Badge = {
   opponent?: string;
   date?: string;
   detail?: string;
+  shareText?: string;
   isNegative?: boolean;
 };
 
@@ -241,6 +242,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const teflonMatch = sorted.find((d) => (d.droppedCatches ?? 0) >= 2);
 
   // ── Build badge list ──────────────────────────────────────────────────────
+  const fmtDate = (d: string) => d.split("-").reverse().join("/");
   const badges: Badge[] = [
     // ─ First steps ─
     {
@@ -278,6 +280,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first50any,
       matchId: first50any?.matchId,
       opponent: first50any?.opponent,
+      shareText: first50any ? `🏏 Half-Century\n${first50any.runs} runs vs ${first50any.opponent}\n${fmtDate(first50any.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "first100",
@@ -288,6 +291,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first100,
       matchId: first100?.matchId,
       opponent: first100?.opponent,
+      shareText: first100 ? `💯 Century\n${first100.runs} runs vs ${first100.opponent}\n${fmtDate(first100.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "first150",
@@ -298,6 +302,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       matchId: first150?.matchId,
       opponent: first150?.opponent,
       detail: first150 ? `${first150.runs} runs` : undefined,
+      shareText: first150 ? `💎 150 Club\n${first150.runs} runs vs ${first150.opponent}\n${fmtDate(first150.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "pinchHitter",
@@ -309,6 +314,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       matchId: pinchHitterMatch?.matchId,
       opponent: pinchHitterMatch?.opponent,
       detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined,
+      shareText: pinchHitterMatch ? `⚡ Pinch Hitter\n${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b vs ${pinchHitterMatch.opponent}\n${fmtDate(pinchHitterMatch.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "nervousNineties",
@@ -422,6 +428,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!first5wkt,
       matchId: first5wkt?.matchId,
       opponent: first5wkt?.opponent,
+      shareText: first5wkt ? `🔥 Five-For\n${first5wkt.wickets}/${first5wkt.runsConceded} off ${Number(first5wkt.overs ?? 0).toFixed(1)} overs vs ${first5wkt.opponent}\n${fmtDate(first5wkt.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "wicketTaker",
@@ -439,6 +446,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: !!magicianMatch,
       matchId: magicianMatch?.matchId,
       opponent: magicianMatch?.opponent,
+      shareText: magicianMatch ? `🪄 Hat Trick!\nvs ${magicianMatch.opponent}\n${fmtDate(magicianMatch.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
     {
       id: "deadEye",
@@ -519,6 +527,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: trophyEarned,
       matchId: trophyMatch?.matchId,
       opponent: trophyMatch?.opponent,
+      shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined,
     },
 
     // ─ Team achievements ─
@@ -704,6 +713,7 @@ function computeMilestones(data: PerMatchStat[]) {
 }
 
 function BadgeModal({ badge, onClose }: { badge: Badge | null; onClose: () => void }) {
+  const [shared, setShared] = useState(false);
   if (!badge) return null;
 
   const accentClass = badge.isNegative ? "text-destructive" : "text-primary";
@@ -775,6 +785,27 @@ function BadgeModal({ badge, onClose }: { badge: Badge | null; onClose: () => vo
           </Link>
         )}
 
+        {badge.earned && badge.shareText && (
+          <button
+            onClick={async () => {
+              if (navigator.share) {
+                try { await navigator.share({ title: `CricVault — ${badge.label}`, text: badge.shareText! }); } catch {}
+              } else {
+                await navigator.clipboard.writeText(badge.shareText!);
+                setShared(true);
+                setTimeout(() => setShared(false), 2000);
+              }
+            }}
+            className={`flex items-center gap-2 px-5 py-2 rounded-xl border text-sm transition-colors ${
+              badge.isNegative
+                ? "border-destructive/40 text-destructive hover:bg-destructive/10"
+                : "border-primary/40 text-primary hover:bg-primary/10"
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            {shared ? "Copied!" : "Share Badge"}
+          </button>
+        )}
         <button
           onClick={onClose}
           className="mt-2 px-6 py-2 rounded-xl border border-zinc-700 text-sm text-muted-foreground hover:text-foreground hover:border-zinc-500 transition-colors"

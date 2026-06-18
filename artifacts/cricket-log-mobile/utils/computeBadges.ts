@@ -34,6 +34,7 @@ export type Badge = {
   imageKey?: string;
   earned: boolean;
   detail?: string;
+  shareText?: string;
   isNegative?: boolean;
 };
 
@@ -91,11 +92,13 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const boundaryEarned    = sorted.some((d) => (d.fours ?? 0) >= 10);
 
   let trophyEarned = false;
+  let trophyMatch: PerMatchStat | undefined;
+  const fmtDate = (d: string) => d.split("-").reverse().join("/");
   if (battingInnings.length >= 2) {
     let best = battingInnings[0].runs ?? 0;
     for (let i = 1; i < battingInnings.length; i++) {
       const r = battingInnings[i].runs ?? 0;
-      if (r > best) { trophyEarned = true; best = r; }
+      if (r > best) { trophyEarned = true; trophyMatch = battingInnings[i]; best = r; }
     }
   }
 
@@ -178,10 +181,10 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "smellGrass", label: "Smell of Cut Grass", description: "10 matches played",             icon: "🌿", earned: sorted.length >= 10, detail: sorted.length >= 10 ? `${sorted.length} matches` : undefined },
     { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 
-    { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",       icon: "🏏", earned: !!first50,  detail: first50  ? `${first50.runs} vs ${first50.opponent}` : undefined },
-    { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", imageKey: "century", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined },
-    { id: "first150",      label: "150 Club",        description: "150+ runs in an innings",        icon: "💎", earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined },
-    { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined },
+    { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",       icon: "🏏", earned: !!first50,  detail: first50  ? `${first50.runs} vs ${first50.opponent}` : undefined, shareText: first50 ? `🏏 Half-Century\n${first50.runs} runs vs ${first50.opponent}\n${fmtDate(first50.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", imageKey: "century", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined, shareText: first100 ? `💯 Century\n${first100.runs} runs vs ${first100.opponent}\n${fmtDate(first100.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "first150",      label: "150 Club",        description: "150+ runs in an innings",        icon: "💎", earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined, shareText: first150 ? `💎 150 Club\n${first150.runs} runs vs ${first150.opponent}\n${fmtDate(first150.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined, shareText: pinchHitterMatch ? `⚡ Pinch Hitter\n${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b vs ${pinchHitterMatch.opponent}\n${fmtDate(pinchHitterMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
 
     // One Short milestones — 49, 99, 149… out on the last before a milestone
@@ -207,7 +210,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "bighitter",     label: "Big Hitter",      description: "5+ sixes in one innings",       icon: "💥", earned: bigHitterEarned },
     { id: "boundary",      label: "Boundary Getter", description: "10+ fours in one innings",      icon: "🏅", earned: boundaryEarned },
     { id: "redink",        label: "Red Ink",         description: "5+ career not outs",            icon: "🛡️", earned: notOuts.length >= 5, detail: notOuts.length >= 5 ? `${notOuts.length} not outs` : undefined },
-    { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", earned: trophyEarned },
+    { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", earned: trophyEarned, shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
 
     { id: "strokemaker", label: "Stroke Maker", description: "500 runs in a season",   icon: "✨", earned: strokeMakerEarned, detail: strokeMakerSeason ? `${strokeMakerSeason} season` : undefined },
     { id: "runmachine",  label: "Run Machine",  description: "750 runs in a season",   icon: "⚙️", earned: runMachineEarned, detail: runMachineSeason ? `${runMachineSeason} season` : undefined },
@@ -215,7 +218,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "career2000",  label: "2,000 Club",   description: "2,000 career runs",      icon: "🏆", earned: careerRuns >= 2000, detail: careerRuns >= 2000 ? `${careerRuns} runs` : undefined },
     { id: "career100wkt", label: "100 Wickets", description: "100 career wickets",     icon: "🎳", earned: careerWickets >= 100, detail: careerWickets >= 100 ? `${careerWickets} wickets` : undefined },
 
-    { id: "fivewkt",      label: "Five-For",       description: "5 wickets in a spell",             icon: "🔥", earned: !!first5wkt, detail: first5wkt ? `${first5wkt.wickets}/${first5wkt.runsConceded} vs ${first5wkt.opponent}` : undefined },
+    { id: "fivewkt",      label: "Five-For",       description: "5 wickets in a spell",             icon: "🔥", earned: !!first5wkt, detail: first5wkt ? `${first5wkt.wickets}/${first5wkt.runsConceded} vs ${first5wkt.opponent}` : undefined, shareText: first5wkt ? `🔥 Five-For\n${first5wkt.wickets}/${first5wkt.runsConceded} off ${Number(first5wkt.overs ?? 0).toFixed(1)} overs vs ${first5wkt.opponent}\n${fmtDate(first5wkt.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "magician",     label: "Magician",       description: "Hat trick in a match",             icon: "🪄", earned: magicianEarned },
     { id: "wicketTaker",  label: "Wicket Taker",   description: "20 wickets over 10+ appearances", icon: "🎯", earned: wtEarned, detail: wtEarned ? `${careerWickets} wickets` : undefined },
     { id: "deadEye",      label: "Dead Eye",       description: "10 career wickets taken bowled",  icon: "🎯", earned: careerBowledWkts >= 10, detail: careerBowledWkts >= 10 ? `${careerBowledWkts} bowled` : undefined },
