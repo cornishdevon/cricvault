@@ -218,6 +218,19 @@ export default function AchievementsScreen() {
               ))}
             </View>
 
+            {negative.some((b) => b.earned) && (
+              <>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+                  Unlucky badges
+                </Text>
+                <View style={styles.grid}>
+                  {negative.filter((b) => b.earned).map((badge) => (
+                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+                  ))}
+                </View>
+              </>
+            )}
+
           </>
         )}
       </ScrollView>
