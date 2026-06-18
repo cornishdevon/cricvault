@@ -525,6 +525,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Personal Best",
       description: "Beat your own batting high score",
       icon: "🏆",
+      imageKey: "personalBest",
       earned: trophyEarned,
       matchId: trophyMatch?.matchId,
       opponent: trophyMatch?.opponent,

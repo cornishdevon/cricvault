@@ -210,7 +210,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "bighitter",     label: "Big Hitter",      description: "5+ sixes in one innings",       icon: "💥", earned: bigHitterEarned },
     { id: "boundary",      label: "Boundary Getter", description: "10+ fours in one innings",      icon: "🏅", earned: boundaryEarned },
     { id: "redink",        label: "Red Ink",         description: "5+ career not outs",            icon: "🛡️", earned: notOuts.length >= 5, detail: notOuts.length >= 5 ? `${notOuts.length} not outs` : undefined },
-    { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", earned: trophyEarned, shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", imageKey: "personalBest", earned: trophyEarned, shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
 
     { id: "strokemaker", label: "Stroke Maker", description: "500 runs in a season",   icon: "✨", earned: strokeMakerEarned, detail: strokeMakerSeason ? `${strokeMakerSeason} season` : undefined },
     { id: "runmachine",  label: "Run Machine",  description: "750 runs in a season",   icon: "⚙️", earned: runMachineEarned, detail: runMachineSeason ? `${runMachineSeason} season` : undefined },

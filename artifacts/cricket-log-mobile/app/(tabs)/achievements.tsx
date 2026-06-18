@@ -23,6 +23,7 @@ const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
   "century":      require("@/assets/badges/century.png"),
   "goldenDuck":   require("@/assets/badges/goldenDuck.png"),
   "150club":      require("@/assets/badges/150club.png"),
+  "personalBest": require("@/assets/badges/personalBest.png"),
 };
 
 function BadgeTile({
