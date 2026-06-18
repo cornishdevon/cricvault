@@ -30,6 +30,7 @@ import {
   Linking,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -407,22 +408,78 @@ export default function MatchDetailScreen() {
     ]);
   };
 
+  const handleShare = async () => {
+    if (!match) return;
+    const m = match as any;
+    const lines: string[] = [];
+    lines.push(`🏏 CricVault — vs ${m.opponent}`);
+    const dateStr = m.date ? m.date.split("-").reverse().join("/") : m.date;
+    lines.push(`${dateStr} · ${m.matchType}${m.venue ? ` · ${m.venue}` : ""}`);
+    if (m.result) lines.push(`Result: ${m.result}`);
+    if (m.playerOfTheMatch) lines.push("⭐ Player of the Match");
+
+    if (batting) {
+      const bat = batting as any;
+      lines.push(""); lines.push("🏏 BATTING");
+      const sr = bat.ballsFaced ? ((bat.runs / bat.ballsFaced) * 100).toFixed(1) : null;
+      let batLine = `${bat.runs ?? 0} runs`;
+      if (bat.ballsFaced) batLine += ` (${bat.ballsFaced}b)`;
+      if (sr) batLine += ` · SR ${sr}`;
+      lines.push(batLine);
+      if ((bat.fours ?? 0) > 0 || (bat.sixes ?? 0) > 0)
+        lines.push(`4s: ${bat.fours ?? 0}  6s: ${bat.sixes ?? 0}`);
+      if (bat.howOut) lines.push(`Out: ${bat.howOut}`);
+    }
+
+    if (bowling) {
+      const bowl = bowling as any;
+      lines.push(""); lines.push("🎳 BOWLING");
+      const econ = bowl.overs ? (bowl.runsConceded / bowl.overs).toFixed(2) : null;
+      let bowlLine = `${bowl.wickets ?? 0}/${bowl.runsConceded ?? 0}`;
+      if (bowl.overs) bowlLine += ` off ${Number(bowl.overs).toFixed(1)} overs`;
+      if (econ) bowlLine += ` · Econ ${econ}`;
+      lines.push(bowlLine);
+      if (bowl.hatTrick) lines.push("🎩 Hat Trick!");
+    }
+
+    if (fielding) {
+      const field = fielding as any;
+      const parts: string[] = [];
+      if ((field.catches ?? 0) > 0) parts.push(`${field.catches} catch${field.catches === 1 ? "" : "es"}`);
+      if ((field.stumpings ?? 0) > 0) parts.push(`${field.stumpings} stumping${field.stumpings === 1 ? "" : "s"}`);
+      if ((field.runOuts ?? 0) > 0) parts.push(`${field.runOuts} run out${field.runOuts === 1 ? "" : "s"}`);
+      if (parts.length > 0) { lines.push(""); lines.push("🧤 FIELDING"); lines.push(parts.join(" · ")); }
+    }
+
+    if (report) {
+      const r = report as any;
+      if (r.notes) { lines.push(""); lines.push("📝 NOTES"); lines.push(r.notes); }
+      if (r.areasToImprove) { lines.push(""); lines.push("💡 TO WORK ON"); lines.push(r.areasToImprove); }
+    }
+
+    lines.push(""); lines.push("Logged on CricVault 🏏");
+    try {
+      await Share.share({ message: lines.join("\n") });
+    } catch { /* dismissed */ }
+  };
+
   useEffect(() => {
     if (match) {
       navigation.setOptions({
         title: `vs ${match.opponent}`,
         headerRight: () => (
-          <TouchableOpacity
-            onPress={handleDelete}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={{ marginRight: 4 }}
-          >
-            <Feather name="trash-2" size={18} color="#ef4444" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginRight: 4 }}>
+            <TouchableOpacity onPress={handleShare} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Feather name="share-2" size={18} color={colors.foreground} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Feather name="trash-2" size={18} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
         ),
       });
     }
-  }, [match, navigation]);
+  }, [match, navigation, batting, bowling, fielding, report]);
 
   if (matchLoading) {
     return (

@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { ArrowLeft, Printer } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Printer, Share2 } from "lucide-react";
 
 function StatCell({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value == null || value === "") return null;
@@ -37,9 +38,50 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function buildShareText(m: any, bat: any, bowl: any, field: any) {
+  const lines: string[] = [];
+  lines.push(`🏏 CricVault — vs ${m.opponent}`);
+  const dateStr = m.date ? m.date.split("-").reverse().join("/") : m.date;
+  lines.push(`${dateStr} · ${m.matchType}${m.venue ? ` · ${m.venue}` : ""}`);
+  if (m.result) lines.push(`Result: ${m.result}`);
+  if (m.playerOfTheMatch) lines.push("⭐ Player of the Match");
+
+  if (bat?.runs != null) {
+    lines.push(""); lines.push("🏏 BATTING");
+    const strikeRate = bat.ballsFaced ? ((bat.runs / bat.ballsFaced) * 100).toFixed(1) : null;
+    let batLine = `${bat.runs} runs`;
+    if (bat.ballsFaced) batLine += ` (${bat.ballsFaced}b)`;
+    if (strikeRate) batLine += ` · SR ${strikeRate}`;
+    lines.push(batLine);
+    if ((bat.fours ?? 0) > 0 || (bat.sixes ?? 0) > 0)
+      lines.push(`4s: ${bat.fours ?? 0}  6s: ${bat.sixes ?? 0}`);
+    if (bat.howOut) lines.push(`Out: ${bat.howOut}`);
+  }
+  if (bowl?.wickets != null || bowl?.overs != null) {
+    lines.push(""); lines.push("🎳 BOWLING");
+    const econ = bowl.overs ? (bowl.runsConceded / bowl.overs).toFixed(2) : null;
+    let bowlLine = `${bowl.wickets ?? 0}/${bowl.runsConceded ?? 0}`;
+    if (bowl.overs) bowlLine += ` off ${Number(bowl.overs).toFixed(1)} overs`;
+    if (econ) bowlLine += ` · Econ ${econ}`;
+    lines.push(bowlLine);
+    if (bowl.hatTrick) lines.push("🎩 Hat Trick!");
+  }
+  if (field) {
+    const parts: string[] = [];
+    if ((field.catches ?? 0) > 0) parts.push(`${field.catches} catch${field.catches === 1 ? "" : "es"}`);
+    if ((field.stumpings ?? 0) > 0) parts.push(`${field.stumpings} stumping${field.stumpings === 1 ? "" : "s"}`);
+    if ((field.runOuts ?? 0) > 0) parts.push(`${field.runOuts} run out${field.runOuts === 1 ? "" : "s"}`);
+    if (parts.length > 0) { lines.push(""); lines.push("🧤 FIELDING"); lines.push(parts.join(" · ")); }
+  }
+  if (m.notes) { lines.push(""); lines.push("📝 NOTES"); lines.push(m.notes); }
+  lines.push(""); lines.push("Logged on CricVault 🏏");
+  return lines.join("\n");
+}
+
 export default function MatchReport() {
   const { matchId } = useParams<{ matchId: string }>();
   const id = Number(matchId);
+  const [copied, setCopied] = useState(false);
 
   const { data: match, isLoading: matchLoading } = useGetMatch(id, {
     query: { queryKey: getGetMatchQueryKey(id) },
@@ -121,15 +163,35 @@ export default function MatchReport() {
               Back
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => window.print()}
-          >
-            <Printer size={15} />
-            Print / Save PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={async () => {
+                const text = buildShareText(m, bat, bowl, field);
+                if (navigator.share) {
+                  try { await navigator.share({ title: `CricVault — vs ${m.opponent}`, text }); } catch { /* dismissed */ }
+                } else {
+                  await navigator.clipboard.writeText(text);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+            >
+              <Share2 size={15} />
+              {copied ? "Copied!" : "Share"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => window.print()}
+            >
+              <Printer size={15} />
+              Print / Save PDF
+            </Button>
+          </div>
         </div>
 
         {/* Header */}

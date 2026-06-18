@@ -57,7 +57,7 @@ const HOW_OUT_SUGGESTIONS = [
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Trash2, Save, X } from "lucide-react";
+import { ArrowLeft, Trash2, Save, X, Share2 } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
 
@@ -951,8 +951,75 @@ export default function MatchDetail() {
   const { data: match, isLoading } = useGetMatch(matchId, {
     query: { enabled: !!matchId, queryKey: getGetMatchQueryKey(matchId) },
   });
+  const { data: battingShare } = useGetBattingStats(matchId, {
+    query: { enabled: !!matchId, queryKey: getGetBattingStatsQueryKey(matchId) },
+  });
+  const { data: bowlingShare } = useGetBowlingStats(matchId, {
+    query: { enabled: !!matchId, queryKey: getGetBowlingStatsQueryKey(matchId) },
+  });
+  const { data: fieldingShare } = useGetFieldingStats(matchId, {
+    query: { enabled: !!matchId, queryKey: getGetFieldingStatsQueryKey(matchId) },
+  });
+  const { data: reportShare } = useGetMatchReport(matchId, {
+    query: { enabled: !!matchId, queryKey: getGetMatchReportQueryKey(matchId) },
+  });
   const deleteMatch = useDeleteMatch();
   const updateMatch = useUpdateMatch();
+
+  const handleShare = async () => {
+    if (!match) return;
+    const m = match as any;
+    const bat = battingShare as any;
+    const bowl = bowlingShare as any;
+    const field = fieldingShare as any;
+    const rep = reportShare as any;
+
+    const lines: string[] = [];
+    lines.push(`🏏 CricVault — vs ${m.opponent}`);
+    const dateStr = m.date ? m.date.split("-").reverse().join("/") : m.date;
+    lines.push(`${dateStr} · ${m.matchType}${m.venue ? ` · ${m.venue}` : ""}`);
+    if (m.result) lines.push(`Result: ${m.result}`);
+    if (m.playerOfTheMatch) lines.push("⭐ Player of the Match");
+
+    if (bat?.runs != null) {
+      lines.push(""); lines.push("🏏 BATTING");
+      const sr = bat.ballsFaced ? ((bat.runs / bat.ballsFaced) * 100).toFixed(1) : null;
+      let batLine = `${bat.runs} runs`;
+      if (bat.ballsFaced) batLine += ` (${bat.ballsFaced}b)`;
+      if (sr) batLine += ` · SR ${sr}`;
+      lines.push(batLine);
+      if ((bat.fours ?? 0) > 0 || (bat.sixes ?? 0) > 0)
+        lines.push(`4s: ${bat.fours ?? 0}  6s: ${bat.sixes ?? 0}`);
+      if (bat.howOut) lines.push(`Out: ${bat.howOut}`);
+    }
+    if (bowl?.wickets != null || bowl?.overs != null) {
+      lines.push(""); lines.push("🎳 BOWLING");
+      const econ = bowl.overs ? (bowl.runsConceded / bowl.overs).toFixed(2) : null;
+      let bowlLine = `${bowl.wickets ?? 0}/${bowl.runsConceded ?? 0}`;
+      if (bowl.overs) bowlLine += ` off ${Number(bowl.overs).toFixed(1)} overs`;
+      if (econ) bowlLine += ` · Econ ${econ}`;
+      lines.push(bowlLine);
+      if (bowl.hatTrick) lines.push("🎩 Hat Trick!");
+    }
+    if (field) {
+      const parts: string[] = [];
+      if ((field.catches ?? 0) > 0) parts.push(`${field.catches} catch${field.catches === 1 ? "" : "es"}`);
+      if ((field.stumpings ?? 0) > 0) parts.push(`${field.stumpings} stumping${field.stumpings === 1 ? "" : "s"}`);
+      if ((field.runOuts ?? 0) > 0) parts.push(`${field.runOuts} run out${field.runOuts === 1 ? "" : "s"}`);
+      if (parts.length > 0) { lines.push(""); lines.push("🧤 FIELDING"); lines.push(parts.join(" · ")); }
+    }
+    if (rep?.notes) { lines.push(""); lines.push("📝 NOTES"); lines.push(rep.notes); }
+    if (rep?.areasToImprove) { lines.push(""); lines.push("💡 TO WORK ON"); lines.push(rep.areasToImprove); }
+    lines.push(""); lines.push("Logged on CricVault 🏏");
+
+    const text = lines.join("\n");
+    if (navigator.share) {
+      try { await navigator.share({ title: `CricVault — vs ${m.opponent}`, text }); } catch { /* dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard — paste anywhere to share 📋" });
+    }
+  };
 
   const handleDelete = () => {
     if (!confirm("Delete this match and all its stats? This cannot be undone.")) return;
@@ -1034,6 +1101,13 @@ export default function MatchDetail() {
           <Link href={`/matches/${match.id}/report`} className="text-muted-foreground hover:text-foreground transition-colors" title="View printable report">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           </Link>
+          <button
+            onClick={handleShare}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title="Share match"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
           <button
             onClick={handleDelete}
             className="text-muted-foreground hover:text-destructive transition-colors"
