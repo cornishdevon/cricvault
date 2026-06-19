@@ -183,6 +183,9 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
   const debutMatch = sorted[0];
   const debutEarned = sorted.length >= 1;
 
+  // ── NEW: Smell of Cut Grass — 10+ matches played ─────────────────────────
+  const smellGrassEarned = sorted.length >= 10;
+
   // ── NEW: Welcome to New Season — matches in 2+ calendar years ────────────
   const years = [...new Set(sorted.map((d) => d.date.slice(0, 4)))].sort();
   const newSeasonEarned = years.length >= 2;
@@ -250,6 +253,14 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       earned: debutEarned,
       matchId: debutMatch?.matchId,
       opponent: debutMatch?.opponent,
+    },
+    {
+      id: "smellGrass",
+      label: "Smell of Cut Grass",
+      description: "10 matches played — you're a regular",
+      icon: "🌿",
+      earned: smellGrassEarned,
+      detail: smellGrassEarned ? `${sorted.length} matches` : undefined,
     },
     {
       id: "newSeason",
