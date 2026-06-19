@@ -656,6 +656,7 @@ export default function Dashboard() {
       </div>
 
       {/* Summary cards */}
+      <div id="stats" className="-mt-4" />
       {summaryLoading ? (
         <div className="rounded-2xl bg-primary p-5">
           <div className="grid gap-4 md:grid-cols-3">
@@ -723,6 +724,7 @@ export default function Dashboard() {
       )}
 
       {/* Season targets */}
+      <div id="goals" className="-mt-2" />
       {!chartLoading && (
         <SeasonTargets
           currentRuns={seasonRuns}
@@ -735,6 +737,9 @@ export default function Dashboard() {
       {!chartLoading && hasMatchData && (
         <EncouragementBanner data={filteredData} />
       )}
+
+      {/* Form */}
+      <div id="form" className="-mt-2" />
 
       {/* Runs & Wickets charts */}
       {chartLoading ? (
@@ -781,6 +786,9 @@ export default function Dashboard() {
         <PersonalBests data={filteredData} />
       ) : null}
 
+      {/* Badges */}
+      <div id="badges" className="-mt-2" />
+
       {/* Achievements & milestones — always career-wide */}
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
@@ -794,6 +802,9 @@ export default function Dashboard() {
       ) : hasMatchData ? (
         <HeadToHead data={filteredData} />
       ) : null}
+
+      {/* Timeline */}
+      <div id="timeline" className="-mt-2" />
 
       {/* Career milestones — always career-wide */}
       {chartLoading ? (
@@ -813,6 +824,7 @@ export default function Dashboard() {
       )}
 
       {/* Recent matches */}
+      <div id="recent" className="-mt-2" />
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold tracking-tight">Recent Matches</h2>

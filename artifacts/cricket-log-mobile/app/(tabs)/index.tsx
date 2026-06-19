@@ -4,7 +4,7 @@ import {
   useListMatches,
 } from "@workspace/api-client-react";
 import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { SeasonTargets } from "@/components/SeasonTargets";
 import {
   ActivityIndicator,
@@ -450,6 +450,45 @@ function HeadToHeadSection({ data, colors, onPress }: {
   );
 }
 
+// ── Shortcut Pills ─────────────────────────────────────────────────────────────
+
+const SHORTCUTS = [
+  { label: "📊 Stats", key: "stats" },
+  { label: "🎯 Goals", key: "goals" },
+  { label: "📈 Form", key: "form" },
+  { label: "🎳 Dismissals", key: "dismissals" },
+  { label: "🏟 Match Types", key: "matchtype" },
+  { label: "👊 Head-to-Head", key: "h2h" },
+  { label: "🗂 Recent", key: "recent" },
+];
+
+function ShortcutPills({
+  colors,
+  onPress,
+}: {
+  colors: ReturnType<typeof useColors>;
+  onPress: (key: string) => void;
+}) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.pillsRow}
+      style={{ flexShrink: 0 }}
+    >
+      {SHORTCUTS.map((s) => (
+        <TouchableOpacity
+          key={s.key}
+          onPress={() => onPress(s.key)}
+          style={[styles.pill, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function DashboardScreen() {
@@ -512,8 +551,21 @@ export default function DashboardScreen() {
 
   const handleMatchPress = (id: number) => router.push(`/match/${id}`);
 
+  const scrollViewRef = useRef<ScrollView>(null);
+  const sectionRefs = useRef<Record<string, number>>({});
+
+  const handleShortcut = (key: string) => {
+    const y = sectionRefs.current[key];
+    if (y != null) scrollViewRef.current?.scrollTo({ y, animated: true });
+  };
+
+  const measureSection = (key: string) => (event: any) => {
+    sectionRefs.current[key] = event.nativeEvent.layout.y;
+  };
+
   return (
     <ScrollView
+      ref={scrollViewRef}
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       refreshControl={
@@ -528,6 +580,9 @@ export default function DashboardScreen() {
         />
       }
     >
+      {/* ── Shortcut Pills ── */}
+      <ShortcutPills colors={colors} onPress={handleShortcut} />
+
       <View style={styles.header}>
         <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Career Stats</Text>
         <Text style={[styles.heroTitle, { color: colors.foreground }]}>
@@ -548,6 +603,7 @@ export default function DashboardScreen() {
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : summary ? (
         <>
+          <View onLayout={measureSection("stats")} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Batting</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Total Runs" value={summary.batting.totalRuns} colors={colors} />
@@ -591,6 +647,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* ── Season Targets ── */}
+          <View onLayout={measureSection("goals")} />
           <SeasonTargets
             currentRuns={seasonRuns}
             currentWickets={seasonWickets}
@@ -599,6 +656,7 @@ export default function DashboardScreen() {
           />
 
           {/* ── Form Guide ── */}
+          <View onLayout={measureSection("form")} />
           {allPerMatch.length > 0 && (
             <FormGuideSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
           )}
@@ -628,22 +686,26 @@ export default function DashboardScreen() {
           )}
 
           {/* ── Dismissal Breakdown ── */}
+          <View onLayout={measureSection("dismissals")} />
           {allPerMatch.length > 0 && (
             <DismissalSection data={allPerMatch} colors={colors} />
           )}
 
           {/* ── Match Type Breakdown ── */}
+          <View onLayout={measureSection("matchtype")} />
           {allPerMatch.length > 0 && (
             <MatchTypeSection data={allPerMatch} colors={colors} />
           )}
 
           {/* ── Head-to-Head ── */}
+          <View onLayout={measureSection("h2h")} />
           {allPerMatch.length > 0 && (
             <HeadToHeadSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
           )}
         </>
       ) : null}
 
+      <View onLayout={measureSection("recent")} />
       {recentMatches.length > 0 ? (
         <>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Matches</Text>
@@ -852,6 +914,26 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", marginTop: 60, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", marginBottom: 6 },
   emptySub: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
+
+  // Shortcut pills
+  pillsRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+    flexDirection: "row",
+  },
+  pill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    flexShrink: 0,
+  },
+  pillText: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    whiteSpace: "nowrap",
+  },
 
   // Analysis cards
   analysisCard: {

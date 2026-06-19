@@ -2,8 +2,55 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart } from "lucide-react";
 
+const DASHBOARD_SHORTCUTS = [
+  { label: "📊 Stats", anchor: "stats" },
+  { label: "🎯 Goals", anchor: "goals" },
+  { label: "📈 Form", anchor: "form" },
+  { label: "🏅 Badges", anchor: "badges" },
+  { label: "🕐 Timeline", anchor: "timeline" },
+  { label: "🗂 Matches", anchor: "recent" },
+];
+
+function DashboardShortcuts() {
+  const scrollTo = (anchor: string) => {
+    const el = document.getElementById(anchor);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <div className="w-full border-b bg-background/80 backdrop-blur">
+      <div className="container max-w-5xl mx-auto px-4">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-2">
+          {DASHBOARD_SHORTCUTS.map((s) => (
+            <button
+              key={s.anchor}
+              onClick={() => scrollTo(s.anchor)}
+              className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border border-border bg-card hover:bg-accent hover:border-primary/30 hover:text-primary transition-all whitespace-nowrap"
+            >
+              {s.label}
+            </button>
+          ))}
+          <Link
+            href="/analysis"
+            className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 transition-all whitespace-nowrap"
+          >
+            🔍 Analysis →
+          </Link>
+          <Link
+            href="/seasons"
+            className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border border-border bg-card hover:bg-accent transition-all whitespace-nowrap"
+          >
+            📅 Seasons →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const isDashboard = location === "/";
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: Activity, exact: true },
@@ -52,6 +99,9 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
+
+      {isDashboard && <DashboardShortcuts />}
+
       <main className="flex-1 container max-w-5xl mx-auto px-4 py-8">
         {children}
       </main>
