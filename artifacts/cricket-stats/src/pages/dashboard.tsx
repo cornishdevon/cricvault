@@ -12,6 +12,9 @@ import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
 import { MilestonesTimeline } from "@/components/milestones-timeline";
+import { CareerRating } from "@/components/career-rating";
+import { SeasonTargets } from "@/components/season-targets";
+import { ShareCard } from "@/components/share-card";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,10 +40,13 @@ type PerMatchStat = {
   matchId: number;
   date: string;
   opponent: string;
+  venue?: string | null;
   matchType: string;
+  playingFor?: string | null;
   runs?: number | null;
   ballsFaced?: number | null;
   strikeRate?: number | null;
+  battingPosition?: number | null;
   fours?: number | null;
   sixes?: number | null;
   howOut?: string | null;
@@ -56,6 +62,7 @@ type PerMatchStat = {
   missedStumpings?: number | null;
   hatTrick?: boolean | null;
   result?: string | null;
+  playerOfTheMatch?: boolean | null;
 };
 
 function exportCSV(data: PerMatchStat[], season: string) {
@@ -578,6 +585,26 @@ export default function Dashboard() {
 
   const hasMatchData = filteredData.length > 0;
 
+  const potmCount = useMemo(
+    () => filteredData.filter((m) => m.playerOfTheMatch).length,
+    [filteredData]
+  );
+
+  const winCount = useMemo(
+    () => filteredData.filter((m) => m.result === "Win").length,
+    [filteredData]
+  );
+
+  const seasonRuns = useMemo(
+    () => filteredData.filter((m) => m.runs != null).reduce((s, m) => s + (m.runs ?? 0), 0),
+    [filteredData]
+  );
+
+  const seasonWickets = useMemo(
+    () => filteredData.filter((m) => m.wickets != null).reduce((s, m) => s + (m.wickets ?? 0), 0),
+    [filteredData]
+  );
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -690,6 +717,20 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Career rating */}
+      {!summaryLoading && summary && (
+        <CareerRating summary={summary} potmCount={potmCount} />
+      )}
+
+      {/* Season targets */}
+      {!chartLoading && (
+        <SeasonTargets
+          currentRuns={seasonRuns}
+          currentWickets={seasonWickets}
+          season={selectedSeason}
+        />
+      )}
+
       {/* Encouragement banner — shown when bad form detected */}
       {!chartLoading && hasMatchData && (
         <EncouragementBanner data={filteredData} />
@@ -760,6 +801,16 @@ export default function Dashboard() {
       ) : (perMatch && perMatch.length > 0) ? (
         <MilestonesTimeline data={perMatch} />
       ) : null}
+
+      {/* Stats share card */}
+      {!summaryLoading && !chartLoading && hasMatchData && summary && (
+        <ShareCard
+          summary={summary}
+          season={selectedSeason}
+          potmCount={potmCount}
+          winCount={winCount}
+        />
+      )}
 
       {/* Recent matches */}
       <div>

@@ -5,6 +5,7 @@ import {
 } from "@workspace/api-client-react";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
+import { SeasonTargets } from "@/components/SeasonTargets";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -144,10 +145,13 @@ type PerMatchStat = {
   matchId: number;
   date: string;
   opponent: string;
+  matchType?: string | null;
   runs?: number | null;
+  ballsFaced?: number | null;
   wickets?: number | null;
   overs?: number | null;
   runsConceded?: number | null;
+  howOut?: string | null;
   result?: string | null;
 };
 
@@ -262,6 +266,122 @@ function BestPerformancesSection({ data, colors, onPress }: {
             </Text>
           </TouchableOpacity>
         )}
+      </View>
+    </View>
+  );
+}
+
+// ── Dismissal Breakdown ────────────────────────────────────────────────────────
+
+const DISMISSAL_COLORS_M = ["#16a34a","#2563eb","#7c3aed","#d97706","#dc2626","#0891b2","#db2777","#475569"];
+
+function DismissalSection({ data, colors }: {
+  data: PerMatchStat[];
+  colors: ReturnType<typeof useColors>;
+}) {
+  const counts = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of data) {
+      if (m.howOut) {
+        const key = m.howOut.trim();
+        map.set(key, (map.get(key) ?? 0) + 1);
+      }
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [data]);
+
+  if (counts.length === 0) return null;
+
+  const total = counts.reduce((s, c) => s + c.value, 0);
+  const maxVal = Math.max(...counts.map((c) => c.value), 1);
+
+  return (
+    <View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Dismissal Breakdown</Text>
+      <View style={[styles.analysisCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {counts.map((c, i) => {
+          const barPct = c.value / maxVal;
+          const pct = total > 0 ? Math.round((c.value / total) * 100) : 0;
+          return (
+            <View key={c.name} style={styles.dismissalRow}>
+              <Text style={[styles.dismissalName, { color: colors.foreground }]} numberOfLines={1}>
+                {c.name}
+              </Text>
+              <View style={styles.dismissalBarWrap}>
+                <View style={[styles.dismissalBarBg, { backgroundColor: colors.border }]}>
+                  <View
+                    style={[styles.dismissalBarFill, {
+                      width: `${barPct * 100}%` as any,
+                      backgroundColor: DISMISSAL_COLORS_M[i % DISMISSAL_COLORS_M.length],
+                    }]}
+                  />
+                </View>
+              </View>
+              <Text style={[styles.dismissalCount, { color: colors.mutedForeground }]}>
+                {c.value} <Text style={{ fontSize: 9 }}>({pct}%)</Text>
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// ── Match Type Breakdown ───────────────────────────────────────────────────────
+
+function MatchTypeSection({ data, colors }: {
+  data: PerMatchStat[];
+  colors: ReturnType<typeof useColors>;
+}) {
+  const rows = React.useMemo(() => {
+    const map = new Map<string, PerMatchStat[]>();
+    for (const m of data) {
+      const key = m.matchType ?? "Other";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(m);
+    }
+    if (map.size < 2) return [];
+    return Array.from(map.entries())
+      .map(([type, ms]) => {
+        const innings = ms.filter((m) => m.runs != null);
+        const runs = innings.reduce((s, m) => s + (m.runs ?? 0), 0);
+        const wkts = ms.filter((m) => m.wickets != null).reduce((s, m) => s + (m.wickets ?? 0), 0);
+        return {
+          type,
+          matches: ms.length,
+          runs,
+          avg: innings.length > 0 ? (runs / innings.length).toFixed(1) : "—",
+          wickets: wkts,
+          wins: ms.filter((m) => m.result === "Win").length,
+        };
+      })
+      .sort((a, b) => b.matches - a.matches);
+  }, [data]);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>By Match Type</Text>
+      <View style={[styles.analysisCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.tableHeader, { borderBottomColor: colors.border }]}>
+          {["Type","M","Runs","Avg","Wkts","W"].map(h => (
+            <Text key={h} style={[styles.tableHead, { color: colors.mutedForeground, flex: h === "Type" ? 2 : 1 }]}>{h}</Text>
+          ))}
+        </View>
+        {rows.map((r, i) => (
+          <View key={r.type} style={[styles.tableRow, i < rows.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}>
+            <Text style={[styles.tableCell, { color: colors.foreground, fontFamily: "Inter_600SemiBold", flex: 2 }]} numberOfLines={1}>{r.type}</Text>
+            <Text style={[styles.tableCell, { color: colors.mutedForeground, flex: 1 }]}>{r.matches}</Text>
+            <Text style={[styles.tableCell, { color: colors.foreground, fontFamily: "Inter_600SemiBold", flex: 1 }]}>{r.runs}</Text>
+            <Text style={[styles.tableCell, { color: colors.mutedForeground, flex: 1 }]}>{r.avg}</Text>
+            <Text style={[styles.tableCell, { color: colors.foreground, flex: 1 }]}>{r.wickets}</Text>
+            <Text style={[styles.tableCell, { color: colors.primary, fontFamily: "Inter_600SemiBold", flex: 1 }]}>{r.wins}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -382,6 +502,14 @@ export default function DashboardScreen() {
   const hasChartData = chartMatches.length > 0;
   const allPerMatch = perMatch ?? [];
 
+  const currentYear = new Date().getFullYear().toString();
+  const seasonRuns = allPerMatch
+    .filter((m) => m.date?.startsWith(currentYear) && m.runs != null)
+    .reduce((s, m) => s + (m.runs ?? 0), 0);
+  const seasonWickets = allPerMatch
+    .filter((m) => m.date?.startsWith(currentYear) && m.wickets != null)
+    .reduce((s, m) => s + (m.wickets ?? 0), 0);
+
   const handleMatchPress = (id: number) => router.push(`/match/${id}`);
 
   return (
@@ -462,6 +590,14 @@ export default function DashboardScreen() {
             />
           </View>
 
+          {/* ── Season Targets ── */}
+          <SeasonTargets
+            currentRuns={seasonRuns}
+            currentWickets={seasonWickets}
+            season={currentYear}
+            colors={colors}
+          />
+
           {/* ── Form Guide ── */}
           {allPerMatch.length > 0 && (
             <FormGuideSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
@@ -489,6 +625,16 @@ export default function DashboardScreen() {
                 <BarChart data={wicketsData} barColor="#8b5cf6" colors={colors} />
               </View>
             </>
+          )}
+
+          {/* ── Dismissal Breakdown ── */}
+          {allPerMatch.length > 0 && (
+            <DismissalSection data={allPerMatch} colors={colors} />
+          )}
+
+          {/* ── Match Type Breakdown ── */}
+          {allPerMatch.length > 0 && (
+            <MatchTypeSection data={allPerMatch} colors={colors} />
           )}
 
           {/* ── Head-to-Head ── */}
@@ -706,4 +852,70 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", marginTop: 60, paddingHorizontal: 40 },
   emptyTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", marginBottom: 6 },
   emptySub: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
+
+  // Analysis cards
+  analysisCard: {
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+
+  // Dismissal breakdown
+  dismissalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    gap: 8,
+  },
+  dismissalName: {
+    width: 100,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+  },
+  dismissalBarWrap: {
+    flex: 1,
+  },
+  dismissalBarBg: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  dismissalBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  dismissalCount: {
+    width: 44,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    textAlign: "right",
+  },
+
+  // Match type table
+  tableHeader: {
+    flexDirection: "row",
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 4,
+  },
+  tableHead: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+    textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  tableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  tableCell: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
 });

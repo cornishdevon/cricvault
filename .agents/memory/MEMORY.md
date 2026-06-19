@@ -1,1 +1,3 @@
 - [CricVault architecture](cricvault-arch.md) — multi-artifact cricket stats app; web, API, and mobile share a single data layer via @workspace/api-client-react hooks
+- [Career XP system](career-xp.md) — XP formula for cricket level badge (Novice→Legend), computed client-side from summary stats.
+- [Per-match stats API fields](per-match-api.md) — /stats/per-match includes venue, playingFor, battingPosition; each consumer must declare these in its local PerMatchStat type.
