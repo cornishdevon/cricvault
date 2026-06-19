@@ -625,6 +625,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Billy Big Pads",
       description: "Out LBW 5 times",
       icon: "😬",
+      imageKey: "billyBigPads",
       earned: lbwOuts >= 5,
       detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined,
       isNegative: true,

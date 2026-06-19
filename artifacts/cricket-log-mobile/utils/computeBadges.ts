@@ -275,7 +275,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
       isNegative: true as const,
     })),
 
-    { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
+    { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", imageKey: "billyBigPads", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
     { id: "gardenGate",      label: "Garden Gate",      description: "Out bowled 5 times",         icon: "🚪", earned: bowledOuts >= 5, detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined, isNegative: true },
     { id: "catchingPractice", label: "Catching Practice", description: "Out caught 10 times",    icon: "🙈", earned: caughtOuts >= 10, detail: caughtOuts >= 10 ? `${caughtOuts}× caught` : undefined, isNegative: true },
     { id: "keepRunning",     label: "Keep on Running",  description: "Run out 3 times",           icon: "🏃", earned: runOutOuts >= 3, detail: runOutOuts >= 3 ? `${runOutOuts}× run out` : undefined, isNegative: true },
