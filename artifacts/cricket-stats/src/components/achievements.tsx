@@ -426,6 +426,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Five-For",
       description: "Took 5 wickets in a spell",
       icon: "🔥",
+      imageKey: "fiveFor",
       earned: !!first5wkt,
       matchId: first5wkt?.matchId,
       opponent: first5wkt?.opponent,
