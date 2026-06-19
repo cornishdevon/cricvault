@@ -5,6 +5,10 @@ import {
   useGetFieldingStats,
   useGetMatchReport,
   useDeleteMatch,
+  useUpdateMatch,
+  useUpdateBattingStats,
+  useUpdateBowlingStats,
+  useUpdateFieldingStats,
   useListMatchPhotos,
   useListMatchVideos,
   useAddMatchPhoto,
@@ -14,6 +18,10 @@ import {
   getGetPerMatchStatsQueryKey,
   getGetStatsSummaryQueryKey,
   getListMatchesQueryKey,
+  getGetMatchQueryKey,
+  getGetBattingStatsQueryKey,
+  getGetBowlingStatsQueryKey,
+  getGetFieldingStatsQueryKey,
   getGetMatchReportQueryKey,
   getListMatchPhotosQueryKey,
   getListMatchVideosQueryKey,
@@ -58,6 +66,44 @@ function StatRow({
     <View style={[styles.statRow, { borderBottomColor: colors.border }]}>
       <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
       <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
+    </View>
+  );
+}
+
+function EditableRow({
+  label,
+  value,
+  editValue,
+  onChangeText,
+  editing,
+  numeric,
+  colors,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+  editValue: string;
+  onChangeText: (v: string) => void;
+  editing: boolean;
+  numeric?: boolean;
+  colors: ReturnType<typeof useColors>;
+}) {
+  if (!editing && (value === null || value === undefined || value === "")) return null;
+  return (
+    <View style={[styles.statRow, { borderBottomColor: colors.border }]}>
+      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{label}</Text>
+      {editing ? (
+        <TextInput
+          style={[styles.editInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+          value={editValue}
+          onChangeText={onChangeText}
+          keyboardType={numeric ? "numeric" : "default"}
+          placeholder="—"
+          placeholderTextColor={colors.mutedForeground}
+          returnKeyType="done"
+        />
+      ) : (
+        <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
+      )}
     </View>
   );
 }
@@ -384,6 +430,122 @@ export default function MatchDetailScreen() {
   const { data: fielding } = useGetFieldingStats(matchId);
   const { data: report } = useGetMatchReport(matchId);
   const { mutate: deleteMatch } = useDeleteMatch();
+  const updateMatch = useUpdateMatch();
+  const updateBatting = useUpdateBattingStats();
+  const updateBowling = useUpdateBowlingStats();
+  const updateFielding = useUpdateFieldingStats();
+
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Match fields
+  const [editOpponent, setEditOpponent] = useState("");
+  const [editVenue, setEditVenue] = useState("");
+  const [editResult, setEditResult] = useState("");
+  // Batting fields
+  const [editRuns, setEditRuns] = useState("");
+  const [editBalls, setEditBalls] = useState("");
+  const [editFours, setEditFours] = useState("");
+  const [editSixes, setEditSixes] = useState("");
+  const [editHowOut, setEditHowOut] = useState("");
+  // Bowling fields
+  const [editWickets, setEditWickets] = useState("");
+  const [editOvers, setEditOvers] = useState("");
+  const [editRunsConceded, setEditRunsConceded] = useState("");
+  const [editMaidens, setEditMaidens] = useState("");
+  // Fielding fields
+  const [editCatches, setEditCatches] = useState("");
+  const [editStumpings, setEditStumpings] = useState("");
+  const [editRunOuts, setEditRunOuts] = useState("");
+  const [editDropped, setEditDropped] = useState("");
+
+  const enterEditMode = () => {
+    const m = match as any;
+    setEditOpponent(m?.opponent ?? "");
+    setEditVenue(m?.venue ?? "");
+    setEditResult(m?.result ?? "");
+    const bat = batting as any;
+    setEditRuns(bat?.runs != null ? String(bat.runs) : "");
+    setEditBalls(bat?.ballsFaced != null ? String(bat.ballsFaced) : "");
+    setEditFours(bat?.fours != null ? String(bat.fours) : "");
+    setEditSixes(bat?.sixes != null ? String(bat.sixes) : "");
+    setEditHowOut(bat?.howOut ?? "");
+    const bowl = bowling as any;
+    setEditWickets(bowl?.wickets != null ? String(bowl.wickets) : "");
+    setEditOvers(bowl?.overs != null ? String(Number(bowl.overs).toFixed(1)) : "");
+    setEditRunsConceded(bowl?.runsConceded != null ? String(bowl.runsConceded) : "");
+    setEditMaidens(bowl?.maidens != null ? String(bowl.maidens) : "");
+    const field = fielding as any;
+    setEditCatches(field?.catches != null ? String(field.catches) : "");
+    setEditStumpings(field?.stumpings != null ? String(field.stumpings) : "");
+    setEditRunOuts(field?.runOuts != null ? String(field.runOuts) : "");
+    setEditDropped(field?.droppedCatches != null ? String(field.droppedCatches) : "");
+    setEditMode(true);
+  };
+
+  const cancelEdit = () => setEditMode(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
+      queryClient.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
+      queryClient.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
+      queryClient.invalidateQueries({ queryKey: getGetFieldingStatsQueryKey(matchId) });
+      queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+    };
+    try {
+      await Promise.all([
+        new Promise<void>((resolve, reject) =>
+          updateMatch.mutate(
+            { matchId, data: { opponent: editOpponent || undefined, venue: editVenue || undefined, result: editResult || undefined } as any },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        ),
+        batting ? new Promise<void>((resolve, reject) =>
+          updateBatting.mutate(
+            { matchId, data: {
+              runs: editRuns !== "" ? Number(editRuns) : undefined,
+              ballsFaced: editBalls !== "" ? Number(editBalls) : undefined,
+              fours: editFours !== "" ? Number(editFours) : undefined,
+              sixes: editSixes !== "" ? Number(editSixes) : undefined,
+              howOut: editHowOut || undefined,
+            } as any },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        ) : Promise.resolve(),
+        bowling ? new Promise<void>((resolve, reject) =>
+          updateBowling.mutate(
+            { matchId, data: {
+              wickets: editWickets !== "" ? Number(editWickets) : undefined,
+              overs: editOvers !== "" ? Number(editOvers) : undefined,
+              runsConceded: editRunsConceded !== "" ? Number(editRunsConceded) : undefined,
+              maidens: editMaidens !== "" ? Number(editMaidens) : undefined,
+            } as any },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        ) : Promise.resolve(),
+        fielding ? new Promise<void>((resolve, reject) =>
+          updateFielding.mutate(
+            { matchId, data: {
+              catches: editCatches !== "" ? Number(editCatches) : undefined,
+              stumpings: editStumpings !== "" ? Number(editStumpings) : undefined,
+              runOuts: editRunOuts !== "" ? Number(editRunOuts) : undefined,
+              droppedCatches: editDropped !== "" ? Number(editDropped) : undefined,
+            } as any },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        ) : Promise.resolve(),
+      ]);
+      invalidate();
+      setEditMode(false);
+    } catch {
+      Alert.alert("Error", "Some changes could not be saved. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDelete = () => {
     const label = match ? `vs ${match.opponent}` : "this match";
@@ -466,20 +628,37 @@ export default function MatchDetailScreen() {
   useEffect(() => {
     if (match) {
       navigation.setOptions({
-        title: `vs ${match.opponent}`,
-        headerRight: () => (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginRight: 4 }}>
-            <TouchableOpacity onPress={handleShare} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="share-2" size={18} color={colors.foreground} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="trash-2" size={18} color="#ef4444" />
-            </TouchableOpacity>
-          </View>
-        ),
+        title: editMode ? "Editing…" : `vs ${match.opponent}`,
+        headerRight: () =>
+          editMode ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginRight: 4 }}>
+              <TouchableOpacity onPress={cancelEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ fontSize: 15, color: colors.mutedForeground, fontFamily: "Inter_500Medium" }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                {saving ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <Text style={{ fontSize: 15, color: colors.primary, fontFamily: "Inter_600SemiBold" }}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginRight: 4 }}>
+              <TouchableOpacity onPress={enterEditMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Feather name="edit-2" size={17} color={colors.foreground} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleShare} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Feather name="share-2" size={18} color={colors.foreground} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Feather name="trash-2" size={18} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
+          ),
       });
     }
-  }, [match, navigation, batting, bowling, fielding, report]);
+  }, [match, navigation, batting, bowling, fielding, report, editMode, saving]);
 
   if (matchLoading) {
     return (
@@ -533,13 +712,13 @@ export default function MatchDetailScreen() {
       {/* Batting */}
       {batting ? (
         <Card title="Batting" icon="trending-up" colors={colors}>
-          <StatRow label="Runs" value={batting.runs} colors={colors} />
-          <StatRow label="Balls Faced" value={batting.ballsFaced} colors={colors} />
+          <EditableRow label="Runs" value={batting.runs} editValue={editRuns} onChangeText={setEditRuns} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Balls Faced" value={batting.ballsFaced} editValue={editBalls} onChangeText={setEditBalls} editing={editMode} numeric colors={colors} />
           <StatRow label="Strike Rate" value={sr} colors={colors} />
-          <StatRow label="Fours (4s)" value={batting.fours} colors={colors} />
-          <StatRow label="Sixes (6s)" value={batting.sixes} colors={colors} />
+          <EditableRow label="Fours (4s)" value={batting.fours} editValue={editFours} onChangeText={setEditFours} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Sixes (6s)" value={batting.sixes} editValue={editSixes} onChangeText={setEditSixes} editing={editMode} numeric colors={colors} />
           <StatRow label="Batting Position" value={batting.battingPosition ?? undefined} colors={colors} />
-          <StatRow label="How Out" value={batting.howOut ?? undefined} colors={colors} />
+          <EditableRow label="How Out" value={batting.howOut ?? undefined} editValue={editHowOut} onChangeText={setEditHowOut} editing={editMode} colors={colors} />
           {batting.badUmpireDecision ? (
             <StatRow label="Bad Umpire Decision" value="Yes" colors={colors} />
           ) : null}
@@ -552,11 +731,11 @@ export default function MatchDetailScreen() {
       {/* Bowling */}
       {bowling ? (
         <Card title="Bowling" icon="activity" colors={colors}>
-          <StatRow label="Wickets" value={bowling.wickets} colors={colors} />
-          <StatRow label="Overs" value={overs} colors={colors} />
-          <StatRow label="Runs Conceded" value={bowling.runsConceded} colors={colors} />
+          <EditableRow label="Wickets" value={bowling.wickets} editValue={editWickets} onChangeText={setEditWickets} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Overs" value={overs} editValue={editOvers} onChangeText={setEditOvers} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Runs Conceded" value={bowling.runsConceded} editValue={editRunsConceded} onChangeText={setEditRunsConceded} editing={editMode} numeric colors={colors} />
           <StatRow label="Economy Rate" value={econ} colors={colors} />
-          <StatRow label="Maidens" value={bowling.maidens} colors={colors} />
+          <EditableRow label="Maidens" value={bowling.maidens} editValue={editMaidens} onChangeText={setEditMaidens} editing={editMode} numeric colors={colors} />
           <StatRow label="No Balls" value={bowling.noBalls} colors={colors} />
           <StatRow label="Wides" value={bowling.wides} colors={colors} />
           <StatRow label="Bowled" value={bowling.bowledWickets} colors={colors} />
@@ -573,10 +752,10 @@ export default function MatchDetailScreen() {
       {/* Fielding */}
       {fielding ? (
         <Card title="Fielding" icon="shield" colors={colors}>
-          <StatRow label="Catches" value={fielding.catches} colors={colors} />
-          <StatRow label="Dropped Catches" value={fielding.droppedCatches} colors={colors} />
-          <StatRow label="Run Outs" value={fielding.runOuts} colors={colors} />
-          <StatRow label="Stumpings" value={fielding.stumpings} colors={colors} />
+          <EditableRow label="Catches" value={fielding.catches} editValue={editCatches} onChangeText={setEditCatches} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Dropped Catches" value={fielding.droppedCatches} editValue={editDropped} onChangeText={setEditDropped} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Run Outs" value={fielding.runOuts} editValue={editRunOuts} onChangeText={setEditRunOuts} editing={editMode} numeric colors={colors} />
+          <EditableRow label="Stumpings" value={fielding.stumpings} editValue={editStumpings} onChangeText={setEditStumpings} editing={editMode} numeric colors={colors} />
           <StatRow label="Missed Stumpings" value={fielding.missedStumpings} colors={colors} />
         </Card>
       ) : null}
@@ -749,6 +928,16 @@ const styles = StyleSheet.create({
   },
   smallBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#fff" },
   editLink: { fontSize: 12, fontFamily: "Inter_400Regular", textDecorationLine: "underline" },
+  editInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    minWidth: 80,
+    textAlign: "right",
+  },
 
   // Photos
   photosScroll: { marginTop: 4 },

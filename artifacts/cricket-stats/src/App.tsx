@@ -7,6 +7,7 @@ import MatchReport from "./pages/match-report";
 import SeasonReport from "./pages/season-report";
 import Coaching from "./pages/coaching";
 import AchievementsPage from "./pages/achievements";
+import SeasonsPage from "./pages/seasons";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/achievements" component={AchievementsPage} />
       <Route path="/season-report" component={SeasonReport} />
       <Route path="/coaching" component={Coaching} />
+      <Route path="/seasons" component={SeasonsPage} />
       <Route component={NotFound} />
     </Switch>
   );

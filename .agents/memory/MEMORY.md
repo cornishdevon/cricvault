@@ -1,0 +1,1 @@
+- [CricVault architecture](cricvault-arch.md) — multi-artifact cricket stats app; web, API, and mobile share a single data layer via @workspace/api-client-react hooks

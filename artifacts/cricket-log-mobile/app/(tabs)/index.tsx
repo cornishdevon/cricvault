@@ -4,7 +4,7 @@ import {
   useListMatches,
 } from "@workspace/api-client-react";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -20,7 +20,7 @@ import { useColors } from "@/hooks/useColors";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
-const BAR_AREA_H = 120; // fixed pixel height for the bars region
+const BAR_AREA_H = 120;
 const X_LABEL_H = 22;
 const Y_LABEL_W = 30;
 
@@ -36,22 +36,18 @@ function BarChart({
   if (!data.length) return null;
 
   const maxVal = Math.max(...data.map((d) => d.value), 1);
-  // grid at 0%, 50%, 100% of maxVal
-  const gridTops = [0, BAR_AREA_H / 2, BAR_AREA_H]; // pixel positions from top
+  const gridTops = [0, BAR_AREA_H / 2, BAR_AREA_H];
 
   return (
     <View>
       <View style={{ flexDirection: "row" }}>
-        {/* Y-axis labels */}
         <View style={{ width: Y_LABEL_W, height: BAR_AREA_H, justifyContent: "space-between", alignItems: "flex-end", paddingRight: 4 }}>
           <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>{maxVal}</Text>
           <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>{Math.round(maxVal / 2)}</Text>
           <Text style={[styles.yLabel, { color: colors.mutedForeground }]}>0</Text>
         </View>
 
-        {/* Bars + grid */}
         <View style={{ flex: 1, height: BAR_AREA_H, position: "relative" }}>
-          {/* Grid lines */}
           {gridTops.map((top, i) => (
             <View
               key={i}
@@ -66,7 +62,6 @@ function BarChart({
             />
           ))}
 
-          {/* Bars */}
           <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-end", paddingBottom: 1 }}>
             {data.map((d, i) => {
               const pct = maxVal > 0 ? d.value / maxVal : 0;
@@ -94,7 +89,6 @@ function BarChart({
         </View>
       </View>
 
-      {/* X-axis labels */}
       <View style={{ flexDirection: "row", marginLeft: Y_LABEL_W, height: X_LABEL_H, marginTop: 4 }}>
         {data.map((d, i) => (
           <Text key={i} style={[styles.xLabel, { color: colors.mutedForeground, flex: 1 }]} numberOfLines={1}>
@@ -144,6 +138,198 @@ function ResultBadge({
   );
 }
 
+// ── Form Guide ─────────────────────────────────────────────────────────────────
+
+type PerMatchStat = {
+  matchId: number;
+  date: string;
+  opponent: string;
+  runs?: number | null;
+  wickets?: number | null;
+  overs?: number | null;
+  runsConceded?: number | null;
+  result?: string | null;
+};
+
+function FormGuideSection({ data, colors, onPress }: {
+  data: PerMatchStat[];
+  colors: ReturnType<typeof useColors>;
+  onPress: (id: number) => void;
+}) {
+  const last5 = data.slice(-5).reverse();
+  if (last5.length === 0) return null;
+
+  const getRunColor = (runs: number | null | undefined) => {
+    if (runs == null) return colors.border;
+    if (runs >= 50) return "#16a34a";
+    if (runs >= 25) return "#d97706";
+    return "#ef4444";
+  };
+
+  return (
+    <View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Form</Text>
+      <View style={styles.formRow}>
+        {last5.map((m) => {
+          const runs = m.runs;
+          const wkts = m.wickets;
+          const isWin = m.result?.toLowerCase().startsWith("w");
+          const isLoss = m.result?.toLowerCase().startsWith("l");
+          const dotColor = isWin ? "#16a34a" : isLoss ? "#ef4444" : colors.mutedForeground;
+
+          return (
+            <TouchableOpacity
+              key={m.matchId}
+              onPress={() => onPress(m.matchId)}
+              style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <View style={[styles.formResultDot, { backgroundColor: dotColor }]} />
+              {runs != null && (
+                <Text style={[styles.formStat, { color: getRunColor(runs) }]}>{runs}</Text>
+              )}
+              {wkts != null && (
+                <Text style={[styles.formWkts, { color: "#7c3aed" }]}>{wkts}w</Text>
+              )}
+              <Text style={[styles.formOpponent, { color: colors.mutedForeground }]} numberOfLines={1}>
+                {m.opponent.slice(0, 4)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// ── Best Performances ─────────────────────────────────────────────────────────
+
+function BestPerformancesSection({ data, colors, onPress }: {
+  data: PerMatchStat[];
+  colors: ReturnType<typeof useColors>;
+  onPress: (id: number) => void;
+}) {
+  const bestBat = useMemo(() => {
+    const innings = data.filter((m) => m.runs != null);
+    return innings.reduce<PerMatchStat | null>((best, m) => {
+      if (!best || (m.runs ?? 0) > (best.runs ?? 0)) return m;
+      return best;
+    }, null);
+  }, [data]);
+
+  const bestBowl = useMemo(() => {
+    const spells = data.filter((m) => m.wickets != null);
+    return spells.reduce<PerMatchStat | null>((best, m) => {
+      if (!best) return m;
+      const w = m.wickets ?? 0;
+      const bw = best.wickets ?? 0;
+      if (w > bw) return m;
+      if (w === bw && (m.runsConceded ?? 999) < (best.runsConceded ?? 999)) return m;
+      return best;
+    }, null);
+  }, [data]);
+
+  if (!bestBat && !bestBowl) return null;
+
+  return (
+    <View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Best Performances</Text>
+      <View style={styles.bestRow}>
+        {bestBat && (
+          <TouchableOpacity
+            onPress={() => onPress(bestBat.matchId)}
+            style={[styles.bestCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Text style={[styles.bestIcon]}>🏏</Text>
+            <Text style={[styles.bestValue, { color: colors.primary }]}>{bestBat.runs}</Text>
+            <Text style={[styles.bestLabel, { color: colors.foreground }]}>Top Score</Text>
+            <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+              vs {bestBat.opponent}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {bestBowl && (
+          <TouchableOpacity
+            onPress={() => onPress(bestBowl.matchId)}
+            style={[styles.bestCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          >
+            <Text style={[styles.bestIcon]}>🎳</Text>
+            <Text style={[styles.bestValue, { color: "#7c3aed" }]}>
+              {bestBowl.wickets}/{bestBowl.runsConceded ?? 0}
+            </Text>
+            <Text style={[styles.bestLabel, { color: colors.foreground }]}>Best Bowling</Text>
+            <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+              vs {bestBowl.opponent}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// ── Head-to-Head ──────────────────────────────────────────────────────────────
+
+function HeadToHeadSection({ data, colors, onPress }: {
+  data: PerMatchStat[];
+  colors: ReturnType<typeof useColors>;
+  onPress: (id: number) => void;
+}) {
+  const records = useMemo(() => {
+    const map = new Map<string, { played: number; wins: number; losses: number; avgRuns: number | null; lastMatchId: number }>();
+    for (const m of data) {
+      if (!map.has(m.opponent)) map.set(m.opponent, { played: 0, wins: 0, losses: 0, avgRuns: null, lastMatchId: m.matchId });
+      const rec = map.get(m.opponent)!;
+      rec.played++;
+      rec.lastMatchId = m.matchId;
+      if (m.result === "Win") rec.wins++;
+      else if (m.result === "Loss") rec.losses++;
+    }
+    for (const [opp, rec] of map.entries()) {
+      const innings = data.filter((m) => m.opponent === opp && m.runs != null);
+      rec.avgRuns = innings.length > 0
+        ? Math.round(innings.reduce((s, m) => s + (m.runs ?? 0), 0) / innings.length)
+        : null;
+    }
+    return Array.from(map.entries())
+      .sort(([, a], [, b]) => b.played - a.played)
+      .slice(0, 6);
+  }, [data]);
+
+  if (records.length === 0) return null;
+
+  return (
+    <View>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>vs Opponents</Text>
+      <View style={[styles.h2hCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {/* Header */}
+        <View style={[styles.h2hRow, styles.h2hHeader, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.h2hOpponent, styles.h2hHeaderText, { color: colors.mutedForeground }]}>Opponent</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>P</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>W</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>L</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>Avg</Text>
+        </View>
+        {records.map(([opp, rec], i) => (
+          <TouchableOpacity
+            key={opp}
+            onPress={() => onPress(rec.lastMatchId)}
+            style={[
+              styles.h2hRow,
+              i < records.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.h2hOpponent, { color: colors.foreground }]} numberOfLines={1}>{opp}</Text>
+            <Text style={[styles.h2hCell, { color: colors.mutedForeground }]}>{rec.played}</Text>
+            <Text style={[styles.h2hCell, { color: "#16a34a" }]}>{rec.wins}</Text>
+            <Text style={[styles.h2hCell, { color: "#ef4444" }]}>{rec.losses}</Text>
+            <Text style={[styles.h2hCell, { color: colors.foreground }]}>{rec.avgRuns ?? "—"}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function DashboardScreen() {
@@ -181,7 +367,6 @@ export default function DashboardScreen() {
       ? (summary.batting.totalRuns / summary.batting.innings).toFixed(1)
       : "—";
 
-  // Last 12 matches for charts
   const chartMatches = (perMatch ?? []).slice(-12);
 
   const runsData = chartMatches.map((m) => ({
@@ -195,6 +380,9 @@ export default function DashboardScreen() {
   }));
 
   const hasChartData = chartMatches.length > 0;
+  const allPerMatch = perMatch ?? [];
+
+  const handleMatchPress = (id: number) => router.push(`/match/${id}`);
 
   return (
     <ScrollView
@@ -274,6 +462,16 @@ export default function DashboardScreen() {
             />
           </View>
 
+          {/* ── Form Guide ── */}
+          {allPerMatch.length > 0 && (
+            <FormGuideSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
+          )}
+
+          {/* ── Best Performances ── */}
+          {allPerMatch.length > 0 && (
+            <BestPerformancesSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
+          )}
+
           {/* ── Charts ── */}
           {hasChartData && (
             <>
@@ -291,6 +489,11 @@ export default function DashboardScreen() {
                 <BarChart data={wicketsData} barColor="#8b5cf6" colors={colors} />
               </View>
             </>
+          )}
+
+          {/* ── Head-to-Head ── */}
+          {allPerMatch.length > 0 && (
+            <HeadToHeadSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
           )}
         </>
       ) : null}
@@ -370,70 +573,118 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 14,
   },
-  chartOuter: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  yAxis: {
-    width: Y_LABEL_W,
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingRight: 4,
-    paddingBottom: 2,
-  },
   yLabel: {
     fontSize: 10,
     fontFamily: "Inter_400Regular",
     lineHeight: 12,
-  },
-  barsArea: {
-    flex: 1,
-    position: "relative",
-  },
-  gridLine: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  barsRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    paddingBottom: 2,
-  },
-  barCol: {
-    flex: 1,
-    alignItems: "center",
-    height: "100%",
-    justifyContent: "flex-end",
-    paddingHorizontal: 2,
-  },
-  barTrack: {
-    flex: 1,
-    width: "70%",
-    justifyContent: "flex-end",
-  },
-  bar: {
-    width: "100%",
-    borderRadius: 4,
-    minHeight: 2,
-  },
-  barValueLabel: {
-    fontSize: 9,
-    fontFamily: "Inter_700Bold",
-    position: "absolute",
-    top: 0,
-  },
-  xLabels: {
-    flexDirection: "row",
-    marginTop: 4,
   },
   xLabel: {
     flex: 1,
     textAlign: "center",
     fontSize: 9,
     fontFamily: "Inter_400Regular",
+  },
+
+  // Form Guide
+  formRow: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  formCard: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    gap: 3,
+  },
+  formResultDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 2,
+  },
+  formStat: {
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+  },
+  formWkts: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+  },
+  formOpponent: {
+    fontSize: 9,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
+
+  // Best Performances
+  bestRow: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  bestCard: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: "center",
+    gap: 3,
+  },
+  bestIcon: {
+    fontSize: 22,
+  },
+  bestValue: {
+    fontSize: 22,
+    fontFamily: "Inter_700Bold",
+    marginTop: 2,
+  },
+  bestLabel: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    textAlign: "center",
+  },
+  bestSub: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
+
+  // Head-to-Head
+  h2hCard: {
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  h2hRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  h2hHeader: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  h2hHeaderText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  h2hOpponent: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+  },
+  h2hCell: {
+    width: 36,
+    textAlign: "center",
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
   },
 
   // Recent matches

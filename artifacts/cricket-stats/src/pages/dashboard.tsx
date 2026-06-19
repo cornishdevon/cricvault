@@ -11,6 +11,7 @@ import { EncouragementBanner } from "@/components/encouragement-banner";
 import { FormGuide } from "@/components/form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
+import { MilestonesTimeline } from "@/components/milestones-timeline";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -751,6 +752,13 @@ export default function Dashboard() {
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
         <HeadToHead data={filteredData} />
+      ) : null}
+
+      {/* Career milestones — always career-wide */}
+      {chartLoading ? (
+        <Skeleton className="h-64 rounded-xl" />
+      ) : (perMatch && perMatch.length > 0) ? (
+        <MilestonesTimeline data={perMatch} />
       ) : null}
 
       {/* Recent matches */}
