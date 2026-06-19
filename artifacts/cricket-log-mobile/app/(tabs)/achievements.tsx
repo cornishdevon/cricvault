@@ -215,18 +215,18 @@ export default function AchievementsScreen() {
 
             {/* Positive badges */}
             <View style={styles.grid}>
-              {positive.filter((b) => b.earned || !/^(oneShort|triggered|drs|duckHunting)_\d+$/.test(b.id)).map((badge) => (
+              {positive.filter((b) => b.earned).map((badge) => (
                 <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
               ))}
             </View>
 
-            {negative.length > 0 && (
+            {negative.some((b) => b.earned) && (
               <>
                 <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
                   Unlucky badges
                 </Text>
                 <View style={styles.grid}>
-                  {negative.filter((b) => b.earned || !/^duckHunting_\d+$/.test(b.id)).map((badge) => (
+                  {negative.filter((b) => b.earned).map((badge) => (
                     <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
                   ))}
                 </View>
