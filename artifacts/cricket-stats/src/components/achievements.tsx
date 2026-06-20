@@ -447,6 +447,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Magician",
       description: "Hat trick in a match",
       icon: "🪄",
+      imageKey: "hatTrick",
       earned: !!magicianMatch,
       matchId: magicianMatch?.matchId,
       opponent: magicianMatch?.opponent,
