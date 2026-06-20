@@ -511,6 +511,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Boundary Getter",
       description: "10+ fours in one innings",
       icon: "🏅",
+      imageKey: "boundaryGetter",
       earned: !!boundaryMatch,
       matchId: boundaryMatch?.matchId,
       opponent: boundaryMatch?.opponent,
