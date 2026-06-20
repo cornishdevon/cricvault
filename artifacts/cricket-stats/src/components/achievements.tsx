@@ -841,17 +841,19 @@ function BadgeCard({ badge, onClick }: { badge: Badge; onClick: () => void }) {
       }`}
       onClick={onClick}
     >
-      {badge.earned && badge.imageKey ? (
-        <img
-          src={`/badges/${badge.imageKey}.png`}
-          alt={badge.label}
-          className="w-10 h-10 object-contain rounded-full"
-        />
-      ) : (
-        <span className="text-2xl" role="img" aria-label={badge.label}>
-          {badge.earned ? badge.icon : "🔒"}
-        </span>
-      )}
+      <div className="w-10 h-10 flex items-center justify-center shrink-0">
+        {badge.earned && badge.imageKey ? (
+          <img
+            src={`/badges/${badge.imageKey}.png`}
+            alt={badge.label}
+            className="w-10 h-10 object-contain rounded-full"
+          />
+        ) : (
+          <span className="text-2xl leading-none" role="img" aria-label={badge.label}>
+            {badge.earned ? badge.icon : "🔒"}
+          </span>
+        )}
+      </div>
       <div>
         <p className={`font-semibold text-xs leading-tight ${badge.earned ? (badge.isNegative ? "text-destructive" : "text-foreground") : "text-zinc-400"}`}>
           {badge.label}

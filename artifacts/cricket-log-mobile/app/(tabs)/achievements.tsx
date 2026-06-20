@@ -57,13 +57,15 @@ function BadgeTile({
         { backgroundColor: bgColor, borderColor, opacity: pressed ? 0.75 : 1 },
       ]}
     >
-      {isLocked ? (
-        <Text style={styles.icon}>🔒</Text>
-      ) : imageSource ? (
-        <Image source={imageSource} style={styles.badgeImage} resizeMode="contain" />
-      ) : (
-        <Text style={styles.icon}>{badge.icon}</Text>
-      )}
+      <View style={styles.iconWrap}>
+        {isLocked ? (
+          <Text style={styles.icon}>🔒</Text>
+        ) : imageSource ? (
+          <Image source={imageSource} style={styles.badgeImage} resizeMode="contain" />
+        ) : (
+          <Text style={styles.icon}>{badge.icon}</Text>
+        )}
+      </View>
       <Text style={[styles.tileLabel, { color: labelColor }]} numberOfLines={2}>
         {badge.label}
       </Text>
@@ -302,7 +304,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     gap: 4,
   },
-  icon:       { fontSize: 24, textAlign: "center" },
+  iconWrap:   { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  icon:       { fontSize: 28, textAlign: "center", lineHeight: 36 },
   badgeImage: { width: 44, height: 44, borderRadius: 22 },
   tileLabel:  { fontSize: 10, fontWeight: "700", textAlign: "center", lineHeight: 13 },
   tileDesc:   { fontSize: 9,  textAlign: "center", lineHeight: 12 },
