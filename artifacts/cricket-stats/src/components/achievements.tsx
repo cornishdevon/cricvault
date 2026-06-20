@@ -553,6 +553,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Player of the Match",
       description: "Awarded Player of the Match",
       icon: "⭐",
+      imageKey: "playerOfTheMatch",
       earned: potmEarned,
       matchId: potmFirst?.matchId,
       opponent: potmFirst?.opponent,

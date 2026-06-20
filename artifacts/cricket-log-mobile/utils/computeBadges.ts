@@ -229,7 +229,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "buckethands", label: "Bucket Hands", description: "3 catches in a single match", icon: "🧤", earned: bucketHandsEarned },
     { id: "safegloves",  label: "Safe Gloves",  description: "5 career stumpings as keeper", icon: "🥅", earned: careerStumpings >= 5, detail: careerStumpings >= 5 ? `${careerStumpings} stumpings` : undefined },
 
-    { id: "potm",        label: "Player of the Match", description: "Awarded POTM",                          icon: "⭐", earned: potmEarned, detail: potmMatches.length > 1 ? `${potmMatches.length}× POTM` : undefined },
+    { id: "potm",        label: "Player of the Match", description: "Awarded POTM",                          icon: "⭐", imageKey: "playerOfTheMatch", earned: potmEarned, detail: potmMatches.length > 1 ? `${potmMatches.length}× POTM` : undefined },
     { id: "allRounder",  label: "All Rounder",         description: "30 runs & 3 wkts in one game",         icon: "🌟", earned: allRounderEarned },
     { id: "matchWinner", label: "Match Winner",         description: "8 wins in any 10-match window",        icon: "🥇", earned: matchWinnerEarned, detail: matchWinnerDetail || undefined },
 
