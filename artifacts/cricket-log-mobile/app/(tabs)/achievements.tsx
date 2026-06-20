@@ -47,8 +47,8 @@ function BadgeTile({
   onPress: () => void;
 }) {
   const isLocked = !badge.earned;
-  const bgColor     = isLocked ? "#3f3f46" : badge.isNegative ? "#3d1515" : colors.card;
-  const borderColor = isLocked ? "#52525b" : badge.isNegative ? "#7f1d1d66" : colors.primary + "50";
+  const bgColor     = isLocked ? "#3f3f46" : badge.isNegative ? "#e4e4e7" : colors.card;
+  const borderColor = isLocked ? "#52525b" : badge.isNegative ? "#a1a1aa" : colors.primary + "50";
   const labelColor  = isLocked ? "#a1a1aa" : badge.isNegative ? "#f87171" : colors.foreground;
   const descColor   = isLocked ? "#71717a" : colors.mutedForeground;
   const detailColor = badge.isNegative ? "#f87171" : colors.primary;

@@ -843,7 +843,7 @@ function BadgeCard({ badge, onClick }: { badge: Badge; onClick: () => void }) {
       className={`rounded-xl border p-3 flex flex-col items-center text-center gap-1.5 transition-all duration-200 h-full cursor-pointer ${
         badge.earned
           ? badge.isNegative
-            ? "bg-destructive/5 border-destructive/30 shadow-sm hover:border-destructive/60 hover:shadow-md"
+            ? "bg-zinc-100 border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md"
             : "bg-card border-primary/30 shadow-sm hover:border-primary/60 hover:shadow-md"
           : "bg-zinc-800 border-zinc-700 hover:border-zinc-500"
       }`}
