@@ -408,14 +408,19 @@ router.get("/stats/per-match", async (req, res) => {
         ballsFaced: batting ? batting.ballsFaced : null,
         strikeRate: batting ? Number(batting.strikeRate) : null,
         battingPosition: batting ? batting.battingPosition : null,
-        wickets: bowling ? bowling.wickets : null,
-        runsConceded: bowling ? bowling.runsConceded : null,
-        economyRate: bowling ? Number(bowling.economyRate) : null,
-        overs: bowling ? Number(bowling.overs) : null,
         fours: batting ? batting.fours : null,
         sixes: batting ? batting.sixes : null,
         howOut: batting ? batting.howOut ?? null : null,
         badUmpireDecision: batting ? batting.badUmpireDecision ?? null : null,
+        ballsToFifty: batting ? batting.ballsToFifty ?? null : null,
+        ballsToHundred: batting ? batting.ballsToHundred ?? null : null,
+        wickets: bowling ? bowling.wickets : null,
+        runsConceded: bowling ? bowling.runsConceded : null,
+        economyRate: bowling ? Number(bowling.economyRate) : null,
+        overs: bowling ? Number(bowling.overs) : null,
+        maidens: bowling ? bowling.maidens : null,
+        noBalls: bowling ? bowling.noBalls : null,
+        wides: bowling ? bowling.wides : null,
         hatTrick: bowling ? !!bowling.hatTrick : null,
         bowledWickets: bowling ? bowling.bowledWickets : null,
         lbwWickets: bowling ? bowling.lbwWickets : null,
@@ -424,6 +429,7 @@ router.get("/stats/per-match", async (req, res) => {
         stumpings: fielding ? fielding.stumpings : null,
         droppedCatches: fielding ? fielding.droppedCatches : null,
         missedStumpings: fielding ? fielding.missedStumpings : null,
+        runOuts: fielding ? fielding.runOuts : null,
         result: m.result ?? null,
         playerOfTheMatch: m.playerOfTheMatch ?? false,
       };
@@ -457,12 +463,41 @@ router.get("/stats/summary", async (req, res) => {
       ? parseFloat(((totalRuns / totalBallsFaced) * 100).toFixed(2))
       : 0;
 
+  const dismissals = battingRows.filter(
+    (r) => r.howOut && r.howOut.toLowerCase() !== "not out"
+  );
+  const notOuts = battingRows.filter(
+    (r) => !r.howOut || r.howOut.toLowerCase() === "not out"
+  ).length;
+  const battingAverage =
+    dismissals.length > 0
+      ? parseFloat((totalRuns / dismissals.length).toFixed(2))
+      : totalRuns > 0
+      ? totalRuns
+      : 0;
+  const centuries = battingRows.filter((r) => r.runs >= 100).length;
+  const fifties = battingRows.filter((r) => r.runs >= 50 && r.runs < 100).length;
+  const ducks = battingRows.filter(
+    (r) => r.runs === 0 && r.howOut && r.howOut.toLowerCase() !== "not out"
+  ).length;
+  const goldenDucks = battingRows.filter(
+    (r) =>
+      r.runs === 0 &&
+      r.ballsFaced <= 1 &&
+      r.howOut &&
+      r.howOut.toLowerCase() !== "not out"
+  ).length;
+
   const bowlingInnings = bowlingRows.length;
   const totalWickets = bowlingRows.reduce((s, r) => s + r.wickets, 0);
   const totalOvers = bowlingRows.reduce((s, r) => s + Number(r.overs), 0);
   const totalRunsConceded = bowlingRows.reduce((s, r) => s + r.runsConceded, 0);
   const averageEconomyRate =
     totalOvers > 0 ? parseFloat((totalRunsConceded / totalOvers).toFixed(2)) : 0;
+  const bowlingAverage =
+    totalWickets > 0
+      ? parseFloat((totalRunsConceded / totalWickets).toFixed(2))
+      : 0;
   const bestBowling = bowlingRows.reduce(
     (best, r) =>
       r.wickets > best.wickets ||
@@ -475,30 +510,53 @@ router.get("/stats/summary", async (req, res) => {
     bowlingRows.length > 0
       ? `${bestBowling.wickets}/${bestBowling.runs}`
       : "0/0";
+  const fiveWicketHauls = bowlingRows.filter((r) => r.wickets >= 5).length;
+  const fourWicketHauls = bowlingRows.filter((r) => r.wickets === 4).length;
+  const totalMaidens = bowlingRows.reduce((s, r) => s + (r.maidens ?? 0), 0);
+  const totalNoBalls = bowlingRows.reduce((s, r) => s + (r.noBalls ?? 0), 0);
+  const totalWides = bowlingRows.reduce((s, r) => s + (r.wides ?? 0), 0);
+  const hatTricks = bowlingRows.filter((r) => r.hatTrick).length;
 
   const totalCatches = fieldingRows.reduce((s, r) => s + r.catches, 0);
   const totalDroppedCatches = fieldingRows.reduce((s, r) => s + r.droppedCatches, 0);
   const totalRunOuts = fieldingRows.reduce((s, r) => s + r.runOuts, 0);
   const totalStumpings = fieldingRows.reduce((s, r) => s + r.stumpings, 0);
 
+  const allMatches = await db.select().from(matchesTable);
+  const potmCount = allMatches.filter((m) => m.playerOfTheMatch).length;
+
   res.json({
     totalMatches,
+    potmCount,
     batting: {
       totalRuns,
       totalBallsFaced,
       averageStrikeRate,
+      battingAverage,
       highScore,
       totalFours,
       totalSixes,
       innings: battingInnings,
+      centuries,
+      fifties,
+      ducks,
+      goldenDucks,
+      notOuts,
     },
     bowling: {
       totalWickets,
       totalOvers,
       totalRunsConceded,
       averageEconomyRate,
+      bowlingAverage,
       bestFigures,
       innings: bowlingInnings,
+      fiveWicketHauls,
+      fourWicketHauls,
+      totalMaidens,
+      totalNoBalls,
+      totalWides,
+      hatTricks,
     },
     fielding: {
       totalCatches,

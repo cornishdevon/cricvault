@@ -1,5 +1,7 @@
 import { useGetPerMatchStats } from "@workspace/api-client-react";
 import { useMemo } from "react";
+import { RollingAverageChart } from "@/components/rolling-average-chart";
+import { SeasonComparison } from "@/components/season-comparison";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import {
@@ -517,6 +519,8 @@ export default function AnalysisPage() {
 
       <DismissalBreakdown data={data} />
       <MatchTypeComparison data={data} />
+      <RollingAverageChart data={data} />
+      <SeasonComparison data={data} />
       <VenueStats data={data} />
       <BattingPositionBreakdown data={data} />
       <PlayingForTracker data={data} />

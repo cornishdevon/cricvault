@@ -522,9 +522,29 @@ export default function DashboardScreen() {
   const recentMatches = matches?.slice(0, 5) ?? [];
 
   const battingAvg =
-    summary && summary.batting.innings > 0
+    summary && (summary.batting as any).battingAverage != null
+      ? Number((summary.batting as any).battingAverage).toFixed(1)
+      : summary && summary.batting.innings > 0
       ? (summary.batting.totalRuns / summary.batting.innings).toFixed(1)
       : "—";
+
+  const centuries = (summary?.batting as any)?.centuries ?? 0;
+  const fifties = (summary?.batting as any)?.fifties ?? 0;
+  const ducks = (summary?.batting as any)?.ducks ?? 0;
+  const notOuts = (summary?.batting as any)?.notOuts ?? 0;
+  const fiveWicketHauls = (summary?.bowling as any)?.fiveWicketHauls ?? 0;
+  const totalMaidens = (summary?.bowling as any)?.totalMaidens ?? 0;
+  const totalNoBalls = (summary?.bowling as any)?.totalNoBalls ?? 0;
+  const totalWides = (summary?.bowling as any)?.totalWides ?? 0;
+  const potmCount = (summary as any)?.potmCount ?? 0;
+  const bowlingAverage = (summary?.bowling as any)?.bowlingAverage ?? 0;
+
+  const RUN_MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
+  const WICKET_MILESTONES = [10, 25, 50, 100, 200];
+  const nextRunTarget = RUN_MILESTONES.find((m) => m > (summary?.batting.totalRuns ?? 0)) ?? 5000;
+  const nextWicketTarget = WICKET_MILESTONES.find((m) => m > (summary?.bowling.totalWickets ?? 0)) ?? 200;
+  const runsPct = Math.min(100, Math.round(((summary?.batting.totalRuns ?? 0) / nextRunTarget) * 100));
+  const wicketsPct = Math.min(100, Math.round(((summary?.bowling.totalWickets ?? 0) / nextWicketTarget) * 100));
 
   const chartMatches = (perMatch ?? []).slice(-12);
 
@@ -614,14 +634,25 @@ export default function DashboardScreen() {
               value={summary.batting.averageStrikeRate.toFixed(1)}
               colors={colors}
             />
+            <StatCard label="100s" value={centuries} colors={colors} />
+            <StatCard label="50s" value={fifties} colors={colors} />
             <StatCard label="Fours" value={summary.batting.totalFours} colors={colors} />
             <StatCard label="Sixes" value={summary.batting.totalSixes} colors={colors} />
+            <StatCard label="Not Outs" value={notOuts} colors={colors} />
+            <StatCard label="Ducks" value={ducks} colors={colors} />
+            <StatCard label="POTM" value={potmCount} colors={colors} />
+            <StatCard label="Innings" value={summary.batting.innings} colors={colors} />
           </View>
 
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Bowling</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Wickets" value={summary.bowling.totalWickets} colors={colors} />
             <StatCard label="Best" value={summary.bowling.bestFigures} colors={colors} />
+            <StatCard
+              label="Average"
+              value={bowlingAverage > 0 ? Number(bowlingAverage).toFixed(1) : "—"}
+              colors={colors}
+            />
             <StatCard
               label="Economy"
               value={summary.bowling.averageEconomyRate.toFixed(2)}
@@ -632,6 +663,34 @@ export default function DashboardScreen() {
               value={summary.bowling.totalOvers.toFixed(1)}
               colors={colors}
             />
+            <StatCard label="Maidens" value={totalMaidens} colors={colors} />
+            <StatCard label="5-Wkt Hauls" value={fiveWicketHauls} colors={colors} />
+            <StatCard label="No Balls" value={totalNoBalls} colors={colors} />
+            <StatCard label="Wides" value={totalWides} colors={colors} />
+          </View>
+
+          {/* ── Milestone Progress ── */}
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🎯 Milestones</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.milestoneLabel, { color: colors.foreground }]}>
+              Runs — {summary.batting.totalRuns} / {nextRunTarget}
+            </Text>
+            <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+              <View style={[styles.progressFill, { width: `${runsPct}%` as any, backgroundColor: colors.primary }]} />
+            </View>
+            <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
+              {nextRunTarget - summary.batting.totalRuns} runs to next milestone
+            </Text>
+            <View style={styles.milestoneSpacer} />
+            <Text style={[styles.milestoneLabel, { color: colors.foreground }]}>
+              Wickets — {summary.bowling.totalWickets} / {nextWicketTarget}
+            </Text>
+            <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+              <View style={[styles.progressFill, { width: `${wicketsPct}%` as any, backgroundColor: "#3b82f6" }]} />
+            </View>
+            <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
+              {nextWicketTarget - summary.bowling.totalWickets} wickets to next milestone
+            </Text>
           </View>
 
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Fielding</Text>
@@ -974,6 +1033,37 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_600SemiBold",
     textAlign: "right",
+  },
+
+  // Milestone progress
+  card: {
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 8,
+  },
+  milestoneLabel: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 6,
+  },
+  milestoneSub: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    marginTop: 4,
+  },
+  milestoneSpacer: {
+    height: 14,
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: 8,
+    borderRadius: 4,
   },
 
   // Match type table

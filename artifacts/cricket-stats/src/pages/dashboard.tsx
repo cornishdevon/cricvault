@@ -15,6 +15,9 @@ import { MilestonesTimeline } from "@/components/milestones-timeline";
 import { CareerRating } from "@/components/career-rating";
 import { SeasonTargets } from "@/components/season-targets";
 import { ShareCard } from "@/components/share-card";
+import { MilestoneTracker } from "@/components/milestone-tracker";
+import { ExtendedBattingStats } from "@/components/extended-batting-stats";
+import { ExtendedBowlingStats } from "@/components/extended-bowling-stats";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -716,6 +719,19 @@ export default function Dashboard() {
           </Card>
         </div>
         </div>
+      )}
+
+      {/* Extended batting & bowling breakdown */}
+      {!summaryLoading && summary?.batting && (
+        <ExtendedBattingStats batting={summary.batting as any} potmCount={summary.potmCount ?? 0} />
+      )}
+      {!summaryLoading && summary?.bowling && (
+        <ExtendedBowlingStats bowling={summary.bowling as any} />
+      )}
+
+      {/* Milestone tracker */}
+      {!summaryLoading && summary && (
+        <MilestoneTracker summary={summary as any} />
       )}
 
       {/* Career rating */}
