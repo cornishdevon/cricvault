@@ -180,7 +180,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const badges: Badge[] = [
     { id: "debut",     label: "Debut",               description: "First match logged",            icon: "🎖️", imageKey: "debut", imageScale: 1.4, earned: sorted.length >= 1 },
     { id: "smellGrass", label: "Smell of Cut Grass", description: "10 matches played",             icon: "🌿", earned: sorted.length >= 10, detail: sorted.length >= 10 ? `${sorted.length} matches` : undefined },
-    { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
+    { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", imageKey: "newSeason", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 
     { id: "first50",       label: "Half-Century",    description: "50–99 runs in an innings",       icon: "🏏", earned: !!first50,  detail: first50  ? `${first50.runs} vs ${first50.opponent}` : undefined, shareText: first50 ? `🏏 Half-Century\n${first50.runs} runs vs ${first50.opponent}\n${fmtDate(first50.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", imageKey: "century", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined, shareText: first100 ? `💯 Century\n${first100.runs} runs vs ${first100.opponent}\n${fmtDate(first100.date)}\n\nLogged on CricVault 🏏` : undefined },

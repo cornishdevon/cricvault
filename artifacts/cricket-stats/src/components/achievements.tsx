@@ -270,6 +270,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Welcome to the New Season",
       description: "First stats logged in a brand new season",
       icon: "🌱",
+      imageKey: "newSeason",
       earned: newSeasonEarned,
       detail: newSeasonYear ? `${newSeasonYear} season` : undefined,
     },
