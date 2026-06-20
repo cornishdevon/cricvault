@@ -35,6 +35,7 @@ type Badge = {
   description: string;
   icon: string;
   imageKey?: string;
+  imageScale?: number;
   earned: boolean;
   matchId?: number;
   opponent?: string;
@@ -251,6 +252,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       description: "First match logged in CricVault",
       icon: "🎖️",
       imageKey: "debut",
+      imageScale: 1.4,
       earned: debutEarned,
       matchId: debutMatch?.matchId,
       opponent: debutMatch?.opponent,
@@ -850,6 +852,7 @@ function BadgeCard({ badge, onClick }: { badge: Badge; onClick: () => void }) {
             src={`/badges/${badge.imageKey}.png`}
             alt={badge.label}
             className="w-10 h-10 object-contain rounded-full"
+            style={badge.imageScale && badge.imageScale !== 1 ? { transform: `scale(${badge.imageScale})` } : undefined}
           />
         ) : (
           <span className="text-2xl leading-none" role="img" aria-label={badge.label}>

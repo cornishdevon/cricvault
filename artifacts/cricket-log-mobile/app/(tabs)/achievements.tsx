@@ -64,7 +64,11 @@ function BadgeTile({
         {isLocked ? (
           <Text style={styles.icon}>🔒</Text>
         ) : imageSource ? (
-          <Image source={imageSource} style={styles.badgeImage} resizeMode="contain" />
+          <Image
+            source={imageSource}
+            style={[styles.badgeImage, badge.imageScale && badge.imageScale !== 1 ? { transform: [{ scale: badge.imageScale }] } : undefined]}
+            resizeMode="contain"
+          />
         ) : (
           <Text style={styles.icon}>{badge.icon}</Text>
         )}
