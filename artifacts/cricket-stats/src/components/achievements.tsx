@@ -373,6 +373,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Doff Your Helmet",
       description: "3 centuries in your career",
       icon: "⛑️",
+      imageKey: "doffYourHelmet",
       earned: careerHundreds.length >= 3,
       detail: careerHundreds.length >= 3 ? `${careerHundreds.length} hundreds` : undefined,
     },
