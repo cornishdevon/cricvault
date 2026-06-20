@@ -19,13 +19,14 @@ import { useColors } from "@/hooks/useColors";
 import { computeBadges, type PerMatchStat, type Badge } from "@/utils/computeBadges";
 
 const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
-  "pinch-hitter": require("@/assets/badges/pinch-hitter.png"),
-  "century":      require("@/assets/badges/century.png"),
-  "goldenDuck":   require("@/assets/badges/goldenDuck.png"),
-  "150club":      require("@/assets/badges/150club.png"),
+  "pinch-hitter":  require("@/assets/badges/pinch-hitter.png"),
+  "century":       require("@/assets/badges/century.png"),
+  "goldenDuck":    require("@/assets/badges/goldenDuck.png"),
+  "150club":       require("@/assets/badges/150club.png"),
   "personalBest":  require("@/assets/badges/personalBest.png"),
   "billyBigPads":  require("@/assets/badges/billyBigPads.png"),
   "fiveFor":       require("@/assets/badges/fiveFor.png"),
+  "garden-gate":   require("@/assets/badges/garden-gate.png"),
 };
 
 function BadgeTile({

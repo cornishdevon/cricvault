@@ -631,15 +631,21 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined,
       isNegative: true,
     },
-    {
-      id: "gardenGate",
-      label: "Garden Gate",
-      description: "Out bowled 5 times",
+    // Garden Gate — bowled through the gate — tiered
+    ...[1, 3, 5, 10, 20].map((milestone) => ({
+      id: `gardenGate_${milestone}`,
+      label: milestone === 1 ? "Garden Gate" : `Garden Gate ×${milestone}`,
+      description: milestone === 1
+        ? "Bowled through the gate — ball beats bat and pad"
+        : `Bowled through the gate ${milestone} times`,
       icon: "🚪",
-      earned: bowledOuts >= 5,
-      detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined,
-      isNegative: true,
-    },
+      imageKey: "garden-gate",
+      earned: bowledOuts >= milestone,
+      detail: bowledOuts >= milestone
+        ? bowledOuts > milestone ? `${bowledOuts}× bowled total` : `Bowled ${bowledOuts}×`
+        : undefined,
+      isNegative: true as const,
+    })),
     {
       id: "catchingPractice",
       label: "Catching Practice",

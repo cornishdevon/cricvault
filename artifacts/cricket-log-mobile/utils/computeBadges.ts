@@ -276,7 +276,22 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     })),
 
     { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", imageKey: "billyBigPads", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
-    { id: "gardenGate",      label: "Garden Gate",      description: "Out bowled 5 times",         icon: "🚪", earned: bowledOuts >= 5, detail: bowledOuts >= 5 ? `${bowledOuts}× bowled` : undefined, isNegative: true },
+
+    // Garden Gate — bowled through the gate (bat & pad) — tiered
+    ...[1, 3, 5, 10, 20].map((milestone) => ({
+      id: `gardenGate_${milestone}`,
+      label: milestone === 1 ? "Garden Gate" : `Garden Gate ×${milestone}`,
+      description: milestone === 1
+        ? "Bowled through the gate — ball beats bat and pad"
+        : `Bowled through the gate ${milestone} times`,
+      icon: "🚪",
+      imageKey: "garden-gate",
+      earned: bowledOuts >= milestone,
+      detail: bowledOuts >= milestone
+        ? bowledOuts > milestone ? `${bowledOuts}× bowled total` : `Bowled ${bowledOuts}×`
+        : undefined,
+      isNegative: true as const,
+    })),
     { id: "catchingPractice", label: "Catching Practice", description: "Out caught 10 times",    icon: "🙈", earned: caughtOuts >= 10, detail: caughtOuts >= 10 ? `${caughtOuts}× caught` : undefined, isNegative: true },
     { id: "keepRunning",     label: "Keep on Running",  description: "Run out 3 times",           icon: "🏃", earned: runOutOuts >= 3, detail: runOutOuts >= 3 ? `${runOutOuts}× run out` : undefined, isNegative: true },
     { id: "butterFingers",   label: "Butter Fingers",   description: "Dropped a catch in the field", icon: "🧈", earned: careerDropped > 0, detail: careerDropped > 0 ? `${careerDropped} dropped` : undefined, isNegative: true },
