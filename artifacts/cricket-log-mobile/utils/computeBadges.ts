@@ -177,7 +177,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const drsFirst   = drsMatches[0];
 
   const badges: Badge[] = [
-    { id: "debut",     label: "Debut",               description: "First match logged",            icon: "🎖️", earned: sorted.length >= 1 },
+    { id: "debut",     label: "Debut",               description: "First match logged",            icon: "🎖️", imageKey: "debut", earned: sorted.length >= 1 },
     { id: "smellGrass", label: "Smell of Cut Grass", description: "10 matches played",             icon: "🌿", earned: sorted.length >= 10, detail: sorted.length >= 10 ? `${sorted.length} matches` : undefined },
     { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 

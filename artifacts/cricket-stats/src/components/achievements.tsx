@@ -250,6 +250,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Debut",
       description: "First match logged in CricVault",
       icon: "🎖️",
+      imageKey: "debut",
       earned: debutEarned,
       matchId: debutMatch?.matchId,
       opponent: debutMatch?.opponent,
