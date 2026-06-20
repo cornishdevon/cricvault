@@ -255,6 +255,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
         ? "Would have referred a not-out decision while bowling"
         : `Would have referred ${milestone} not-out decisions`,
       icon: "📺",
+      imageKey: "drs",
       earned: drsCount >= milestone,
       detail: drsCount >= milestone && drsCount > milestone
         ? `${drsCount} times total`

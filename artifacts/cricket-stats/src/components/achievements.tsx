@@ -593,6 +593,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
         ? "Would have referred a not-out decision while bowling"
         : `Would have referred ${milestone} not-out decisions`,
       icon: "📺",
+      imageKey: "drs",
       earned: drsCount >= milestone,
       matchId: milestone === 1 ? drsFirst?.matchId : undefined,
       opponent: milestone === 1 ? drsFirst?.opponent : undefined,
