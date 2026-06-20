@@ -505,6 +505,7 @@ function computeBadges(data: PerMatchStat[]): Badge[] {
       label: "Big Hitter",
       description: "5+ sixes in one innings",
       icon: "💥",
+      imageKey: "bigHitter",
       earned: !!bigHitterMatch,
       matchId: bigHitterMatch?.matchId,
       opponent: bigHitterMatch?.opponent,

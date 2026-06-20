@@ -33,6 +33,7 @@ const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
   "drs":             require("@/assets/badges/drs.png"),
   "hatTrick":           require("@/assets/badges/hatTrick.png"),
   "playerOfTheMatch":   require("@/assets/badges/playerOfTheMatch.png"),
+  "bigHitter":          require("@/assets/badges/bigHitter.png"),
 };
 
 function BadgeTile({

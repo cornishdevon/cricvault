@@ -208,7 +208,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "raisethebat",   label: "Raise the Bat",   description: "5 fifties in a single season",  icon: "🏏", earned: raiseTheBatEarned, detail: raiseTheBatSeason ? `${raiseTheBatSeason} season` : undefined },
     { id: "doffhelmet",    label: "Doff Your Helmet", description: "3 centuries in your career",   icon: "⛑️", imageKey: "doffYourHelmet", earned: careerHundreds.length >= 3, detail: careerHundreds.length >= 3 ? `${careerHundreds.length} hundreds` : undefined },
     { id: "leatherWillow", label: "Leather on Willow", description: "Avg 40+ over 10 innings",    icon: "🪵", earned: lwEarned, detail: lwEarned ? `Avg ${lwAvg}` : undefined },
-    { id: "bighitter",     label: "Big Hitter",      description: "5+ sixes in one innings",       icon: "💥", earned: bigHitterEarned },
+    { id: "bighitter",     label: "Big Hitter",      description: "5+ sixes in one innings",       icon: "💥", imageKey: "bigHitter", earned: bigHitterEarned },
     { id: "boundary",      label: "Boundary Getter", description: "10+ fours in one innings",      icon: "🏅", imageKey: "boundaryGetter", earned: boundaryEarned },
     { id: "redink",        label: "Red Ink",         description: "5+ career not outs",            icon: "🛡️", earned: notOuts.length >= 5, detail: notOuts.length >= 5 ? `${notOuts.length} not outs` : undefined },
     { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", imageKey: "personalBest", earned: trophyEarned, shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
