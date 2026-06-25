@@ -442,6 +442,11 @@ export default function MatchDetailScreen() {
   const [editOpponent, setEditOpponent] = useState("");
   const [editVenue, setEditVenue] = useState("");
   const [editResult, setEditResult] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editPitchType, setEditPitchType] = useState("");
+  const [editWeather, setEditWeather] = useState("");
+  const [editTossWinner, setEditTossWinner] = useState("");
+  const [editTossDecision, setEditTossDecision] = useState("");
   // Batting fields
   const [editRuns, setEditRuns] = useState("");
   const [editBalls, setEditBalls] = useState("");
@@ -464,6 +469,11 @@ export default function MatchDetailScreen() {
     setEditOpponent(m?.opponent ?? "");
     setEditVenue(m?.venue ?? "");
     setEditResult(m?.result ?? "");
+    setEditNotes(m?.notes ?? "");
+    setEditPitchType(m?.pitchType ?? "");
+    setEditWeather(m?.weatherConditions ?? "");
+    setEditTossWinner(m?.tossWinner ?? "");
+    setEditTossDecision(m?.tossDecision ?? "");
     const bat = batting as any;
     setEditRuns(bat?.runs != null ? String(bat.runs) : "");
     setEditBalls(bat?.ballsFaced != null ? String(bat.ballsFaced) : "");
@@ -499,7 +509,19 @@ export default function MatchDetailScreen() {
       await Promise.all([
         new Promise<void>((resolve, reject) =>
           updateMatch.mutate(
-            { matchId, data: { opponent: editOpponent || undefined, venue: editVenue || undefined, result: editResult || undefined } as any },
+            {
+              matchId,
+              data: {
+                opponent: editOpponent || undefined,
+                venue: editVenue || undefined,
+                result: editResult || undefined,
+                notes: editNotes || undefined,
+                pitchType: editPitchType || undefined,
+                weatherConditions: editWeather || undefined,
+                tossWinner: editTossWinner || undefined,
+                tossDecision: editTossDecision || undefined,
+              } as any,
+            },
             { onSuccess: () => resolve(), onError: reject }
           )
         ),
@@ -757,6 +779,52 @@ export default function MatchDetailScreen() {
           <EditableRow label="Run Outs" value={fielding.runOuts} editValue={editRunOuts} onChangeText={setEditRunOuts} editing={editMode} numeric colors={colors} />
           <EditableRow label="Stumpings" value={fielding.stumpings} editValue={editStumpings} onChangeText={setEditStumpings} editing={editMode} numeric colors={colors} />
           <StatRow label="Missed Stumpings" value={fielding.missedStumpings} colors={colors} />
+        </Card>
+      ) : null}
+
+      {/* Match Notes & Conditions */}
+      {((match as any).notes || (match as any).pitchType || (match as any).weatherConditions || (match as any).tossWinner || editMode) ? (
+        <Card title="Notes & Conditions" icon="info" colors={colors}>
+          <EditableRow
+            label="Match Notes"
+            value={(match as any).notes ?? undefined}
+            editValue={editNotes}
+            onChangeText={setEditNotes}
+            editing={editMode}
+            colors={colors}
+          />
+          <EditableRow
+            label="Pitch Type"
+            value={(match as any).pitchType ?? undefined}
+            editValue={editPitchType}
+            onChangeText={setEditPitchType}
+            editing={editMode}
+            colors={colors}
+          />
+          <EditableRow
+            label="Weather"
+            value={(match as any).weatherConditions ?? undefined}
+            editValue={editWeather}
+            onChangeText={setEditWeather}
+            editing={editMode}
+            colors={colors}
+          />
+          <EditableRow
+            label="Toss Winner"
+            value={(match as any).tossWinner ?? undefined}
+            editValue={editTossWinner}
+            onChangeText={setEditTossWinner}
+            editing={editMode}
+            colors={colors}
+          />
+          <EditableRow
+            label="Toss Decision"
+            value={(match as any).tossDecision ?? undefined}
+            editValue={editTossDecision}
+            onChangeText={setEditTossDecision}
+            editing={editMode}
+            colors={colors}
+          />
         </Card>
       ) : null}
 

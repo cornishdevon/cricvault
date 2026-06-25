@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart } from "lucide-react";
+import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun } from "lucide-react";
 
 const DASHBOARD_SHORTCUTS = [
   { label: "📊 Stats", anchor: "stats" },
@@ -45,6 +45,35 @@ function DashboardShortcuts() {
         </div>
       </div>
     </div>
+  );
+}
+
+function DarkModeToggle() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const saved = localStorage.getItem("cricvault-dark-mode");
+    if (saved !== null) return saved === "true";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("cricvault-dark-mode", String(dark));
+  }, [dark]);
+
+  return (
+    <button
+      onClick={() => setDark((d) => !d)}
+      className="ml-2 flex-shrink-0 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </button>
   );
 }
 
@@ -97,6 +126,7 @@ export function Layout({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
+          <DarkModeToggle />
         </div>
       </header>
 

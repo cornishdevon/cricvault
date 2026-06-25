@@ -1,8 +1,9 @@
 import { useGetPerMatchStats } from "@workspace/api-client-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { RollingAverageChart } from "@/components/rolling-average-chart";
 import { SeasonComparison } from "@/components/season-comparison";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import {
   ResponsiveContainer,
@@ -487,11 +488,184 @@ function PressurePerformance({ data }: { data: PerMatchStat[] }) {
   );
 }
 
+// ── Head-to-Head ──────────────────────────────────────────────────────────────
+
+function HeadToHeadStats({ data, opponent }: { data: PerMatchStat[]; opponent: string }) {
+  const ms = data.filter((m) => m.opponent === opponent);
+  const innings = ms.filter((m) => m.runs != null);
+  const runs = innings.reduce((s, m) => s + (m.runs ?? 0), 0);
+  const balls = innings.reduce((s, m) => s + (m.ballsFaced ?? 0), 0);
+  const hs = Math.max(...innings.map((m) => m.runs ?? 0), 0);
+  const bowlMs = ms.filter((m) => m.wickets != null);
+  const wkts = bowlMs.reduce((s, m) => s + (m.wickets ?? 0), 0);
+  const rc = bowlMs.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
+  const ov = bowlMs.reduce((s, m) => s + (m.overs ?? 0), 0);
+  const wins = ms.filter((m) => m.result === "Win").length;
+  const losses = ms.filter((m) => m.result === "Loss").length;
+  const draws = ms.filter((m) => m.result === "Draw").length;
+  const potm = ms.filter((m) => m.playerOfTheMatch).length;
+
+  if (ms.length === 0) return null;
+
+  const statCell = (label: string, val: string | number) => (
+    <div className="flex flex-col items-center rounded-lg bg-muted px-4 py-3 text-center min-w-[72px]">
+      <span className="text-xl font-bold text-foreground">{val}</span>
+      <span className="text-xs text-muted-foreground mt-0.5">{label}</span>
+    </div>
+  );
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center justify-between flex-wrap gap-2">
+          <span>vs <span className="text-primary">{opponent}</span></span>
+          <span className="text-sm font-normal text-muted-foreground">{ms.length} match{ms.length !== 1 ? "es" : ""}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 font-medium">Match Record</p>
+          <div className="flex gap-3 flex-wrap">
+            <div className="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2">
+              <span className="text-lg font-black text-primary">{wins}</span>
+              <span className="text-xs text-primary/80">W</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2">
+              <span className="text-lg font-black text-destructive">{losses}</span>
+              <span className="text-xs text-destructive/80">L</span>
+            </div>
+            {draws > 0 && (
+              <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-4 py-2">
+                <span className="text-lg font-black text-foreground">{draws}</span>
+                <span className="text-xs text-muted-foreground">D</span>
+              </div>
+            )}
+            {potm > 0 && (
+              <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-2">
+                <span className="text-lg font-black text-amber-500">{potm}</span>
+                <span className="text-xs text-amber-600">⭐ POTM</span>
+              </div>
+            )}
+          </div>
+        </div>
+        {innings.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 font-medium">Batting</p>
+            <div className="flex gap-2 flex-wrap">
+              {statCell("Innings", innings.length)}
+              {statCell("Runs", runs)}
+              {statCell("Avg", innings.length > 0 ? (runs / innings.length).toFixed(1) : "—")}
+              {statCell("HS", hs)}
+              {statCell("SR", balls > 0 ? ((runs / balls) * 100).toFixed(1) : "—")}
+            </div>
+          </div>
+        )}
+        {bowlMs.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 font-medium">Bowling</p>
+            <div className="flex gap-2 flex-wrap">
+              {statCell("Spells", bowlMs.length)}
+              {statCell("Wickets", wkts)}
+              {statCell("Runs", rc)}
+              {statCell("Econ", ov > 0 ? (rc / ov).toFixed(2) : "—")}
+            </div>
+          </div>
+        )}
+        {ms.length > 1 && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2 font-medium">Recent Matches</p>
+            <div className="flex gap-2 flex-wrap">
+              {[...ms].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6).map((m) => (
+                <Link key={m.matchId} href={`/matches/${m.matchId}`}>
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors hover:opacity-80 ${
+                    m.result === "Win" ? "bg-primary/10 border-primary/30 text-primary" :
+                    m.result === "Loss" ? "bg-destructive/10 border-destructive/30 text-destructive" :
+                    "bg-muted border-border text-muted-foreground"
+                  }`}>
+                    {m.result?.[0] ?? "?"} {m.runs != null ? `· ${m.runs}r` : ""}{m.wickets != null ? ` ${m.wickets}w` : ""}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Recent Performance Chart ───────────────────────────────────────────────────
+
+function RecentPerformanceChart({ data }: { data: PerMatchStat[] }) {
+  const [count, setCount] = useState(10);
+  const chartData = useMemo(() => {
+    return [...data]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-count)
+      .map((m) => ({
+        label: `vs ${m.opponent}`.substring(0, 12),
+        Runs: m.runs ?? null,
+        Wickets: m.wickets ?? null,
+        result: m.result,
+      }));
+  }, [data, count]);
+
+  const hasRuns = chartData.some((d) => d.Runs != null);
+  const hasWkts = chartData.some((d) => d.Wickets != null);
+  if (!hasRuns && !hasWkts) return null;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xl font-bold tracking-tight">Recent Performance</h2>
+        <Select value={String(count)} onValueChange={(v) => setCount(Number(v))}>
+          <SelectTrigger className="w-32 h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[5, 10, 15, 20].map((n) => (
+              <SelectItem key={n} value={String(n)}>Last {n}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Card>
+        <CardContent className="pt-4 pb-2">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 32 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" tick={{ fontSize: 9 }} angle={-35} textAnchor="end" interval={0} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
+              />
+              <Legend />
+              {hasRuns && <Bar dataKey="Runs" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} maxBarSize={40} />}
+              {hasWkts && <Bar dataKey="Wickets" fill="hsl(var(--chart-2, #7c3aed))" radius={[3, 3, 0, 0]} maxBarSize={40} />}
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AnalysisPage() {
   const { data: perMatch, isLoading } = useGetPerMatchStats();
   const data = (perMatch ?? []) as PerMatchStat[];
+  const [selectedOpponent, setSelectedOpponent] = useState<string>("all");
+
+  const opponents = useMemo(() => {
+    const set = new Set(data.map((m) => m.opponent));
+    return Array.from(set).sort();
+  }, [data]);
+
+  const filteredData = useMemo(
+    () => selectedOpponent === "all" ? data : data.filter((m) => m.opponent === selectedOpponent),
+    [data, selectedOpponent]
+  );
 
   if (isLoading) {
     return (
@@ -512,19 +686,42 @@ export default function AnalysisPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Analysis</h1>
-        <p className="text-muted-foreground mt-1">Deep dives into how, where, and when you perform.</p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Analysis</h1>
+          <p className="text-muted-foreground mt-1">Deep dives into how, where, and when you perform.</p>
+        </div>
+        {opponents.length > 1 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by opponent:</span>
+            <Select value={selectedOpponent} onValueChange={setSelectedOpponent}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="All opponents" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All opponents</SelectItem>
+                {opponents.map((opp) => (
+                  <SelectItem key={opp} value={opp}>{opp}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
-      <DismissalBreakdown data={data} />
-      <MatchTypeComparison data={data} />
-      <RollingAverageChart data={data} />
-      <SeasonComparison data={data} />
-      <VenueStats data={data} />
-      <BattingPositionBreakdown data={data} />
-      <PlayingForTracker data={data} />
-      <PressurePerformance data={data} />
+      {selectedOpponent !== "all" && (
+        <HeadToHeadStats data={data} opponent={selectedOpponent} />
+      )}
+
+      <RecentPerformanceChart data={filteredData} />
+      <DismissalBreakdown data={filteredData} />
+      <MatchTypeComparison data={filteredData} />
+      <RollingAverageChart data={filteredData} />
+      <SeasonComparison data={filteredData} />
+      <VenueStats data={filteredData} />
+      <BattingPositionBreakdown data={filteredData} />
+      <PlayingForTracker data={filteredData} />
+      <PressurePerformance data={filteredData} />
     </div>
   );
 }

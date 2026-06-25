@@ -9,6 +9,7 @@ import {
 import { Achievements } from "@/components/achievements";
 import { EncouragementBanner } from "@/components/encouragement-banner";
 import { FormGuide } from "@/components/form-guide";
+import { RecentFormGuide } from "@/components/recent-form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
 import { MilestonesTimeline } from "@/components/milestones-timeline";
@@ -770,7 +771,14 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* Form guide */}
+      {/* Recent match form (W/L/D dots) */}
+      {chartLoading ? (
+        <Skeleton className="h-48 rounded-xl" />
+      ) : hasMatchData ? (
+        <RecentFormGuide data={filteredData} />
+      ) : null}
+
+      {/* Batting form guide */}
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (

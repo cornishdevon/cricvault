@@ -11,6 +11,11 @@ export const matchesTable = pgTable("matches", {
   playingFor: text("playing_for"),
   result: text("result"),
   playerOfTheMatch: boolean("player_of_the_match").notNull().default(false),
+  notes: text("notes"),
+  pitchType: text("pitch_type"),
+  weatherConditions: text("weather_conditions"),
+  tossWinner: text("toss_winner"),
+  tossDecision: text("toss_decision"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

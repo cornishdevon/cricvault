@@ -939,6 +939,195 @@ function MediaTab({ matchId }: { matchId: number }) {
   );
 }
 
+// ── Info Tab ───────────────────────────────────────────────────────────────────
+
+const PITCH_TYPES = ["Flat/Hard", "Green/Seaming", "Dusty/Turning", "Slow/Low", "Wet/Soft", "Artificial"];
+const WEATHER_CONDITIONS = ["Sunny", "Overcast", "Cloudy", "Hot", "Cold", "Windy", "Drizzle", "Humid"];
+const TOSS_DECISIONS = ["Bat", "Bowl"];
+
+function InfoTab({ matchId, match }: { matchId: number; match: any }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const updateMatch = useUpdateMatch();
+  const [editing, setEditing] = useState(false);
+
+  const [notes, setNotes] = useState("");
+  const [pitchType, setPitchType] = useState("");
+  const [weather, setWeather] = useState("");
+  const [tossWinner, setTossWinner] = useState("");
+  const [tossDecision, setTossDecision] = useState("");
+
+  const handleEdit = () => {
+    setNotes(match.notes ?? "");
+    setPitchType(match.pitchType ?? "");
+    setWeather(match.weatherConditions ?? "");
+    setTossWinner(match.tossWinner ?? "");
+    setTossDecision(match.tossDecision ?? "");
+    setEditing(true);
+  };
+
+  const handleSave = () => {
+    updateMatch.mutate(
+      {
+        matchId,
+        data: {
+          notes: notes || undefined,
+          pitchType: pitchType || undefined,
+          weatherConditions: weather || undefined,
+          tossWinner: tossWinner || undefined,
+          tossDecision: tossDecision || undefined,
+        } as any,
+      },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
+          setEditing(false);
+          toast({ title: "Match info saved" });
+        },
+        onError: () => toast({ title: "Failed to save", variant: "destructive" }),
+      }
+    );
+  };
+
+  const hasConditions = match.pitchType || match.weatherConditions || match.tossWinner;
+  const hasInfo = match.notes || hasConditions;
+
+  if (editing) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader><CardTitle>Edit Match Info</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Match Notes</Label>
+              <Textarea
+                placeholder="Quick notes about this match — conditions, key moments, etc."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="resize-y"
+              />
+            </div>
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium text-foreground mb-3">Conditions</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Pitch Type</Label>
+                  <Select value={pitchType} onValueChange={setPitchType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select pitch…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not set</SelectItem>
+                      {PITCH_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Weather</Label>
+                  <Select value={weather} onValueChange={setWeather}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select weather…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not set</SelectItem>
+                      {WEATHER_CONDITIONS.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Toss Winner</Label>
+                  <Input
+                    placeholder="Who won the toss?"
+                    value={tossWinner}
+                    onChange={(e) => setTossWinner(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Toss Decision</Label>
+                  <Select value={tossDecision} onValueChange={setTossDecision}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Bat or Bowl…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not set</SelectItem>
+                      {TOSS_DECISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button onClick={handleSave} disabled={updateMatch.isPending}>
+                <Save className="h-4 w-4 mr-2" /> Save
+              </Button>
+              <Button variant="outline" onClick={() => setEditing(false)}>
+                <X className="h-4 w-4 mr-2" /> Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {match.notes && (
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base">Match Notes</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{match.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+      {hasConditions && (
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base">Conditions</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {match.pitchType && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">Pitch</span>
+                  <span className="text-sm font-medium text-foreground">{match.pitchType}</span>
+                </div>
+              )}
+              {match.weatherConditions && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">Weather</span>
+                  <span className="text-sm font-medium text-foreground">{match.weatherConditions}</span>
+                </div>
+              )}
+              {match.tossWinner && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">Toss</span>
+                  <span className="text-sm font-medium text-foreground">{match.tossWinner}</span>
+                </div>
+              )}
+              {match.tossDecision && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground">Elected to</span>
+                  <span className="text-sm font-medium text-foreground">{match.tossDecision}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {!hasInfo && (
+        <Card className="border-dashed bg-transparent shadow-none">
+          <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+            <p className="text-muted-foreground mb-4">No match notes or conditions recorded.</p>
+          </CardContent>
+        </Card>
+      )}
+      <Button variant="outline" onClick={handleEdit}>
+        {hasInfo ? "Edit Info" : "Add Notes & Conditions"}
+      </Button>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MatchDetail() {
@@ -1123,12 +1312,14 @@ export default function MatchDetail() {
           <TabsTrigger value="batting">Batting</TabsTrigger>
           <TabsTrigger value="bowling">Bowling</TabsTrigger>
           <TabsTrigger value="fielding">Fielding</TabsTrigger>
+          <TabsTrigger value="info">Info</TabsTrigger>
           <TabsTrigger value="report">Report</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
         </TabsList>
         <TabsContent value="batting" className="mt-4"><BattingTab matchId={matchId} /></TabsContent>
         <TabsContent value="bowling" className="mt-4"><BowlingTab matchId={matchId} /></TabsContent>
         <TabsContent value="fielding" className="mt-4"><FieldingTab matchId={matchId} /></TabsContent>
+        <TabsContent value="info" className="mt-4"><InfoTab matchId={matchId} match={match} /></TabsContent>
         <TabsContent value="report" className="mt-4"><ReportTab matchId={matchId} /></TabsContent>
         <TabsContent value="media" className="mt-4"><MediaTab matchId={matchId} /></TabsContent>
       </Tabs>

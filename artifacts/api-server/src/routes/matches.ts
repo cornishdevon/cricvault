@@ -50,7 +50,7 @@ router.get("/matches/:matchId", async (req, res) => {
 
 router.patch("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch } = req.body;
+  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch, notes, pitchType, weatherConditions, tossWinner, tossDecision } = req.body;
   const updates: Record<string, unknown> = {};
   if (date !== undefined) updates.date = date;
   if (opponent !== undefined) updates.opponent = opponent;
@@ -59,6 +59,11 @@ router.patch("/matches/:matchId", async (req, res) => {
   if (playingFor !== undefined) updates.playingFor = playingFor;
   if (result !== undefined) updates.result = result;
   if (playerOfTheMatch !== undefined) updates.playerOfTheMatch = !!playerOfTheMatch;
+  if (notes !== undefined) updates.notes = notes || null;
+  if (pitchType !== undefined) updates.pitchType = pitchType || null;
+  if (weatherConditions !== undefined) updates.weatherConditions = weatherConditions || null;
+  if (tossWinner !== undefined) updates.tossWinner = tossWinner || null;
+  if (tossDecision !== undefined) updates.tossDecision = tossDecision || null;
   const [match] = await db
     .update(matchesTable)
     .set(updates)
