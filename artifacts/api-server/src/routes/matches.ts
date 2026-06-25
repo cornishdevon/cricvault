@@ -586,9 +586,31 @@ router.get("/media/photos", async (req, res) => {
       matchType: matchesTable.matchType,
     })
     .from(photosTable)
-    .innerJoin(matchesTable, eq(photosTable.matchId, matchesTable.id))
-    .orderBy(desc(matchesTable.date));
+    .leftJoin(matchesTable, eq(photosTable.matchId, matchesTable.id))
+    .orderBy(desc(photosTable.createdAt));
   res.json(photos);
+});
+
+router.post("/media/photos", async (req, res) => {
+  const { url, caption, matchId } = req.body;
+  if (!url) return res.status(400).json({ error: "url is required" });
+  const [row] = await db
+    .insert(photosTable)
+    .values({ matchId: matchId ?? null, url, caption: caption ?? null })
+    .returning();
+  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+});
+
+router.patch("/media/photos/:photoId", async (req, res) => {
+  const photoId = Number(req.params.photoId);
+  const { matchId, caption } = req.body;
+  const updates: Record<string, unknown> = {};
+  if (matchId !== undefined) updates.matchId = matchId ?? null;
+  if (caption !== undefined) updates.caption = caption;
+  if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
+  const [row] = await db.update(photosTable).set(updates).where(eq(photosTable.id, photoId)).returning();
+  if (!row) return res.status(404).json({ error: "Photo not found" });
+  res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.get("/media/videos", async (req, res) => {
@@ -603,9 +625,31 @@ router.get("/media/videos", async (req, res) => {
       matchType: matchesTable.matchType,
     })
     .from(videosTable)
-    .innerJoin(matchesTable, eq(videosTable.matchId, matchesTable.id))
-    .orderBy(desc(matchesTable.date));
+    .leftJoin(matchesTable, eq(videosTable.matchId, matchesTable.id))
+    .orderBy(desc(videosTable.createdAt));
   res.json(videos);
+});
+
+router.post("/media/videos", async (req, res) => {
+  const { objectPath, caption, matchId } = req.body;
+  if (!objectPath) return res.status(400).json({ error: "objectPath is required" });
+  const [row] = await db
+    .insert(videosTable)
+    .values({ matchId: matchId ?? null, objectPath, caption: caption ?? null })
+    .returning();
+  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+});
+
+router.patch("/media/videos/:videoId", async (req, res) => {
+  const videoId = Number(req.params.videoId);
+  const { matchId, caption } = req.body;
+  const updates: Record<string, unknown> = {};
+  if (matchId !== undefined) updates.matchId = matchId ?? null;
+  if (caption !== undefined) updates.caption = caption;
+  if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
+  const [row] = await db.update(videosTable).set(updates).where(eq(videosTable.id, videoId)).returning();
+  if (!row) return res.status(404).json({ error: "Video not found" });
+  res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 export default router;

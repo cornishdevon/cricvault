@@ -92,7 +92,7 @@ export type MatchReport = typeof matchReportsTable.$inferSelect;
 
 export const photosTable = pgTable("photos", {
   id: serial("id").primaryKey(),
-  matchId: integer("match_id").notNull().references(() => matchesTable.id, { onDelete: "cascade" }),
+  matchId: integer("match_id").references(() => matchesTable.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
   caption: text("caption"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -104,7 +104,7 @@ export type Photo = typeof photosTable.$inferSelect;
 
 export const videosTable = pgTable("videos", {
   id: serial("id").primaryKey(),
-  matchId: integer("match_id").notNull().references(() => matchesTable.id, { onDelete: "cascade" }),
+  matchId: integer("match_id").references(() => matchesTable.id, { onDelete: "cascade" }),
   objectPath: text("object_path").notNull(),
   caption: text("caption"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

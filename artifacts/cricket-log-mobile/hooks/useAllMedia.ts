@@ -2,22 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 
 export interface MediaPhoto {
   id: number;
-  matchId: number;
+  matchId: number | null;
   url: string;
   caption: string | null;
-  opponent: string;
-  date: string;
-  matchType: string;
+  opponent: string | null;
+  date: string | null;
+  matchType: string | null;
 }
 
 export interface MediaVideo {
   id: number;
-  matchId: number;
+  matchId: number | null;
   objectPath: string;
   caption: string | null;
-  opponent: string;
-  date: string;
-  matchType: string;
+  opponent: string | null;
+  date: string | null;
+  matchType: string | null;
 }
 
 function getApiBase() {

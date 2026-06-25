@@ -75,9 +75,7 @@ function UploadModal({
   matches,
 }: UploadModalProps) {
   const [category, setCategory] = useState<Tab>(defaultCategory);
-  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(
-    matches[0]?.id ?? null
-  );
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [caption, setCaption] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState("image/jpeg");
@@ -88,7 +86,7 @@ function UploadModal({
     setCaption("");
     setUploading(false);
     setCategory(defaultCategory);
-    setSelectedMatchId(matches[0]?.id ?? null);
+    setSelectedMatchId(null);
   };
 
   const handleClose = () => {
@@ -111,8 +109,8 @@ function UploadModal({
   };
 
   const handleUpload = async () => {
-    if (!imageUri || !selectedMatchId) {
-      Alert.alert("Missing info", "Please pick an image and select a match.");
+    if (!imageUri) {
+      Alert.alert("Missing media", "Please pick a photo or video first.");
       return;
     }
     setUploading(true);
@@ -154,14 +152,20 @@ function UploadModal({
       const finalCaption = prefix + caption.trim();
 
       if (isVideo) {
-        await fetch(`${getApiBase()}/api/matches/${selectedMatchId}/videos`, {
+        const endpoint = selectedMatchId
+          ? `${getApiBase()}/api/matches/${selectedMatchId}/videos`
+          : `${getApiBase()}/api/media/videos`;
+        await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ objectPath, caption: finalCaption }),
         });
       } else {
         const publicUrl = `${getApiBase()}/api/storage${objectPath}`;
-        await fetch(`${getApiBase()}/api/matches/${selectedMatchId}/photos`, {
+        const endpoint = selectedMatchId
+          ? `${getApiBase()}/api/matches/${selectedMatchId}/photos`
+          : `${getApiBase()}/api/media/photos`;
+        await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url: publicUrl, caption: finalCaption }),
@@ -217,8 +221,26 @@ function UploadModal({
           </View>
 
           {/* Match picker */}
-          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Match</Text>
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Match (optional)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.matchPicker}>
+            {/* No match option */}
+            <TouchableOpacity
+              onPress={() => setSelectedMatchId(null)}
+              style={[
+                styles.matchChip,
+                {
+                  backgroundColor: selectedMatchId === null ? colors.primary : colors.card,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.matchChipText, { color: selectedMatchId === null ? "#fff" : colors.foreground }]}>
+                No match
+              </Text>
+              <Text style={[styles.matchChipDate, { color: selectedMatchId === null ? "rgba(255,255,255,0.75)" : colors.mutedForeground }]}>
+                General upload
+              </Text>
+            </TouchableOpacity>
             {matches.map((m) => (
               <TouchableOpacity
                 key={m.id}
@@ -319,9 +341,17 @@ function PhotoCell({ photo, colors }: { photo: MediaPhoto; colors: ReturnType<ty
         <TouchableOpacity style={styles.lightboxBg} activeOpacity={1} onPress={() => setLightbox(false)}>
           <Image source={{ uri: photo.url }} style={styles.lightboxImage} resizeMode="contain" />
           <View style={styles.lightboxMeta}>
-            <Text style={styles.lightboxOpponent}>vs {photo.opponent}</Text>
+            {photo.opponent ? (
+              <Text style={styles.lightboxOpponent}>vs {photo.opponent}</Text>
+            ) : (
+              <Text style={styles.lightboxOpponent}>General</Text>
+            )}
             {cap ? <Text style={styles.lightboxCaption}>{cap}</Text> : null}
-            <Text style={styles.lightboxDate}>{photo.date} · {photo.matchType}</Text>
+            {(photo.date || photo.matchType) ? (
+              <Text style={styles.lightboxDate}>
+                {[photo.date, photo.matchType].filter(Boolean).join(" · ")}
+              </Text>
+            ) : null}
           </View>
         </TouchableOpacity>
       </Modal>
@@ -340,16 +370,18 @@ function VideoCard({ video, colors }: { video: MediaVideo; colors: ReturnType<ty
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[styles.videoOpponent, { color: colors.foreground }]} numberOfLines={1}>
-          vs {video.opponent}
+          {video.opponent ? `vs ${video.opponent}` : "General"}
         </Text>
         {cap ? (
           <Text style={[styles.videoCaption, { color: colors.mutedForeground }]} numberOfLines={1}>
             {cap}
           </Text>
         ) : null}
-        <Text style={[styles.videoDate, { color: colors.mutedForeground }]}>
-          {video.date} · {video.matchType}
-        </Text>
+        {(video.date || video.matchType) ? (
+          <Text style={[styles.videoDate, { color: colors.mutedForeground }]}>
+            {[video.date, video.matchType].filter(Boolean).join(" · ")}
+          </Text>
+        ) : null}
       </View>
       <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
     </View>
