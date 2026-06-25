@@ -79,10 +79,12 @@ function UploadModal({
   const [caption, setCaption] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState("image/jpeg");
+  const [imageSize, setImageSize] = useState(0);
   const [uploading, setUploading] = useState(false);
 
   const reset = () => {
     setImageUri(null);
+    setImageSize(0);
     setCaption("");
     setUploading(false);
     setCategory(defaultCategory);
@@ -105,6 +107,7 @@ function UploadModal({
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
       setImageMime(result.assets[0].mimeType ?? "image/jpeg");
+      setImageSize(result.assets[0].fileSize ?? 0);
     }
   };
 
@@ -125,18 +128,18 @@ function UploadModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            fileName,
+            name: fileName,
+            size: imageSize,
             contentType: imageMime,
-            directory: isVideo ? "videos" : "photos",
           }),
         }
       );
       if (!urlRes.ok) throw new Error("Could not get upload URL");
-      const { uploadUrl, objectPath } = await urlRes.json();
+      const { uploadURL, objectPath } = await urlRes.json();
 
       const fileRes = await fetch(imageUri);
       const blob = await fileRes.blob();
-      const putRes = await fetch(uploadUrl, {
+      const putRes = await fetch(uploadURL, {
         method: "PUT",
         headers: { "Content-Type": imageMime },
         body: blob,
