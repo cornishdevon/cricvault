@@ -158,6 +158,10 @@ overrides:
   qs: '>=6.15.2'
   markdown-it: '>=14.2.0'
 
+packageExtensionsChecksum: sha256-mZyj4X4CFqh7WPNgQvbGqzpLiKkqzkt91vowaM8zC3w=
+
+pnpmfileChecksum: sha256-jQ0igrpUCGnM5qOuWGIE2r+1bkjrYNE9d8UA0U+PVYg=
+
 importers:
 
   .:
@@ -231,6 +235,9 @@ importers:
     devDependencies:
       '@babel/core':
         specifier: ^7.29.6
+        version: 7.29.7
+      '@babel/generator':
+        specifier: ^7.29.7
         version: 7.29.7
       '@expo-google-fonts/inter':
         specifier: ^0.4.0
@@ -11896,6 +11903,7 @@ snapshots:
   react-native-worklets@0.5.1(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       '@babel/core': 7.29.7
+      '@babel/generator': 7.29.7
       '@babel/plugin-transform-arrow-functions': 7.29.7(@babel/core@7.29.7)
       '@babel/plugin-transform-class-properties': 7.29.7(@babel/core@7.29.7)
       '@babel/plugin-transform-classes': 7.29.7(@babel/core@7.29.7)

@@ -68,6 +68,15 @@ catalog:
 
 autoInstallPeers: false
 
+packageExtensions:
+  # react-native-worklets@0.5.1 calls require('@babel/generator') internally
+  # but doesn't declare it as a dependency. After @babel/core was upgraded to
+  # 7.29.x, pnpm's strict resolution can no longer resolve it transitively.
+  # This extension injects it directly into react-native-worklets's node_modules.
+  react-native-worklets@*:
+    dependencies:
+      '@babel/generator': '>=7.0.0'
+
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
