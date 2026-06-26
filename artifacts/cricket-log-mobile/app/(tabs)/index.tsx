@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { usePlayerName } from "@/hooks/usePlayerName";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
@@ -494,6 +495,7 @@ function ShortcutPills({
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { playerName } = usePlayerName();
   const router = useRouter();
 
   const {
@@ -604,7 +606,9 @@ export default function DashboardScreen() {
       <ShortcutPills colors={colors} onPress={handleShortcut} />
 
       <View style={styles.header}>
-        <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Career Stats</Text>
+        <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
+          Hi, {playerName || "Cricketer"} 👋
+        </Text>
         <Text style={[styles.heroTitle, { color: colors.foreground }]}>
           {summary
             ? `${summary.batting.totalRuns} Runs`

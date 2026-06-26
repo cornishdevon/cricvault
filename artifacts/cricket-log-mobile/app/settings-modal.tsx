@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
+import { usePlayerName } from "@/hooks/usePlayerName";
 
 const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
   { key: "index",        icon: "bar-chart-2", hint: "Main stats overview" },
@@ -29,14 +30,21 @@ export default function SettingsModal() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { labels, updateLabel, resetLabels } = useTabLabels();
+  const { playerName, saveName } = usePlayerName();
 
+  const [draftName, setDraftName] = useState(playerName);
   const [draft, setDraft] = useState({ ...labels });
+
+  useEffect(() => {
+    setDraftName(playerName);
+  }, [playerName]);
 
   useEffect(() => {
     setDraft({ ...labels });
   }, [labels]);
 
   const handleSave = async () => {
+    await saveName(draftName);
     for (const { key } of TAB_DEFS) {
       await updateLabel(key, draft[key]);
     }
@@ -66,6 +74,28 @@ export default function SettingsModal() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={[styles.heading, { color: colors.foreground }]}>
+          Profile
+        </Text>
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="user" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Your name</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={draftName}
+              onChangeText={setDraftName}
+              placeholder="Cricketer"
+              placeholderTextColor={colors.mutedForeground}
+              maxLength={40}
+              returnKeyType="done"
+              autoCorrect={false}
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>
           Rename Tabs
         </Text>
         <Text style={[styles.sub, { color: colors.mutedForeground }]}>
