@@ -249,7 +249,9 @@ function BestPerformancesSection({ data, colors, onPress }: {
             style={[styles.bestCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <Text style={[styles.bestIcon]}>🏏</Text>
-            <Text style={[styles.bestValue, { color: colors.primary }]}>{bestBat.runs}</Text>
+            <Text style={[styles.bestValue, { color: colors.primary }]}>
+              {bestBat.runs}{!bestBat.howOut ? <Text style={{ fontSize: 14, color: colors.primary }}>*</Text> : null}
+            </Text>
             <Text style={[styles.bestLabel, { color: colors.foreground }]}>Top Score</Text>
             <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
               vs {bestBat.opponent}

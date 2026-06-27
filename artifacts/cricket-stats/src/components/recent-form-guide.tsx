@@ -7,6 +7,7 @@ type MatchResult = {
   opponent: string;
   result?: string | null;
   runs?: number | null;
+  howOut?: string | null;
   wickets?: number | null;
   playerOfTheMatch?: boolean | null;
 };
@@ -79,7 +80,7 @@ export function RecentFormGuide({ data }: { data: MatchResult[] }) {
                 <div className="text-center w-full">
                   {(m.runs != null || m.wickets != null) && (
                     <p className={`text-xs font-semibold ${text} opacity-90`}>
-                      {m.runs != null && `${m.runs}r`}
+                      {m.runs != null && `${m.runs}${!m.howOut ? '*' : ''}r`}
                       {m.runs != null && m.wickets != null && " · "}
                       {m.wickets != null && `${m.wickets}w`}
                     </p>
