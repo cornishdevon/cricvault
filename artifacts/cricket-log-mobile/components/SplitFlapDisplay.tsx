@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Platform, Text, View } from "react-native";
 
-const TILE_W = 50;
-const TILE_H = 68;
+const TILE_W = 64;
+const TILE_H = 88;
 const HALF_H = TILE_H / 2;
-const FONT_SIZE = 44;
-const RADIUS = 10;
+const FONT_SIZE = 58;
+const RADIUS = 12;
 const DIVIDER = 2;
 
 const SLATE = "#0f1e3c";

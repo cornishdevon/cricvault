@@ -3,10 +3,10 @@ import {
   useGetPerMatchStats,
   useListMatches,
 } from "@workspace/api-client-react";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
-import React, { useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SeasonTargets } from "@/components/SeasonTargets";
 import {
   ActivityIndicator,
@@ -562,6 +562,46 @@ export default function DashboardScreen() {
   } = useGetPerMatchStats();
 
   const isLoading = summaryLoading || matchesLoading;
+
+  const [flapValue, setFlapValue] = useState(0);
+  const flapIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const triggerCountUp = useCallback((target: number) => {
+    if (flapIntervalRef.current) clearInterval(flapIntervalRef.current);
+    if (target === 0) { setFlapValue(0); return; }
+    setFlapValue(0);
+    const DURATION = 1600;
+    const STEPS = 45;
+    const INTERVAL = DURATION / STEPS;
+    let step = 0;
+    flapIntervalRef.current = setInterval(() => {
+      step++;
+      const t = step / STEPS;
+      const eased = 1 - Math.pow(1 - t, 3);
+      setFlapValue(Math.round(eased * target));
+      if (step >= STEPS) {
+        clearInterval(flapIntervalRef.current!);
+        flapIntervalRef.current = null;
+        setFlapValue(target);
+      }
+    }, INTERVAL);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const target = (summary as any)?.batting?.totalRuns ?? 0;
+      triggerCountUp(target);
+      return () => {
+        if (flapIntervalRef.current) clearInterval(flapIntervalRef.current);
+      };
+    }, [(summary as any)?.batting?.totalRuns, triggerCountUp])
+  );
+
+  useEffect(() => {
+    const target = (summary as any)?.batting?.totalRuns ?? 0;
+    if (target > 0) triggerCountUp(target);
+  }, [(summary as any)?.batting?.totalRuns]);
+
   const isRefreshing = summaryRefetching || matchesRefetching || perMatchRefetching;
 
   const recentMatches = matches?.slice(0, 5) ?? [];
@@ -664,7 +704,7 @@ export default function DashboardScreen() {
         </View>
         {summary ? (
           <View style={styles.splitFlapRow}>
-            <SplitFlapDisplay value={summary.batting.totalRuns} />
+            <SplitFlapDisplay value={flapValue} />
             <Text style={[styles.runsLabel, { color: colors.mutedForeground }]}>Runs</Text>
           </View>
         ) : (
