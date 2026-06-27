@@ -8,9 +8,10 @@ const FONT_SIZE = 58;
 const RADIUS = 12;
 const DIVIDER = 2;
 
-const SLATE = "#0f1e3c";
+const SLATE = "#12213a";
 const INK = "#f0f4ff";
 const DIVIDER_COLOR = "rgba(0,0,0,0.55)";
+const TILE_BORDER = "rgba(210, 175, 90, 0.55)";
 
 function HalfDigit({
   digit,
@@ -100,10 +101,13 @@ function SplitFlapDigit({ digit }: { digit: string }) {
       style={{
         width: TILE_W,
         marginHorizontal: 3,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 8,
+        borderRadius: RADIUS,
+        borderWidth: 1.5,
+        borderColor: TILE_BORDER,
+        shadowColor: "#D2AF5A",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
         elevation: 8,
       }}
     >
@@ -170,6 +174,8 @@ export function SplitFlapDisplay({ value }: { value: number }) {
               marginHorizontal: 3,
               backgroundColor: SLATE,
               borderRadius: RADIUS,
+              borderWidth: 1.5,
+              borderColor: TILE_BORDER,
               justifyContent: "center",
               alignItems: "center",
             }}
