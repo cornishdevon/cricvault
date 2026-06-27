@@ -13,6 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
+import { useSeasonContext, type CricketRegion } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
@@ -29,6 +30,7 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
 export default function SettingsModal() {
   const colors = useColors();
   const { override, setOverride } = useAppearance();
+  const { region, setRegion } = useSeasonContext();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { labels, updateLabel, resetLabels } = useTabLabels();
@@ -104,6 +106,50 @@ export default function SettingsModal() {
                     ]}
                   >
                     {opt === "light" ? "Light" : opt === "dark" ? "Dark" : "Auto"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <Text style={[styles.heading, { color: colors.foreground }]}>
+          Season
+        </Text>
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="globe" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Cricket region</Text>
+            <Text style={[styles.regionSub, { color: colors.mutedForeground }]}>
+              {region === "england"
+                ? "Calendar year season (e.g. 2026)"
+                : "Split-year season (e.g. 2026/27)"}
+            </Text>
+            <View style={styles.schemeRow}>
+              {([
+                { key: "england", label: "England / Aus" },
+                { key: "subcontinent", label: "Subcontinent" },
+              ] as { key: CricketRegion; label: string }[]).map(({ key, label }) => (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.schemeBtn,
+                    {
+                      backgroundColor: region === key ? colors.primary : colors.muted,
+                      borderColor: region === key ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setRegion(key)}
+                >
+                  <Text
+                    style={[
+                      styles.schemeBtnText,
+                      { color: region === key ? colors.primaryForeground : colors.mutedForeground },
+                    ]}
+                  >
+                    {label}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -237,6 +283,7 @@ const styles = StyleSheet.create({
   resetBtn: { alignItems: "center", paddingVertical: 12 },
   resetBtnText: { fontSize: 14, fontFamily: "Inter_400Regular" },
 
+  regionSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
   schemeRow: { flexDirection: "row", gap: 8, marginTop: 2 },
   schemeBtn: {
     flex: 1,

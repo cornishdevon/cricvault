@@ -17,6 +17,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
+import { SeasonProvider } from "@/contexts/SeasonContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -71,6 +72,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <AppearanceProvider>
+        <SeasonProvider>
         <PlayerNameProvider>
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
@@ -82,6 +84,7 @@ export default function RootLayout() {
           </QueryClientProvider>
         </TabLabelsProvider>
         </PlayerNameProvider>
+        </SeasonProvider>
         </AppearanceProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

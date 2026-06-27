@@ -20,6 +20,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useSeasonContext } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
@@ -564,18 +565,18 @@ export default function DashboardScreen() {
 
   const isLoading = summaryLoading || matchesLoading;
 
-  const currentYear = new Date().getFullYear().toString();
+  const { seasonLabel, isMatchInSeason } = useSeasonContext();
   const allPerMatchEarly = perMatch ?? [];
   const seasonRuns = allPerMatchEarly
-    .filter((m) => m.date?.startsWith(currentYear) && m.runs != null)
+    .filter((m) => isMatchInSeason(m.date) && m.runs != null)
     .reduce((s, m) => s + (m.runs ?? 0), 0);
   const seasonWickets = allPerMatchEarly
-    .filter((m) => m.date?.startsWith(currentYear) && m.wickets != null)
+    .filter((m) => isMatchInSeason(m.date) && m.wickets != null)
     .reduce((s, m) => s + (m.wickets ?? 0), 0);
-  const seasonMatches = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear)).length;
+  const seasonMatches = allPerMatchEarly.filter((m) => isMatchInSeason(m.date)).length;
 
   // ── Detailed season batting stats ──────────────────────────────────────────
-  const seasonBatted = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear) && m.runs != null);
+  const seasonBatted = allPerMatchEarly.filter((m) => isMatchInSeason(m.date) && m.runs != null);
   const seasonHS = seasonBatted.reduce((max, m) => Math.max(max, m.runs ?? 0), 0);
   const seasonFifties = seasonBatted.filter((m) => (m.runs ?? 0) >= 50 && (m.runs ?? 0) < 100).length;
   const seasonCenturies = seasonBatted.filter((m) => (m.runs ?? 0) >= 100).length;
@@ -595,7 +596,7 @@ export default function DashboardScreen() {
       : "—";
 
   // ── Detailed season bowling stats ──────────────────────────────────────────
-  const seasonBowled = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear) && m.wickets != null);
+  const seasonBowled = allPerMatchEarly.filter((m) => isMatchInSeason(m.date) && m.wickets != null);
   const seasonRunsConceded = seasonBowled.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
   const seasonOvers = seasonBowled.reduce((s, m) => s + (m.overs ?? 0), 0);
   const seasonEconomy = seasonOvers > 0 ? (seasonRunsConceded / seasonOvers).toFixed(2) : "—";
@@ -759,7 +760,7 @@ export default function DashboardScreen() {
           )}
           {summary ? (
             <Text style={[styles.heroSub, { color: colors.pavilionMuted }]}>
-              {currentYear} Season · {seasonMatches} matches · {seasonWickets} wkts
+              {seasonLabel} Season · {seasonMatches} matches · {seasonWickets} wkts
             </Text>
           ) : null}
         </View>
@@ -789,7 +790,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* ── Current Season ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{currentYear} Season — Batting</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{seasonLabel} Season — Batting</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Runs" value={seasonRuns} colors={colors} />
             <StatCard label="Innings" value={seasonInnings} colors={colors} />
@@ -802,7 +803,7 @@ export default function DashboardScreen() {
             <StatCard label="Matches" value={seasonMatches} colors={colors} />
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{currentYear} Season — Bowling</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{seasonLabel} Season — Bowling</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Wickets" value={seasonWickets} colors={colors} />
             <StatCard label="Best" value={seasonBest} colors={colors} />
@@ -890,7 +891,7 @@ export default function DashboardScreen() {
           <SeasonTargets
             currentRuns={seasonRuns}
             currentWickets={seasonWickets}
-            season={currentYear}
+            season={seasonLabel}
             colors={colors}
           />
 
