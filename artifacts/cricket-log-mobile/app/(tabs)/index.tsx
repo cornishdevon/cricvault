@@ -691,7 +691,7 @@ export default function DashboardScreen() {
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
-            Hi, {playerName || "Cricketer"} 👋
+            Hi, {playerName || "Cricketer"}
           </Text>
           {isLiquidGlassAvailable() && (
             <TouchableOpacity
