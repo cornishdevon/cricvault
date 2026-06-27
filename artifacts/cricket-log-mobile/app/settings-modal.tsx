@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAppearance } from "@/contexts/AppearanceContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
@@ -27,6 +28,7 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
 
 export default function SettingsModal() {
   const colors = useColors();
+  const { override, setOverride } = useAppearance();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { labels, updateLabel, resetLabels } = useTabLabels();
@@ -73,6 +75,42 @@ export default function SettingsModal() {
         ]}
         keyboardShouldPersistTaps="handled"
       >
+        <Text style={[styles.heading, { color: colors.foreground }]}>
+          Appearance
+        </Text>
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="moon" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Colour scheme</Text>
+            <View style={styles.schemeRow}>
+              {(["light", "system", "dark"] as const).map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={[
+                    styles.schemeBtn,
+                    {
+                      backgroundColor: override === opt ? colors.primary : colors.muted,
+                      borderColor: override === opt ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setOverride(opt)}
+                >
+                  <Text
+                    style={[
+                      styles.schemeBtnText,
+                      { color: override === opt ? colors.primaryForeground : colors.mutedForeground },
+                    ]}
+                  >
+                    {opt === "light" ? "Light" : opt === "dark" ? "Dark" : "Auto"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
         <Text style={[styles.heading, { color: colors.foreground }]}>
           Profile
         </Text>
@@ -198,4 +236,14 @@ const styles = StyleSheet.create({
   },
   resetBtn: { alignItems: "center", paddingVertical: 12 },
   resetBtnText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+
+  schemeRow: { flexDirection: "row", gap: 8, marginTop: 2 },
+  schemeBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  schemeBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
 });

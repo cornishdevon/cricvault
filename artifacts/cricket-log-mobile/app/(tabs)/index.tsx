@@ -564,6 +564,16 @@ export default function DashboardScreen() {
 
   const isLoading = summaryLoading || matchesLoading;
 
+  const currentYear = new Date().getFullYear().toString();
+  const allPerMatchEarly = perMatch ?? [];
+  const seasonRuns = allPerMatchEarly
+    .filter((m) => m.date?.startsWith(currentYear) && m.runs != null)
+    .reduce((s, m) => s + (m.runs ?? 0), 0);
+  const seasonWickets = allPerMatchEarly
+    .filter((m) => m.date?.startsWith(currentYear) && m.wickets != null)
+    .reduce((s, m) => s + (m.wickets ?? 0), 0);
+  const seasonMatches = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear)).length;
+
   const [flapValue, setFlapValue] = useState(0);
   const flapIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -590,18 +600,16 @@ export default function DashboardScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      const target = (summary as any)?.batting?.totalRuns ?? 0;
-      triggerCountUp(target);
+      triggerCountUp(seasonRuns);
       return () => {
         if (flapIntervalRef.current) clearInterval(flapIntervalRef.current);
       };
-    }, [(summary as any)?.batting?.totalRuns, triggerCountUp])
+    }, [seasonRuns, triggerCountUp])
   );
 
   useEffect(() => {
-    const target = (summary as any)?.batting?.totalRuns ?? 0;
-    if (target > 0) triggerCountUp(target);
-  }, [(summary as any)?.batting?.totalRuns]);
+    if (seasonRuns > 0) triggerCountUp(seasonRuns);
+  }, [seasonRuns]);
 
   const isRefreshing = summaryRefetching || matchesRefetching || perMatchRefetching;
 
@@ -646,14 +654,6 @@ export default function DashboardScreen() {
 
   const hasChartData = chartMatches.length > 0;
   const allPerMatch = perMatch ?? [];
-
-  const currentYear = new Date().getFullYear().toString();
-  const seasonRuns = allPerMatch
-    .filter((m) => m.date?.startsWith(currentYear) && m.runs != null)
-    .reduce((s, m) => s + (m.runs ?? 0), 0);
-  const seasonWickets = allPerMatch
-    .filter((m) => m.date?.startsWith(currentYear) && m.wickets != null)
-    .reduce((s, m) => s + (m.wickets ?? 0), 0);
 
   const handleMatchPress = (id: number) => router.push(`/match/${id}`);
 
@@ -721,7 +721,7 @@ export default function DashboardScreen() {
           )}
           {summary ? (
             <Text style={[styles.heroSub, { color: colors.pavilionMuted }]}>
-              {summary.totalMatches} matches · {summary.bowling.totalWickets} wickets
+              {currentYear} Season · {seasonMatches} matches · {seasonWickets} wkts
             </Text>
           ) : null}
         </View>

@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -68,6 +69,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
+        <AppearanceProvider>
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1 }}>
@@ -77,6 +79,7 @@ export default function RootLayout() {
             </GestureHandlerRootView>
           </QueryClientProvider>
         </TabLabelsProvider>
+        </AppearanceProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
   );
