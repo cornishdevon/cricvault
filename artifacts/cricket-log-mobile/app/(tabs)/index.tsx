@@ -749,7 +749,7 @@ export default function DashboardScreen() {
           </View>
           {summary ? (
             <View style={styles.splitFlapRow}>
-              <SplitFlapDisplay value={flapValue} minDigits={summary && summary.batting.totalRuns >= 1000 ? 4 : 3} />
+              <SplitFlapDisplay value={flapValue} />
               <Text style={[styles.runsLabel, { color: colors.pavilionForeground }]}>Runs</Text>
             </View>
           ) : (
