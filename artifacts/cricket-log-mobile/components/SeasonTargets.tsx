@@ -155,7 +155,7 @@ export function SeasonTargets({
               {currentRuns}/{targets.runs}{!runsDone ? `  (${runsLeft} to go)` : ""}
             </Text>
           </View>
-          <ProgressBar value={currentRuns} max={targets.runs} color={runsDone ? "#22c55e" : colors.primary} />
+          <ProgressBar value={currentRuns} max={targets.runs} color={colors.primary} />
         </View>
       )}
 
@@ -167,7 +167,7 @@ export function SeasonTargets({
               {currentWickets}/{targets.wickets}{!wktsDone ? `  (${wktsLeft} to go)` : ""}
             </Text>
           </View>
-          <ProgressBar value={currentWickets} max={targets.wickets} color={wktsDone ? "#22c55e" : "#8b5cf6"} />
+          <ProgressBar value={currentWickets} max={targets.wickets} color={colors.accent} />
         </View>
       )}
     </View>
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   goalMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
   goalLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
   goalCount: { fontSize: 11, fontFamily: "Inter_400Regular" },
-  barBg: { height: 8, borderRadius: 4, backgroundColor: "#e5e7eb", overflow: "hidden" },
+  barBg: { height: 8, borderRadius: 4, backgroundColor: "#D4CCBA", overflow: "hidden" },
   barFill: { height: 8, borderRadius: 4 },
 
   emptyCard: {

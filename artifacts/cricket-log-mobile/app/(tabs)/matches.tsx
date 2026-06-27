@@ -98,8 +98,8 @@ function MatchItem({
         <Text style={[styles.meta, { color: colors.mutedForeground }]}>{match.date}</Text>
         <Text style={[styles.meta, { color: colors.mutedForeground }]}>{match.matchType}</Text>
         {match.playerOfTheMatch ? (
-          <View style={[styles.potmBadge, { backgroundColor: "#fff8dc" }]}>
-            <Text style={[styles.potmText, { color: "#b45309" }]}>⭐ POTM</Text>
+          <View style={[styles.potmBadge, { backgroundColor: "#EDE8DC" }]}>
+            <Text style={[styles.potmText, { color: "#C0392B" }]}>⭐ POTM</Text>
           </View>
         ) : null}
       </View>

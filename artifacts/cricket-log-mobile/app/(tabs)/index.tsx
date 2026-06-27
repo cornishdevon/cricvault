@@ -173,8 +173,8 @@ function FormGuideSection({ data, colors, onPress }: {
   const getRunColor = (runs: number | null | undefined) => {
     if (runs == null) return colors.border;
     if (runs >= 50) return "#16a34a";
-    if (runs >= 25) return "#d97706";
-    return "#ef4444";
+    if (runs >= 25) return "#4A9E61";
+    return "#C0392B";
   };
 
   return (
@@ -199,7 +199,7 @@ function FormGuideSection({ data, colors, onPress }: {
                 <Text style={[styles.formStat, { color: getRunColor(runs) }]}>{runs}</Text>
               )}
               {wkts != null && (
-                <Text style={[styles.formWkts, { color: "#7c3aed" }]}>{wkts}w</Text>
+                <Text style={[styles.formWkts, { color: colors.accent }]}>{wkts}w</Text>
               )}
               <Text style={[styles.formOpponent, { color: colors.mutedForeground }]} numberOfLines={1}>
                 {m.opponent.slice(0, 4)}
@@ -266,7 +266,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
             style={[styles.bestCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <BallHitsStumps size={32} />
-            <Text style={[styles.bestValue, { color: "#7c3aed" }]}>
+            <Text style={[styles.bestValue, { color: colors.accent }]}>
               {bestBowl.wickets}/{bestBowl.runsConceded ?? 0}
             </Text>
             <Text style={[styles.bestLabel, { color: colors.foreground }]}>Best Bowling</Text>
@@ -282,7 +282,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
 
 // ── Dismissal Breakdown ────────────────────────────────────────────────────────
 
-const DISMISSAL_COLORS_M = ["#16a34a","#2563eb","#7c3aed","#d97706","#dc2626","#0891b2","#db2777","#475569"];
+const DISMISSAL_COLORS_M = ["#1B5E2B","#C0392B","#4A9E61","#922B21","#2D7D45","#E55A4A","#7A6E5F","#0A3018"];
 
 function DismissalSection({ data, colors }: {
   data: PerMatchStat[];
@@ -871,7 +871,7 @@ export default function DashboardScreen() {
               Wickets — {summary.bowling.totalWickets} / {nextWicketTarget}
             </Text>
             <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
-              <View style={[styles.progressFill, { width: `${wicketsPct}%` as any, backgroundColor: "#3b82f6" }]} />
+              <View style={[styles.progressFill, { width: `${wicketsPct}%` as any, backgroundColor: colors.accent }]} />
             </View>
             <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
               {nextWicketTarget - summary.bowling.totalWickets} wickets to next milestone

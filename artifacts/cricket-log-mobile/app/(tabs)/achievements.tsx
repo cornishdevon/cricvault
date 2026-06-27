@@ -221,9 +221,9 @@ export default function AchievementsScreen() {
             {/* Batting milestones bar */}
             {innings.length > 0 && (
               <View style={[styles.milestonesBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <MilestonePip color="#84cc16" count={innings.filter((d) => (d.runs ?? 0) >= 25).length} label="25+" />
+                <MilestonePip color="#4A9E61" count={innings.filter((d) => (d.runs ?? 0) >= 25).length} label="25+" />
                 <MilestonePip color={colors.primary} count={fifties} label="50+" />
-                <MilestonePip color="#f59e0b" count={hundreds} label="100+" />
+                <MilestonePip color="#C0392B" count={hundreds} label="100+" />
                 <Text style={[styles.inningsTotal, { color: colors.mutedForeground }]}>
                   {innings.length} innings
                 </Text>

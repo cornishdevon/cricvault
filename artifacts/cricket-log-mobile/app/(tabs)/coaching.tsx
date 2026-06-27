@@ -24,11 +24,11 @@ const CATEGORIES = ["All", "Batting", "Bowling", "Fielding", "Fitness", "Mental"
 type Category = (typeof CATEGORIES)[number];
 
 const CATEGORY_ACCENT: Record<string, string> = {
-  Batting:  "#22c55e",
-  Bowling:  "#8b5cf6",
-  Fielding: "#f59e0b",
-  Fitness:  "#ef4444",
-  Mental:   "#06b6d4",
+  Batting:  "#1B5E2B",
+  Bowling:  "#C0392B",
+  Fielding: "#4A9E61",
+  Fitness:  "#C0392B",
+  Mental:   "#2D7D45",
 };
 
 const CATEGORY_ICON: Record<string, string> = {

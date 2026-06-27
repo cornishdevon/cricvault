@@ -1380,7 +1380,7 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 999,
     backgroundColor: "#0f2218",
-    borderColor: "#4ade80",
+    borderColor: "#4A9E61",
     borderWidth: 1.5,
     borderRadius: 18,
     paddingVertical: 20,
@@ -1395,7 +1395,7 @@ const styles = StyleSheet.create({
   popupTitle: {
     fontSize: 17,
     fontFamily: "Inter_700Bold",
-    color: "#4ade80",
+    color: "#4A9E61",
     marginBottom: 14,
     textAlign: "center",
   },
