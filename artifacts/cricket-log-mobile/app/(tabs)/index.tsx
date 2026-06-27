@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
+import { BallHitsStumps, StumpsExploding } from "@/components/CricketIcons";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
@@ -260,7 +261,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
             onPress={() => onPress(bestBowl.matchId)}
             style={[styles.bestCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
-            <Text style={[styles.bestIcon]}>🎳</Text>
+            <BallHitsStumps size={32} />
             <Text style={[styles.bestValue, { color: "#7c3aed" }]}>
               {bestBowl.wickets}/{bestBowl.runsConceded ?? 0}
             </Text>
@@ -460,7 +461,7 @@ const SHORTCUTS = [
   { label: "📊 Stats", key: "stats" },
   { label: "🎯 Targets", key: "goals" },
   { label: "📈 Form", key: "form" },
-  { label: "🎳 Dismissals", key: "dismissals" },
+  { label: "Dismissals", key: "dismissals" },
   { label: "🏟 Match Types", key: "matchtype" },
   { label: "👊 Head-to-Head", key: "h2h" },
   { label: "🗂 Recent", key: "recent" },
@@ -486,7 +487,14 @@ function ShortcutPills({
           onPress={() => onPress(s.key)}
           style={[styles.pill, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+          {s.key === "dismissals" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <StumpsExploding size={15} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : (
+            <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+          )}
         </TouchableOpacity>
       ))}
     </ScrollView>
