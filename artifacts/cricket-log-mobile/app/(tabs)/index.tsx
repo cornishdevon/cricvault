@@ -919,6 +919,8 @@ const styles = StyleSheet.create({
   formStat: {
     fontSize: 15,
     fontFamily: "Inter_700Bold",
+    textAlign: "center",
+    width: "100%",
   },
   formWkts: {
     fontSize: 12,
