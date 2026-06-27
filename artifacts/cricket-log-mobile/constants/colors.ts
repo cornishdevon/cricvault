@@ -1,35 +1,76 @@
 const colors = {
   light: {
-    text: "#0f1a0f",
-    tint: "#2d7a42",
+    text: "#1A1A2E",
+    tint: "#1B5E2B",
 
-    background: "#b8e0c4",
-    foreground: "#0f1a0f",
+    background: "#F5F0E8",
+    foreground: "#1A1A2E",
 
-    card: "#ffffff",
-    cardForeground: "#0f1a0f",
+    card: "#FFFDF8",
+    cardForeground: "#1A1A2E",
 
-    primary: "#2d7a42",
-    primaryForeground: "#ffffff",
+    primary: "#1B5E2B",
+    primaryForeground: "#FFFFFF",
 
-    secondary: "#e8f0e9",
-    secondaryForeground: "#1a3d20",
+    secondary: "#EDE8DC",
+    secondaryForeground: "#1A1A2E",
 
-    muted: "#eef2ee",
-    mutedForeground: "#6b7c6b",
+    muted: "#EDE8DC",
+    mutedForeground: "#7A6E5F",
 
-    accent: "#e8f0e9",
-    accentForeground: "#1a3d20",
+    accent: "#C0392B",
+    accentForeground: "#FFFFFF",
 
-    destructive: "#d93025",
-    destructiveForeground: "#ffffff",
+    destructive: "#C0392B",
+    destructiveForeground: "#FFFFFF",
 
-    border: "#dce8dc",
-    input: "#dce8dc",
+    border: "#D4CCBA",
+    input: "#D4CCBA",
 
-    success: "#2d7a42",
-    warning: "#d97706",
-    info: "#2563eb",
+    success: "#1B5E2B",
+    warning: "#B45309",
+    info: "#1E40AF",
+
+    pavilion: "#1A3520",
+    pavilionForeground: "#FFFDF8",
+    pavilionMuted: "rgba(255,255,255,0.55)",
+  },
+
+  dark: {
+    text: "#E8E0CC",
+    tint: "#3D8B52",
+
+    background: "#0D1A10",
+    foreground: "#E8E0CC",
+
+    card: "#142019",
+    cardForeground: "#E8E0CC",
+
+    primary: "#3D8B52",
+    primaryForeground: "#0D1A10",
+
+    secondary: "#1E2E20",
+    secondaryForeground: "#E8E0CC",
+
+    muted: "#1E2E20",
+    mutedForeground: "#9A9080",
+
+    accent: "#C0392B",
+    accentForeground: "#FFFFFF",
+
+    destructive: "#E55A4A",
+    destructiveForeground: "#FFFFFF",
+
+    border: "#2A3D2C",
+    input: "#2A3D2C",
+
+    success: "#3D8B52",
+    warning: "#D97706",
+    info: "#3B82F6",
+
+    pavilion: "#0D1F14",
+    pavilionForeground: "#FFFDF8",
+    pavilionMuted: "rgba(255,255,255,0.50)",
   },
 
   radius: 10,

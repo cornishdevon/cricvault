@@ -685,38 +685,40 @@ export default function DashboardScreen() {
         />
       }
     >
-      {/* ── Shortcut Pills ── */}
-      <ShortcutPills colors={colors} onPress={handleShortcut} />
+      {/* ── Pavilion hero — dark cricket green scoreboard section ── */}
+      <View style={[styles.pavilion, { backgroundColor: colors.pavilion }]}>
+        <ShortcutPills colors={colors} onPress={handleShortcut} />
 
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
-            Hi, {playerName || "Cricketer"}
-          </Text>
-          {isLiquidGlassAvailable() && (
-            <TouchableOpacity
-              onPress={() => router.push("/settings-modal")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Feather name="settings" size={20} color={colors.mutedForeground} />
-            </TouchableOpacity>
-          )}
-        </View>
-        {summary ? (
-          <View style={styles.splitFlapRow}>
-            <SplitFlapDisplay value={flapValue} />
-            <Text style={[styles.runsLabel, { color: colors.mutedForeground }]}>Runs</Text>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <Text style={[styles.greeting, { color: colors.pavilionMuted }]}>
+              Hi, {playerName || "Cricketer"}
+            </Text>
+            {isLiquidGlassAvailable() && (
+              <TouchableOpacity
+                onPress={() => router.push("/settings-modal")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="settings" size={20} color={colors.pavilionMuted} />
+              </TouchableOpacity>
+            )}
           </View>
-        ) : (
-          <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-            {isLoading ? "Loading…" : "No data yet"}
-          </Text>
-        )}
-        {summary ? (
-          <Text style={[styles.heroSub, { color: colors.mutedForeground }]}>
-            {summary.totalMatches} matches · {summary.bowling.totalWickets} wickets
-          </Text>
-        ) : null}
+          {summary ? (
+            <View style={styles.splitFlapRow}>
+              <SplitFlapDisplay value={flapValue} />
+              <Text style={[styles.runsLabel, { color: colors.pavilionForeground }]}>Runs</Text>
+            </View>
+          ) : (
+            <Text style={[styles.heroTitle, { color: colors.pavilionForeground }]}>
+              {isLoading ? "Loading…" : "No data yet"}
+            </Text>
+          )}
+          {summary ? (
+            <Text style={[styles.heroSub, { color: colors.pavilionMuted }]}>
+              {summary.totalMatches} matches · {summary.bowling.totalWickets} wickets
+            </Text>
+          ) : null}
+        </View>
       </View>
 
       {isLoading ? (
@@ -903,20 +905,24 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  pavilion: { paddingBottom: 20 },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
   greeting: { fontSize: 13, fontFamily: "Inter_500Medium" },
   splitFlapRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 10, marginBottom: 2 },
-  runsLabel: { fontSize: 22, fontFamily: "Inter_600SemiBold" },
+  runsLabel: { fontSize: 22, fontFamily: "Inter_600SemiBold", letterSpacing: 1 },
   heroTitle: { fontSize: 32, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
-  heroSub: { fontSize: 14, fontFamily: "Inter_400Regular", marginTop: 4 },
+  heroSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 6, letterSpacing: 0.3 },
 
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 24,
     marginBottom: 10,
+    opacity: 0.6,
   },
   statsGrid: {
     flexDirection: "row",
