@@ -920,7 +920,7 @@ export default function DashboardScreen() {
                 Wickets Taken
               </Text>
               <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <BarChart data={wicketsData} barColor="#8b5cf6" colors={colors} />
+                <BarChart data={wicketsData} barColor={colors.primary} colors={colors} />
               </View>
             </>
           )}
