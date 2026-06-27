@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
+import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
@@ -621,13 +622,16 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           )}
         </View>
-        <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-          {summary
-            ? `${summary.batting.totalRuns} Runs`
-            : isLoading
-            ? "Loading…"
-            : "No data yet"}
-        </Text>
+        {summary ? (
+          <View style={styles.splitFlapRow}>
+            <SplitFlapDisplay value={summary.batting.totalRuns} />
+            <Text style={[styles.runsLabel, { color: colors.mutedForeground }]}>Runs</Text>
+          </View>
+        ) : (
+          <Text style={[styles.heroTitle, { color: colors.foreground }]}>
+            {isLoading ? "Loading…" : "No data yet"}
+          </Text>
+        )}
         {summary ? (
           <Text style={[styles.heroSub, { color: colors.mutedForeground }]}>
             {summary.totalMatches} matches · {summary.bowling.totalWickets} wickets
@@ -822,6 +826,8 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
   greeting: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  splitFlapRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 10, marginBottom: 2 },
+  runsLabel: { fontSize: 22, fontFamily: "Inter_600SemiBold" },
   heroTitle: { fontSize: 32, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   heroSub: { fontSize: 14, fontFamily: "Inter_400Regular", marginTop: 4 },
 
