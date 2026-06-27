@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -196,6 +197,7 @@ type PerMatchStat = {
   runOuts?: number | null;
   stumpings?: number | null;
   droppedCatches?: number | null;
+  battingPosition?: number | null;
 };
 
 function FormGuideSection({ data, colors, onPress }: {
@@ -666,6 +668,62 @@ export default function DashboardScreen() {
     ? `${seasonBestBowling.wickets}/${seasonBestBowling.runsConceded ?? "?"}`
     : "—";
 
+  // ── Season comparison deltas ────────────────────────────────────────────────
+  const prevSeason = availableSeasons[selectedSeasonIdx + 1];
+  const prevSeasonFiltered = prevSeason
+    ? allPerMatchEarly.filter((m) => !!m.date && m.date >= prevSeason.startDate && m.date <= prevSeason.endDate)
+    : [];
+  const prevSeasonRuns = prevSeasonFiltered.filter((m) => m.runs != null).reduce((s, m) => s + (m.runs ?? 0), 0);
+  const prevSeasonWickets = prevSeasonFiltered.filter((m) => m.wickets != null).reduce((s, m) => s + (m.wickets ?? 0), 0);
+  const prevSeasonCatches = prevSeasonFiltered.reduce((s, m) => s + (m.catches ?? 0), 0);
+  const runsDelta = prevSeason != null ? seasonRuns - prevSeasonRuns : null;
+  const wicketsDelta = prevSeason != null ? seasonWickets - prevSeasonWickets : null;
+  const catchesDelta = prevSeason != null ? seasonCatches - prevSeasonCatches : null;
+
+  // ── Form streak ─────────────────────────────────────────────────────────────
+  const sortedForStreak = [...allPerMatchEarly].sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+  let runStreak = 0;
+  for (let i = sortedForStreak.length - 1; i >= 0; i--) {
+    const m = sortedForStreak[i];
+    if (m.runs == null) continue;
+    if ((m.runs ?? 0) >= 30) { runStreak++; } else { break; }
+  }
+
+  // ── Batting position breakdown ───────────────────────────────────────────────
+  const positionAccum: Record<string, { runs: number; innings: number; notOuts: number }> = {};
+  for (const m of allPerMatchEarly) {
+    if (m.runs == null || !m.battingPosition) continue;
+    const p = String(m.battingPosition);
+    if (!positionAccum[p]) positionAccum[p] = { runs: 0, innings: 0, notOuts: 0 };
+    positionAccum[p].runs += m.runs ?? 0;
+    positionAccum[p].innings++;
+    if (!m.howOut || m.howOut.toLowerCase() === "not out") positionAccum[p].notOuts++;
+  }
+  const positionRows = Object.entries(positionAccum)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([pos, { runs, innings, notOuts }]) => {
+      const p = Number(pos);
+      const label = p <= 2 ? "Opener" : p <= 4 ? "Top Order" : p <= 7 ? "Middle Order" : "Lower Order";
+      const dismissals = innings - notOuts;
+      return { pos: p, label, runs, innings, avg: dismissals > 0 ? (runs / dismissals).toFixed(1) : "—" };
+    });
+
+  // ── Season pace projection ───────────────────────────────────────────────────
+  let projectedRuns: number | null = null;
+  let projectedWickets: number | null = null;
+  if (activeSeason && seasonMatches > 0) {
+    const today = new Date();
+    const start = new Date(activeSeason.startDate);
+    const end = new Date(activeSeason.endDate);
+    const totalMs = end.getTime() - start.getTime();
+    const elapsedMs = Math.min(today.getTime() - start.getTime(), totalMs);
+    const pct = totalMs > 0 ? elapsedMs / totalMs : 0;
+    if (pct > 0.05 && pct < 0.95) {
+      projectedRuns = Math.round(seasonRuns / pct);
+      projectedWickets = Math.round(seasonWickets / pct);
+    }
+  }
+
   const [flapValue, setFlapValue] = useState(0);
   const flapIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -748,6 +806,16 @@ export default function DashboardScreen() {
   const allPerMatch = perMatch ?? [];
 
   const handleMatchPress = (id: number) => router.push(`/match/${id}`);
+
+  const handleShare = async () => {
+    const lines = [
+      `📊 ${activeSeasonLabel} Season — CricVault`,
+      `🏏 ${seasonRuns} runs · Avg ${seasonBattingAvg} · HS ${seasonHS}`,
+      `🎳 ${seasonWickets} wickets · Best ${seasonBest}`,
+      `🧤 ${seasonCatches} catches · ${seasonMatches} matches`,
+    ].join("\n");
+    try { await Share.share({ message: lines }); } catch (_) {}
+  };
 
   const scrollViewRef = useRef<ScrollView>(null);
   const sectionRefs = useRef<Record<string, number>>({});
@@ -857,23 +925,58 @@ export default function DashboardScreen() {
             </ScrollView>
           )}
 
+          {/* ── Milestone strip ── */}
+          <View style={[styles.milestoneStrip, { backgroundColor: colors.muted, borderColor: colors.border }]}>
+            <Text style={[styles.milestoneStripItem, { color: colors.primary }]}>
+              🏏 {nextRunTarget - summary.batting.totalRuns} to {nextRunTarget} runs
+            </Text>
+            <Text style={[styles.milestoneStripSep, { color: colors.border }]}> · </Text>
+            <Text style={[styles.milestoneStripItem, { color: colors.accent }]}>
+              🎳 {nextWicketTarget - summary.bowling.totalWickets} to {nextWicketTarget} wickets
+            </Text>
+          </View>
+
           {/* ── Season headline card ── */}
           <View style={[styles.headlineCard, { backgroundColor: colors.primary }]}>
             <View style={styles.headlineStat}>
               <Text style={styles.headlineValue}>{seasonRuns}</Text>
               <Text style={styles.headlineLabel}>Runs</Text>
+              {runsDelta !== null && (
+                <Text style={[styles.headlineDelta, { color: runsDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
+                  {runsDelta >= 0 ? "+" : ""}{runsDelta} vs {prevSeason?.label}
+                </Text>
+              )}
             </View>
             <View style={styles.headlineDivider} />
             <View style={styles.headlineStat}>
               <Text style={styles.headlineValue}>{seasonWickets}</Text>
               <Text style={styles.headlineLabel}>Wickets</Text>
+              {wicketsDelta !== null && (
+                <Text style={[styles.headlineDelta, { color: wicketsDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
+                  {wicketsDelta >= 0 ? "+" : ""}{wicketsDelta}
+                </Text>
+              )}
             </View>
             <View style={styles.headlineDivider} />
             <View style={styles.headlineStat}>
               <Text style={styles.headlineValue}>{seasonCatches}</Text>
               <Text style={styles.headlineLabel}>Catches</Text>
+              {catchesDelta !== null && (
+                <Text style={[styles.headlineDelta, { color: catchesDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
+                  {catchesDelta >= 0 ? "+" : ""}{catchesDelta}
+                </Text>
+              )}
             </View>
           </View>
+
+          {/* ── Share button ── */}
+          <TouchableOpacity
+            onPress={handleShare}
+            style={[styles.shareBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+          >
+            <Feather name="share-2" size={13} color={colors.mutedForeground} />
+            <Text style={[styles.shareBtnText, { color: colors.mutedForeground }]}>Share {activeSeasonLabel} stats</Text>
+          </TouchableOpacity>
 
           {/* ── Current Season ── */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — Batting</Text>
@@ -897,6 +1000,16 @@ export default function DashboardScreen() {
             <StatCard label="Economy" value={seasonEconomy} colors={colors} />
             <StatCard label="Overs" value={seasonOvers > 0 ? seasonOvers.toFixed(1) : "—"} colors={colors} />
           </View>
+
+          {/* ── Season Projection ── */}
+          {projectedRuns !== null && (
+            <View style={[styles.projectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.projectionTitle, { color: colors.foreground }]}>📈 Season Projection</Text>
+              <Text style={[styles.projectionSub, { color: colors.mutedForeground }]}>
+                At your current rate — ~{projectedRuns} runs and ~{projectedWickets} wickets by season end
+              </Text>
+            </View>
+          )}
 
           {/* ── Career Totals ── */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Batting</Text>
@@ -939,6 +1052,26 @@ export default function DashboardScreen() {
             <StatCard label="No Balls" value={totalNoBalls} colors={colors} />
             <StatCard label="Wides" value={totalWides} colors={colors} />
           </View>
+
+          {/* ── Batting Position Breakdown ── */}
+          {positionRows.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>By Batting Position</Text>
+              <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {positionRows.map((row) => (
+                  <View key={row.pos} style={styles.posRow}>
+                    <View style={styles.posLabelGroup}>
+                      <Text style={[styles.posNum, { color: colors.primary }]}>#{row.pos}</Text>
+                      <Text style={[styles.posName, { color: colors.mutedForeground }]}> {row.label}</Text>
+                    </View>
+                    <Text style={[styles.posStat, { color: colors.mutedForeground }]}>{row.innings} inn</Text>
+                    <Text style={[styles.posStat, { color: colors.foreground }]}>{row.runs} runs</Text>
+                    <Text style={[styles.posAvg, { color: colors.primary }]}>avg {row.avg}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
 
           {/* ── Milestone Progress ── */}
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Milestones</Text>
@@ -983,6 +1116,13 @@ export default function DashboardScreen() {
 
           {/* ── Form Guide ── */}
           <View onLayout={measureSection("form")} />
+          {runStreak >= 3 && (
+            <View style={[styles.streakBanner, { backgroundColor: colors.accent + "22", borderColor: colors.accent + "55" }]}>
+              <Text style={[styles.streakBannerText, { color: colors.accent }]}>
+                🔥 On a roll — {runStreak} innings in a row with 30+
+              </Text>
+            </View>
+          )}
           {allPerMatch.length > 0 && (
             <FormGuideSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
           )}
@@ -1098,6 +1238,73 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   seasonPillText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
+  milestoneStrip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    marginTop: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  milestoneStripItem: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  milestoneStripSep: { fontSize: 12, fontFamily: "Inter_400Regular" },
+
+  headlineDelta: {
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+    marginTop: 2,
+    opacity: 0.9,
+  },
+
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  shareBtnText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+
+  projectionCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  projectionTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 4 },
+  projectionSub: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 18 },
+
+  posRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#D4CCBA40",
+  },
+  posLabelGroup: { flex: 1, flexDirection: "row", alignItems: "center" },
+  posNum: { fontSize: 14, fontFamily: "Inter_700Bold" },
+  posName: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  posStat: { fontSize: 12, fontFamily: "Inter_500Medium", marginRight: 10 },
+  posAvg: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
+  streakBanner: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  streakBannerText: { fontSize: 13, fontFamily: "Inter_600SemiBold", textAlign: "center" },
 
   headlineCard: {
     flexDirection: "row",
