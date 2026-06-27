@@ -94,6 +94,60 @@ export function BallHitsStumps({ size = 28 }: { size?: number }) {
   );
 }
 
+// ── Two cricket caps facing each other — used on the Head-to-Head pill ───────
+//
+// Viewbox 32×16. Left cap is blue, right cap is red.
+// Both have traditional yellow piping on the crown seam and band edge,
+// and a small circular badge on the front face. Brims point inward to
+// suggest the two opponents facing off.
+//
+export function TwoCricketCaps({ size = 22 }: { size?: number }) {
+  const h = (size / 32) * 16;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 32 16">
+
+      {/* ── Left cap — blue, brim faces right ── */}
+      {/* Crown dome */}
+      <Path d="M 2,12 C 2,4 5,1.5 9,2 C 13,2.5 14,7 14,12 Z" fill="#1d4ed8" />
+      {/* Band */}
+      <Rect x="2" y="12" width="12" height="1.6" fill="#1a3a9f" />
+      {/* Peak */}
+      <Path d="M 13.5,12 L 17,13 L 16,14.2 L 13.5,13.4 Z" fill="#162e72" />
+      {/* Yellow piping — crown seam */}
+      <Path
+        d="M 2,12 C 2,4 5,1.5 9,2 C 13,2.5 14,7 14,12"
+        stroke="#FBBF24" strokeWidth="0.75" fill="none" strokeLinecap="round"
+      />
+      {/* Yellow piping — band top edge */}
+      <Path d="M 2,12 L 14,12" stroke="#FBBF24" strokeWidth="0.5" fill="none" />
+      {/* Badge — circle with outline + mini shield */}
+      <Circle cx="11.5" cy="7.5" r="2" fill="white" />
+      <Circle cx="11.5" cy="7.5" r="2" fill="none" stroke="#FBBF24" strokeWidth="0.45" />
+      <Path d="M 10.7,7 L 11.5,6.2 L 12.3,7 L 12,8.5 L 11,8.5 Z" fill="#1d4ed8" />
+
+      {/* ── Right cap — red, brim faces left ── */}
+      {/* Crown dome */}
+      <Path d="M 30,12 C 30,4 27,1.5 23,2 C 19,2.5 18,7 18,12 Z" fill="#dc2626" />
+      {/* Band */}
+      <Rect x="18" y="12" width="12" height="1.6" fill="#b91c1c" />
+      {/* Peak */}
+      <Path d="M 18.5,12 L 15,13 L 16,14.2 L 18.5,13.4 Z" fill="#8b1a1a" />
+      {/* Yellow piping — crown seam */}
+      <Path
+        d="M 30,12 C 30,4 27,1.5 23,2 C 19,2.5 18,7 18,12"
+        stroke="#FBBF24" strokeWidth="0.75" fill="none" strokeLinecap="round"
+      />
+      {/* Yellow piping — band top edge */}
+      <Path d="M 18,12 L 30,12" stroke="#FBBF24" strokeWidth="0.5" fill="none" />
+      {/* Badge */}
+      <Circle cx="20.5" cy="7.5" r="2" fill="white" />
+      <Circle cx="20.5" cy="7.5" r="2" fill="none" stroke="#FBBF24" strokeWidth="0.45" />
+      <Path d="M 19.7,7 L 20.5,6.2 L 21.3,7 L 21,8.5 L 20,8.5 Z" fill="#dc2626" />
+
+    </Svg>
+  );
+}
+
 // ── Stumps exploding — used on the Dismissals pill ───────────────────────────
 export function StumpsExploding({ size = 18 }: { size?: number }) {
   return (
