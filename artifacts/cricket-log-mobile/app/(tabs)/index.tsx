@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
-import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps } from "@/components/CricketIcons";
+import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards } from "@/components/CricketIcons";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
@@ -460,13 +460,13 @@ function HeadToHeadSection({ data, colors, onPress }: {
 // ── Shortcut Pills ─────────────────────────────────────────────────────────────
 
 const SHORTCUTS = [
-  { label: "📊 Stats", key: "stats" },
-  { label: "🎯 Targets", key: "goals" },
-  { label: "📈 Form", key: "form" },
+  { label: "Stats", key: "stats" },
+  { label: "Targets", key: "goals" },
+  { label: "Form", key: "form" },
   { label: "Dismissals", key: "dismissals" },
   { label: "Match Types", key: "matchtype" },
   { label: "Head-to-Head", key: "h2h" },
-  { label: "🗂 Recent", key: "recent" },
+  { label: "Recent", key: "recent" },
 ];
 
 function ShortcutPills({
@@ -489,7 +489,22 @@ function ShortcutPills({
           onPress={() => onPress(s.key)}
           style={[styles.pill, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          {s.key === "dismissals" ? (
+          {s.key === "stats" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <BarChartStats size={18} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "goals" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <BullseyeTarget size={17} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "form" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <TrendLine size={18} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "dismissals" ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <StumpsExploding size={15} />
               <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
@@ -502,6 +517,11 @@ function ShortcutPills({
           ) : s.key === "h2h" ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <TwoCricketCaps size={22} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "recent" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <StackedCards size={18} />
               <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
             </View>
           ) : (

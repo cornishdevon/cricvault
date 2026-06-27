@@ -1,5 +1,5 @@
 import React from "react";
-import Svg, { Circle, G, Line, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Defs, G, Line, LinearGradient, Path, Polygon, Rect, Stop } from "react-native-svg";
 
 const STUMP = "#E8D5A8";
 const STRIPE = "#1d4ed8";
@@ -186,6 +186,129 @@ export function StumpsExploding({ size = 18 }: { size?: number }) {
       <G origin="13 2" rotation={22}>
         <Rect x="9" y="0.5" width="8" height="2" rx="1" fill={STUMP} />
       </G>
+    </Svg>
+  );
+}
+
+// ── Bar-chart scorecard — Stats pill ──────────────────────────────────────────
+//
+// Three ascending bars in shades of blue, with a base line.
+// Feels like a cricket scorecard histogram.
+//
+export function BarChartStats({ size = 18 }: { size?: number }) {
+  const h = (size / 16) * 14;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 16 14">
+      <Defs>
+        <LinearGradient id="bar1" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#60a5fa" stopOpacity="1" />
+          <Stop offset="1" stopColor="#3b82f6" stopOpacity="1" />
+        </LinearGradient>
+        <LinearGradient id="bar2" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#3b82f6" stopOpacity="1" />
+          <Stop offset="1" stopColor="#1d4ed8" stopOpacity="1" />
+        </LinearGradient>
+        <LinearGradient id="bar3" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#1d4ed8" stopOpacity="1" />
+          <Stop offset="1" stopColor="#1e40af" stopOpacity="1" />
+        </LinearGradient>
+      </Defs>
+      {/* Base line */}
+      <Line x1="0.5" y1="13" x2="15.5" y2="13" stroke="#1d4ed8" strokeWidth="0.8" strokeOpacity="0.4" />
+      {/* Bar 1 — short */}
+      <Rect x="1" y="9" width="3.5" height="4" rx="0.8" fill="url(#bar1)" />
+      {/* Bar 2 — medium */}
+      <Rect x="6.25" y="5.5" width="3.5" height="7.5" rx="0.8" fill="url(#bar2)" />
+      {/* Bar 3 — tall */}
+      <Rect x="11.5" y="1.5" width="3.5" height="11.5" rx="0.8" fill="url(#bar3)" />
+      {/* Tick marks on top of each bar */}
+      <Rect x="1" y="8.3" width="3.5" height="0.7" rx="0.3" fill="rgba(255,255,255,0.5)" />
+      <Rect x="6.25" y="4.8" width="3.5" height="0.7" rx="0.3" fill="rgba(255,255,255,0.5)" />
+      <Rect x="11.5" y="0.8" width="3.5" height="0.7" rx="0.3" fill="rgba(255,255,255,0.5)" />
+    </Svg>
+  );
+}
+
+// ── Bullseye target — Targets pill ────────────────────────────────────────────
+//
+// Three concentric rings (amber) with fine crosshair lines and a solid centre.
+//
+export function BullseyeTarget({ size = 18 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      {/* Outer ring */}
+      <Circle cx="8" cy="8" r="7" fill="none" stroke="#f59e0b" strokeWidth="1.2" strokeOpacity="0.45" />
+      {/* Middle ring */}
+      <Circle cx="8" cy="8" r="4.5" fill="none" stroke="#f59e0b" strokeWidth="1.3" strokeOpacity="0.7" />
+      {/* Inner fill */}
+      <Circle cx="8" cy="8" r="2.2" fill="#f59e0b" />
+      {/* Crosshair — vertical */}
+      <Line x1="8" y1="0.5" x2="8" y2="3.3" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.55" strokeLinecap="round" />
+      <Line x1="8" y1="12.7" x2="8" y2="15.5" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.55" strokeLinecap="round" />
+      {/* Crosshair — horizontal */}
+      <Line x1="0.5" y1="8" x2="3.3" y2="8" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.55" strokeLinecap="round" />
+      <Line x1="12.7" y1="8" x2="15.5" y2="8" stroke="#f59e0b" strokeWidth="1" strokeOpacity="0.55" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+// ── Rising trend line — Form pill ─────────────────────────────────────────────
+//
+// Upward-trending polyline in green with cricket-ball dot markers
+// and an arrowhead at the right end.
+//
+export function TrendLine({ size = 18 }: { size?: number }) {
+  const h = (size / 16) * 14;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 16 14">
+      {/* Faint grid baseline */}
+      <Line x1="0" y1="13" x2="16" y2="13" stroke="#16a34a" strokeWidth="0.5" strokeOpacity="0.25" />
+      {/* Trend path */}
+      <Path
+        d="M1.5,11 L5,7.5 L9,8.5 L13.5,2.5"
+        stroke="#16a34a" strokeWidth="1.6" fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+      />
+      {/* Arrowhead */}
+      <Polygon
+        points="13.5,1 15.5,3 12,3.5"
+        fill="#16a34a"
+      />
+      {/* Data-point dots */}
+      <Circle cx="1.5" cy="11" r="1.4" fill="#16a34a" />
+      <Circle cx="5" cy="7.5" r="1.4" fill="#16a34a" />
+      <Circle cx="9" cy="8.5" r="1.4" fill="#16a34a" />
+      <Circle cx="13.5" cy="2.5" r="1.4" fill="#16a34a" />
+      {/* White highlight on each dot */}
+      <Circle cx="1.1" cy="10.6" r="0.5" fill="rgba(255,255,255,0.55)" />
+      <Circle cx="4.6" cy="7.1" r="0.5" fill="rgba(255,255,255,0.55)" />
+      <Circle cx="8.6" cy="8.1" r="0.5" fill="rgba(255,255,255,0.55)" />
+      <Circle cx="13.1" cy="2.1" r="0.5" fill="rgba(255,255,255,0.55)" />
+    </Svg>
+  );
+}
+
+// ── Stacked match slips — Recent pill ─────────────────────────────────────────
+//
+// Three overlapping card rectangles (cascading offset) with ruled lines
+// on the front card, like a stack of match scorecards.
+//
+export function StackedCards({ size = 18 }: { size?: number }) {
+  const h = (size / 16) * 14;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 16 14">
+      {/* Back card */}
+      <Rect x="4" y="0.5" width="11" height="9" rx="1.5" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.7" />
+      {/* Middle card */}
+      <Rect x="2" y="2" width="11" height="9" rx="1.5" fill="#f1f5f9" stroke="#64748b" strokeWidth="0.8" />
+      {/* Front card */}
+      <Rect x="0" y="3.5" width="11" height="10" rx="1.5" fill="white" stroke="#334155" strokeWidth="0.9" />
+      {/* Ruling lines on front card */}
+      <Line x1="1.5" y1="7" x2="9.5" y2="7" stroke="#334155" strokeWidth="0.7" strokeOpacity="0.6" strokeLinecap="round" />
+      <Line x1="1.5" y1="9.5" x2="9.5" y2="9.5" stroke="#334155" strokeWidth="0.7" strokeOpacity="0.4" strokeLinecap="round" />
+      <Line x1="1.5" y1="12" x2="7" y2="12" stroke="#334155" strokeWidth="0.7" strokeOpacity="0.3" strokeLinecap="round" />
+      {/* Small header block on front card */}
+      <Rect x="1.5" y="5" width="4" height="1.2" rx="0.4" fill="#1d4ed8" opacity="0.6" />
     </Svg>
   );
 }
