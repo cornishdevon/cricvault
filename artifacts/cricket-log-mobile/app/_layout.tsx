@@ -16,6 +16,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
+import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -70,6 +71,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <AppearanceProvider>
+        <PlayerNameProvider>
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1 }}>
@@ -79,6 +81,7 @@ export default function RootLayout() {
             </GestureHandlerRootView>
           </QueryClientProvider>
         </TabLabelsProvider>
+        </PlayerNameProvider>
         </AppearanceProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
