@@ -173,7 +173,7 @@ function BattingTab({ matchId }: { matchId: number }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-3">
-              <StatBadge label="Runs" value={`${stats.runs}${stats.howOut ? '' : '*'}`} />
+              <StatBadge label="Runs" value={`${stats.runs}${!stats.howOut || stats.howOut.toLowerCase() === 'not out' ? '*' : ''}`} />
               <StatBadge label="Balls" value={stats.ballsFaced} />
               <StatBadge label="Strike Rate" value={`${strikeRate}`} />
               <StatBadge label="Fours" value={stats.fours} />

@@ -80,7 +80,7 @@ export function RecentFormGuide({ data }: { data: MatchResult[] }) {
                 <div className="text-center w-full">
                   {(m.runs != null || m.wickets != null) && (
                     <p className={`text-xs font-semibold ${text} opacity-90`}>
-                      {m.runs != null && `${m.runs}${!m.howOut ? '*' : ''}r`}
+                      {m.runs != null && `${m.runs}${!m.howOut || m.howOut.toLowerCase() === 'not out' ? '*' : ''}r`}
                       {m.runs != null && m.wickets != null && " · "}
                       {m.wickets != null && `${m.wickets}w`}
                     </p>

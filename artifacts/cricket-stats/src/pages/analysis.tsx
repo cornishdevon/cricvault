@@ -582,7 +582,7 @@ function HeadToHeadStats({ data, opponent }: { data: PerMatchStat[]; opponent: s
                     m.result === "Loss" ? "bg-destructive/10 border-destructive/30 text-destructive" :
                     "bg-muted border-border text-muted-foreground"
                   }`}>
-                    {m.result?.[0] ?? "?"} {m.runs != null ? `· ${m.runs}${!m.howOut ? '*' : ''}r` : ""}{m.wickets != null ? ` ${m.wickets}w` : ""}
+                    {m.result?.[0] ?? "?"} {m.runs != null ? `· ${m.runs}${!m.howOut || m.howOut.toLowerCase() === 'not out' ? '*' : ''}r` : ""}{m.wickets != null ? ` ${m.wickets}w` : ""}
                   </div>
                 </Link>
               ))}

@@ -250,7 +250,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
           >
             <Text style={[styles.bestIcon]}>🏏</Text>
             <Text style={[styles.bestValue, { color: colors.primary }]}>
-              {`${bestBat.runs}${!bestBat.howOut ? '*' : ''}`}
+              {`${bestBat.runs}${!bestBat.howOut || bestBat.howOut.toLowerCase() === 'not out' ? '*' : ''}`}
             </Text>
             <Text style={[styles.bestLabel, { color: colors.foreground }]}>Top Score</Text>
             <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
