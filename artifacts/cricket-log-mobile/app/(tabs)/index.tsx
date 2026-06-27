@@ -6,6 +6,7 @@ import {
 import { useRouter, useFocusEffect } from "expo-router";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SeasonTargets } from "@/components/SeasonTargets";
 import {
@@ -686,7 +687,12 @@ export default function DashboardScreen() {
       }
     >
       {/* ── Pavilion hero — dark cricket green scoreboard section ── */}
-      <View style={[styles.pavilion, { backgroundColor: colors.pavilion }]}>
+      <LinearGradient
+        colors={["#1F4028", "#152C1E", "#0E1A12"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.pavilion}
+      >
         <ShortcutPills colors={colors} onPress={handleShortcut} />
 
         <View style={styles.header}>
@@ -719,7 +725,7 @@ export default function DashboardScreen() {
             </Text>
           ) : null}
         </View>
-      </View>
+      </LinearGradient>
 
       {isLoading ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
@@ -911,8 +917,8 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 13, fontFamily: "Inter_500Medium" },
   splitFlapRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 10, marginBottom: 2 },
   runsLabel: { fontSize: 22, fontFamily: "Inter_600SemiBold", letterSpacing: 1 },
-  heroTitle: { fontSize: 32, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
-  heroSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 6, letterSpacing: 0.3 },
+  heroTitle: { fontSize: 32, fontFamily: "Georgia", letterSpacing: 0 },
+  heroSub: { fontSize: 13, fontFamily: "Georgia", fontStyle: "italic", marginTop: 6, letterSpacing: 0.2 },
 
   sectionTitle: {
     fontSize: 11,

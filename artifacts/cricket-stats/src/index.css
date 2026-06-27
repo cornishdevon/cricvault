@@ -122,7 +122,7 @@
   --chart-5: 270 35% 42%;
 
   --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
+  --app-font-serif: 'Playfair Display', Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00); /*replace with H S L */
@@ -238,6 +238,17 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-image: repeating-linear-gradient(
+      163deg,
+      transparent 0px,
+      transparent 24px,
+      color-mix(in srgb, hsl(var(--primary)) 4%, transparent) 24px,
+      color-mix(in srgb, hsl(var(--primary)) 4%, transparent) 48px
+    );
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-serif);
   }
 }
 
