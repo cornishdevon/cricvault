@@ -56,7 +56,9 @@ function computeSeasonStats(data: PerMatchStat[]) {
 
   const totalRuns   = battingInnings.reduce((s, d) => s + (d.runs ?? 0), 0);
   const totalBalls  = battingInnings.reduce((s, d) => s + (d.ballsFaced ?? 0), 0);
-  const highScore   = battingInnings.reduce((m, d) => Math.max(m, d.runs ?? 0), 0);
+  const highScoreInnings = battingInnings.reduce<(typeof battingInnings)[0] | null>((best, d) => (!best || (d.runs ?? 0) > (best.runs ?? 0) ? d : best), null);
+  const highScore   = highScoreInnings?.runs ?? 0;
+  const highScoreNotOut = !highScoreInnings?.howOut || highScoreInnings.howOut.toLowerCase() === 'not out';
   const fifties     = battingInnings.filter((d) => (d.runs ?? 0) >= 50 && (d.runs ?? 0) < 100).length;
   const hundreds    = battingInnings.filter((d) => (d.runs ?? 0) >= 100).length;
   const totalFours  = battingInnings.reduce((s, d) => s + (d.fours ?? 0), 0);
@@ -84,7 +86,7 @@ function computeSeasonStats(data: PerMatchStat[]) {
   return {
     matches: data.length,
     wins, losses, draws, potm,
-    totalRuns, highScore, battingAvg, strikeRate, fifties, hundreds, totalFours, totalSixes,
+    totalRuns, highScore: highScoreNotOut ? `${highScore}*` : `${highScore}`, battingAvg, strikeRate, fifties, hundreds, totalFours, totalSixes,
     battingInnings: battingInnings.length,
     totalWickets, totalOvers, economy, bestWickets, bestSpell,
     bowlingSpells: bowlingSpells.length,

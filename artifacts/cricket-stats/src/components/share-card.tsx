@@ -8,6 +8,7 @@ type Summary = {
   batting: {
     totalRuns: number;
     highScore: number;
+    highScoreHowOut?: string | null;
     innings: number;
     totalFours: number;
     totalSixes: number;
@@ -112,7 +113,7 @@ export function ShareCard({
           <div style={{ fontSize: 11, opacity: 0.6, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>Batting</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
-              { label: "HS", val: summary.batting.highScore },
+              { label: "HS", val: `${summary.batting.highScore}${!summary.batting.highScoreHowOut || summary.batting.highScoreHowOut.toLowerCase() === 'not out' ? '*' : ''}` },
               { label: "Avg", val: avg },
               { label: "SR", val: summary.batting.averageStrikeRate.toFixed(0) },
               { label: "Inn", val: summary.batting.innings },

@@ -377,7 +377,7 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
   const bests = [
     highScoreMatch && {
       title: "Highest Score",
-      value: `${highScoreMatch.runs}`,
+      value: `${highScoreMatch.runs}${!highScoreMatch.howOut || highScoreMatch.howOut.toLowerCase() === 'not out' ? '*' : ''}`,
       sub: highScoreMatch.strikeRate != null ? `SR ${Number(highScoreMatch.strikeRate).toFixed(1)}` : null,
       opponent: highScoreMatch.opponent,
       matchId: highScoreMatch.matchId,

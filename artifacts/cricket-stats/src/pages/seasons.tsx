@@ -20,6 +20,7 @@ type PerMatchStat = {
   ballsFaced?: number | null;
   fours?: number | null;
   sixes?: number | null;
+  howOut?: string | null;
   wickets?: number | null;
   overs?: number | null;
   runsConceded?: number | null;
@@ -34,7 +35,7 @@ type SeasonRow = {
   matches: number;
   innings: number;
   runs: number;
-  highScore: number;
+  highScore: string;
   avg: string;
   sr: string;
   fours: number;
@@ -62,7 +63,9 @@ function buildSeasons(data: PerMatchStat[]): SeasonRow[] {
       const innings = ms.filter((m) => m.runs != null);
       const runs = innings.reduce((s, m) => s + (m.runs ?? 0), 0);
       const balls = innings.reduce((s, m) => s + (m.ballsFaced ?? 0), 0);
-      const hs = Math.max(...innings.map((m) => m.runs ?? 0), 0);
+      const hsMatch = innings.reduce<(typeof innings)[0] | null>((best, m) => (!best || (m.runs ?? 0) > (best.runs ?? 0) ? m : best), null);
+      const hs = hsMatch?.runs ?? 0;
+      const hsNotOut = !hsMatch?.howOut || hsMatch.howOut.toLowerCase() === 'not out';
       const bowlMs = ms.filter((m) => m.wickets != null);
       const wkts = bowlMs.reduce((s, m) => s + (m.wickets ?? 0), 0);
       const rc = bowlMs.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
@@ -80,7 +83,7 @@ function buildSeasons(data: PerMatchStat[]): SeasonRow[] {
         matches: ms.length,
         innings: innings.length,
         runs,
-        highScore: hs,
+        highScore: hsNotOut ? `${hs}*` : `${hs}`,
         avg: innings.length > 0 ? (runs / innings.length).toFixed(1) : "—",
         sr: balls > 0 ? ((runs / balls) * 100).toFixed(1) : "—",
         fours: innings.reduce((s, m) => s + (m.fours ?? 0), 0),

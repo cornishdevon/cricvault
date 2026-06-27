@@ -6,6 +6,7 @@ type BattingSummary = {
   totalRuns: number;
   battingAverage: number;
   highScore: number;
+  highScoreHowOut?: string | null;
   centuries: number;
   fifties: number;
   ducks: number;
@@ -43,7 +44,8 @@ function StatPill({
 }
 
 export function ExtendedBattingStats({ batting, potmCount }: { batting: BattingSummary; potmCount: number }) {
-  const { innings, totalRuns, battingAverage, highScore, centuries, fifties, ducks, goldenDucks, notOuts, totalFours, totalSixes, averageStrikeRate } = batting;
+  const { innings, totalRuns, battingAverage, highScore, highScoreHowOut, centuries, fifties, ducks, goldenDucks, notOuts, totalFours, totalSixes, averageStrikeRate } = batting;
+  const highScoreNotOut = !highScoreHowOut || highScoreHowOut.toLowerCase() === 'not out';
 
   return (
     <Card>
@@ -57,7 +59,7 @@ export function ExtendedBattingStats({ batting, potmCount }: { batting: BattingS
           <StatPill label="Innings" value={innings} variant="neutral" />
           <StatPill label="Average" value={battingAverage.toFixed(1)} variant="good" />
           <StatPill label="Strike Rate" value={averageStrikeRate.toFixed(1)} variant="neutral" />
-          <StatPill label="High Score" value={highScore} variant="good" />
+          <StatPill label="High Score" value={`${highScore}${highScoreNotOut ? '*' : ''}`} variant="good" />
           <StatPill label="Hundreds" value={centuries} sub="100+" variant="good" />
           <StatPill label="Fifties" value={fifties} sub="50–99" variant="good" />
           <StatPill label="Not Outs" value={notOuts} variant="neutral" />

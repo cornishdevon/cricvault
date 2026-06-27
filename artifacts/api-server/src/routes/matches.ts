@@ -462,7 +462,11 @@ router.get("/stats/summary", async (req, res) => {
   const totalBallsFaced = battingRows.reduce((s, r) => s + r.ballsFaced, 0);
   const totalFours = battingRows.reduce((s, r) => s + r.fours, 0);
   const totalSixes = battingRows.reduce((s, r) => s + r.sixes, 0);
-  const highScore = battingRows.reduce((m, r) => Math.max(m, r.runs), 0);
+  const highScoreRow = battingRows.reduce<(typeof battingRows)[0] | null>(
+    (best, r) => (!best || r.runs > best.runs ? r : best), null
+  );
+  const highScore = highScoreRow?.runs ?? 0;
+  const highScoreHowOut = highScoreRow?.howOut ?? null;
   const averageStrikeRate =
     totalBallsFaced > 0
       ? parseFloat(((totalRuns / totalBallsFaced) * 100).toFixed(2))
@@ -539,6 +543,7 @@ router.get("/stats/summary", async (req, res) => {
       averageStrikeRate,
       battingAverage,
       highScore,
+      highScoreHowOut,
       totalFours,
       totalSixes,
       innings: battingInnings,
