@@ -159,8 +159,10 @@ function SplitFlapDigit({ digit }: { digit: string }) {
   );
 }
 
-export function SplitFlapDisplay({ value }: { value: number }) {
-  const digits = String(value).split("");
+export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minDigits?: number }) {
+  const raw = String(value);
+  const padded = raw.length < minDigits ? raw.padStart(minDigits, "0") : raw;
+  const digits = padded.split("");
 
   if (Platform.OS === "web") {
     return (
