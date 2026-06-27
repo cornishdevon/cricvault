@@ -26,6 +26,38 @@ import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
 import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards } from "@/components/CricketIcons";
 
+// ── Season list builder ────────────────────────────────────────────────────────
+type SeasonDef = { label: string; startDate: string; endDate: string };
+
+function buildSeasonList(dates: string[], region: "england" | "subcontinent"): SeasonDef[] {
+  const now = new Date();
+  const y = now.getFullYear();
+  const mon = now.getMonth();
+  if (region === "england") {
+    const years = new Set<string>(dates.map((d) => d.slice(0, 4)).filter(Boolean));
+    years.add(String(y));
+    return [...years].sort().reverse().map((yr) => ({
+      label: yr,
+      startDate: `${yr}-01-01`,
+      endDate: `${yr}-12-31`,
+    }));
+  } else {
+    const keys = new Set<number>();
+    keys.add(mon >= 9 ? y : y - 1);
+    for (const d of dates) {
+      if (!d || d.length < 7) continue;
+      const dy = parseInt(d.slice(0, 4), 10);
+      const dm = parseInt(d.slice(5, 7), 10) - 1;
+      keys.add(dm >= 9 ? dy : dy - 1);
+    }
+    return [...keys].sort((a, b) => b - a).map((startY) => ({
+      label: `${startY}/${String(startY + 1).slice(2)}`,
+      startDate: `${startY}-10-01`,
+      endDate: `${startY + 1}-09-30`,
+    }));
+  }
+}
+
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
 const BAR_AREA_H = 120;
@@ -565,18 +597,32 @@ export default function DashboardScreen() {
 
   const isLoading = summaryLoading || matchesLoading;
 
-  const { seasonLabel, isMatchInSeason } = useSeasonContext();
+  const { seasonLabel, isMatchInSeason, region } = useSeasonContext();
   const allPerMatchEarly = perMatch ?? [];
+
+  // ── Season selector ────────────────────────────────────────────────────────
+  const availableSeasons = useMemo(
+    () => buildSeasonList(allPerMatchEarly.map((m) => m.date ?? "").filter(Boolean), region),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [perMatch, region]
+  );
+  const [selectedSeasonIdx, setSelectedSeasonIdx] = useState(0);
+  const activeSeason: SeasonDef | undefined = availableSeasons[selectedSeasonIdx] ?? availableSeasons[0];
+  const activeSeasonLabel = activeSeason?.label ?? seasonLabel;
+  const activeIsMatchInSeason = (date: string | null | undefined): boolean => {
+    if (!date || !activeSeason) return false;
+    return date >= activeSeason.startDate && date <= activeSeason.endDate;
+  };
   const seasonRuns = allPerMatchEarly
-    .filter((m) => isMatchInSeason(m.date) && m.runs != null)
+    .filter((m) => activeIsMatchInSeason(m.date) && m.runs != null)
     .reduce((s, m) => s + (m.runs ?? 0), 0);
   const seasonWickets = allPerMatchEarly
-    .filter((m) => isMatchInSeason(m.date) && m.wickets != null)
+    .filter((m) => activeIsMatchInSeason(m.date) && m.wickets != null)
     .reduce((s, m) => s + (m.wickets ?? 0), 0);
-  const seasonMatches = allPerMatchEarly.filter((m) => isMatchInSeason(m.date)).length;
+  const seasonMatches = allPerMatchEarly.filter((m) => activeIsMatchInSeason(m.date)).length;
 
   // ── Detailed season batting stats ──────────────────────────────────────────
-  const seasonBatted = allPerMatchEarly.filter((m) => isMatchInSeason(m.date) && m.runs != null);
+  const seasonBatted = allPerMatchEarly.filter((m) => activeIsMatchInSeason(m.date) && m.runs != null);
   const seasonHS = seasonBatted.reduce((max, m) => Math.max(max, m.runs ?? 0), 0);
   const seasonFifties = seasonBatted.filter((m) => (m.runs ?? 0) >= 50 && (m.runs ?? 0) < 100).length;
   const seasonCenturies = seasonBatted.filter((m) => (m.runs ?? 0) >= 100).length;
@@ -596,7 +642,7 @@ export default function DashboardScreen() {
       : "—";
 
   // ── Detailed season bowling stats ──────────────────────────────────────────
-  const seasonBowled = allPerMatchEarly.filter((m) => isMatchInSeason(m.date) && m.wickets != null);
+  const seasonBowled = allPerMatchEarly.filter((m) => activeIsMatchInSeason(m.date) && m.wickets != null);
   const seasonRunsConceded = seasonBowled.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
   const seasonOvers = seasonBowled.reduce((s, m) => s + (m.overs ?? 0), 0);
   const seasonEconomy = seasonOvers > 0 ? (seasonRunsConceded / seasonOvers).toFixed(2) : "—";
@@ -760,7 +806,7 @@ export default function DashboardScreen() {
           )}
           {summary ? (
             <Text style={[styles.heroSub, { color: colors.pavilionMuted }]}>
-              {seasonLabel} Season · {seasonMatches} matches · {seasonWickets} wkts
+              {activeSeasonLabel} Season · {seasonMatches} matches · {seasonWickets} wkts
             </Text>
           ) : null}
         </View>
@@ -770,8 +816,41 @@ export default function DashboardScreen() {
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : summary ? (
         <>
-          {/* ── Season headline card ── */}
+          {/* ── Season picker ── */}
           <View onLayout={measureSection("stats")} />
+          {availableSeasons.length > 1 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.seasonPickerScroll}
+              contentContainerStyle={styles.seasonPickerContent}
+            >
+              {availableSeasons.map((s, i) => (
+                <TouchableOpacity
+                  key={s.label}
+                  style={[
+                    styles.seasonPill,
+                    {
+                      backgroundColor: i === selectedSeasonIdx ? colors.primary : "transparent",
+                      borderColor: i === selectedSeasonIdx ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setSelectedSeasonIdx(i)}
+                >
+                  <Text
+                    style={[
+                      styles.seasonPillText,
+                      { color: i === selectedSeasonIdx ? colors.primaryForeground : colors.foreground },
+                    ]}
+                  >
+                    {s.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {/* ── Season headline card ── */}
           <View style={[styles.headlineCard, { backgroundColor: colors.primary }]}>
             <View style={styles.headlineStat}>
               <Text style={styles.headlineValue}>{seasonRuns}</Text>
@@ -790,7 +869,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* ── Current Season ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{seasonLabel} Season — Batting</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — Batting</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Runs" value={seasonRuns} colors={colors} />
             <StatCard label="Innings" value={seasonInnings} colors={colors} />
@@ -803,7 +882,7 @@ export default function DashboardScreen() {
             <StatCard label="Matches" value={seasonMatches} colors={colors} />
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{seasonLabel} Season — Bowling</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — Bowling</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Wickets" value={seasonWickets} colors={colors} />
             <StatCard label="Best" value={seasonBest} colors={colors} />
@@ -891,7 +970,7 @@ export default function DashboardScreen() {
           <SeasonTargets
             currentRuns={seasonRuns}
             currentWickets={seasonWickets}
-            season={seasonLabel}
+            season={activeSeasonLabel}
             colors={colors}
           />
 
@@ -1003,6 +1082,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     opacity: 0.6,
   },
+  seasonPickerScroll: { marginTop: 16 },
+  seasonPickerContent: { paddingHorizontal: 16, gap: 8 },
+  seasonPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1.5,
+  },
+  seasonPillText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
   headlineCard: {
     flexDirection: "row",
     marginHorizontal: 16,
