@@ -682,7 +682,7 @@ export default function Dashboard() {
                 <span className="text-base font-normal text-muted-foreground">runs</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                HS: {summary?.batting.highScore ?? 0} • SR:{" "}
+                HS: {summary?.batting.highScore ?? 0}{!summary?.batting.highScoreHowOut || summary.batting.highScoreHowOut.toLowerCase() === 'not out' ? '*' : ''} • SR:{" "}
                 {summary?.batting.averageStrikeRate?.toFixed(1) ?? "0.0"} •{" "}
                 {summary?.batting.innings ?? 0} innings
               </p>
