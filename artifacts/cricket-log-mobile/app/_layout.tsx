@@ -43,7 +43,7 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="settings-modal"
-        options={{ title: "Rename Tabs", presentation: "modal", headerBackTitle: "Cancel" }}
+        options={{ title: "Settings", presentation: "modal", headerBackTitle: "Cancel" }}
       />
     </Stack>
   );

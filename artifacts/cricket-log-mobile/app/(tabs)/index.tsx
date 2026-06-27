@@ -4,6 +4,8 @@ import {
   useListMatches,
 } from "@workspace/api-client-react";
 import { useRouter } from "expo-router";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
+import { Feather } from "@expo/vector-icons";
 import React, { useMemo, useRef } from "react";
 import { SeasonTargets } from "@/components/SeasonTargets";
 import {
@@ -606,9 +608,19 @@ export default function DashboardScreen() {
       <ShortcutPills colors={colors} onPress={handleShortcut} />
 
       <View style={styles.header}>
-        <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
-          Hi, {playerName || "Cricketer"} 👋
-        </Text>
+        <View style={styles.headerRow}>
+          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>
+            Hi, {playerName || "Cricketer"} 👋
+          </Text>
+          {isLiquidGlassAvailable() && (
+            <TouchableOpacity
+              onPress={() => router.push("/settings-modal")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather name="settings" size={20} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          )}
+        </View>
         <Text style={[styles.heroTitle, { color: colors.foreground }]}>
           {summary
             ? `${summary.batting.totalRuns} Runs`
@@ -808,7 +820,8 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
-  greeting: { fontSize: 13, fontFamily: "Inter_500Medium", marginBottom: 4 },
+  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
+  greeting: { fontSize: 13, fontFamily: "Inter_500Medium" },
   heroTitle: { fontSize: 32, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   heroSub: { fontSize: 14, fontFamily: "Inter_400Regular", marginTop: 4 },
 
