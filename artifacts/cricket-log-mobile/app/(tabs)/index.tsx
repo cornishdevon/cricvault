@@ -192,6 +192,10 @@ type PerMatchStat = {
   runsConceded?: number | null;
   howOut?: string | null;
   result?: string | null;
+  catches?: number | null;
+  runOuts?: number | null;
+  stumpings?: number | null;
+  droppedCatches?: number | null;
 };
 
 function FormGuideSection({ data, colors, onPress }: {
@@ -642,6 +646,9 @@ export default function DashboardScreen() {
       : "—";
 
   // ── Detailed season bowling stats ──────────────────────────────────────────
+  const seasonCatches = allPerMatchEarly
+    .filter((m) => activeIsMatchInSeason(m.date))
+    .reduce((s, m) => s + (m.catches ?? 0), 0);
   const seasonBowled = allPerMatchEarly.filter((m) => activeIsMatchInSeason(m.date) && m.wickets != null);
   const seasonRunsConceded = seasonBowled.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
   const seasonOvers = seasonBowled.reduce((s, m) => s + (m.overs ?? 0), 0);
@@ -863,7 +870,7 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.headlineDivider} />
             <View style={styles.headlineStat}>
-              <Text style={styles.headlineValue}>{summary.fielding.totalCatches}</Text>
+              <Text style={styles.headlineValue}>{seasonCatches}</Text>
               <Text style={styles.headlineLabel}>Catches</Text>
             </View>
           </View>
