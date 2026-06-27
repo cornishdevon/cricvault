@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
-import { useListMatches, getListMatchesQueryKey } from "@workspace/api-client-react";
+import { useListMatches, getListMatchesQueryKey, useGetPerMatchStats } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,12 @@ export default function Matches() {
   const { data: matches, isLoading } = useListMatches({
     query: { queryKey: getListMatchesQueryKey() },
   });
+  const { data: perMatchRaw } = useGetPerMatchStats();
+  const statsByMatchId = useMemo(() => {
+    const map = new Map<number, { runs: number | null; howOut: string | null; wickets: number | null; overs: number | null; runsConceded: number | null }>();
+    for (const s of perMatchRaw ?? []) map.set(s.matchId, s as typeof s & { matchId: number });
+    return map;
+  }, [perMatchRaw]);
 
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState("all");
@@ -167,8 +173,8 @@ export default function Matches() {
                 className="hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-2"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div>
+                <CardContent className="p-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
                     <div className="font-semibold text-lg">vs {match.opponent}</div>
                     <div className="text-sm text-muted-foreground">
                       {format(new Date(match.date), "d MMM yyyy")} • {match.matchType}
@@ -179,19 +185,43 @@ export default function Matches() {
                         Playing for {match.playingFor}
                       </div>
                     )}
+                    {(() => {
+                      const s = statsByMatchId.get(match.id);
+                      if (!s) return null;
+                      const hasBat = s.runs != null;
+                      const hasBowl = s.wickets != null && s.overs != null;
+                      if (!hasBat && !hasBowl) return null;
+                      const notOut = !s.howOut || s.howOut.toLowerCase() === "not out";
+                      return (
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {hasBat && (
+                            <span className="text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                              🏏 {s.runs}{notOut ? "*" : ""} runs
+                            </span>
+                          )}
+                          {hasBowl && (
+                            <span className="text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                              ⚪ {s.wickets}/{s.runsConceded} ({s.overs} ov)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div
-                    className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                      match.result === "Win"
-                        ? "bg-primary/10 text-primary"
-                        : match.result === "Loss"
-                        ? "bg-destructive/10 text-destructive"
-                        : match.result === "Draw"
-                        ? "bg-muted text-muted-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {match.result || "Pending"}
+                  <div className="flex-shrink-0">
+                    <div
+                      className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                        match.result === "Win"
+                          ? "bg-primary/10 text-primary"
+                          : match.result === "Loss"
+                          ? "bg-destructive/10 text-destructive"
+                          : match.result === "Draw"
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {match.result || "Pending"}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
