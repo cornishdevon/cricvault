@@ -85,7 +85,7 @@ export function SeasonTargets({
   if (editing) {
     return (
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.primary + "44" }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>🎯 Set Season Goals</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>🎯 Set Season Targets</Text>
         <View style={styles.inputRow}>
           <View style={styles.inputWrap}>
             <Text style={[styles.label, { color: colors.mutedForeground }]}>Runs target</Text>
@@ -125,7 +125,7 @@ export function SeasonTargets({
   if (!targets || (targets.runs === 0 && targets.wickets === 0)) {
     return (
       <View style={[styles.emptyCard, { borderColor: colors.border }]}>
-        <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>🎯 Set season goals to track your targets</Text>
+        <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>🎯 Set season targets to track your progress</Text>
         <TouchableOpacity onPress={() => { setRunsInput(""); setWicketsInput(""); setEditing(true); }} style={[styles.btnSmall, { borderColor: colors.border }]}>
           <Text style={[styles.btnSmallText, { color: colors.primary }]}>Set goals</Text>
         </TouchableOpacity>

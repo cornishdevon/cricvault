@@ -143,7 +143,7 @@ export function SeasonTargets({
         <CardTitle className="text-base flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="h-4 w-4 text-primary" />
-            {season} Season Goals
+            {season} Season Targets
           </div>
           <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={handleSetTargets}>
             Edit
