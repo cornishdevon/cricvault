@@ -8,48 +8,55 @@ const BALL_SEAM = "#7B1C1C";
 
 // ── Cricket pitch top-down — used on the Match Types pill ─────────────────────
 //
-// Viewbox 24×14. Pitch strip runs left-to-right through a green square.
-// Three stumps with blue stripes stand at each end of the strip.
-// Bail caps each set; crease lines sit just inside each wicket.
+// Viewbox 14×24. Pitch strip runs top-to-bottom (portrait).
+// Three stumps with blue stripes span across each end; creases sit inside.
 //
-export function CricketPitch({ size = 18 }: { size?: number }) {
-  const h = (size / 24) * 14;
+export function CricketPitch({ size = 20 }: { size?: number }) {
+  const w = (size / 24) * 14;
   return (
-    <Svg width={size} height={h} viewBox="0 0 24 14">
-      {/* Green outer square */}
-      <Rect x="0" y="0" width="24" height="14" rx="2" fill="#16a34a" />
+    <Svg width={w} height={size} viewBox="0 0 14 24">
+      {/* Green outfield */}
+      <Rect x="0" y="0" width="14" height="24" rx="2" fill="#16a34a" />
 
-      {/* Pitch strip — tan playing surface */}
-      <Rect x="0" y="4.5" width="24" height="5" fill="#C8B070" />
+      {/* Pitch strip — tan, centred */}
+      <Rect x="4.5" y="0" width="5" height="24" fill="#C8B070" />
 
-      {/* Left popping crease */}
-      <Rect x="4.8" y="4.5" width="0.45" height="5" fill="rgba(255,255,255,0.7)" />
-      {/* Right popping crease */}
-      <Rect x="18.75" y="4.5" width="0.45" height="5" fill="rgba(255,255,255,0.7)" />
+      {/* Top popping crease */}
+      <Rect x="4.5" y="4.8" width="5" height="0.45" fill="rgba(255,255,255,0.7)" />
+      {/* Bottom popping crease */}
+      <Rect x="4.5" y="18.75" width="5" height="0.45" fill="rgba(255,255,255,0.7)" />
 
-      {/* ── Left stumps ── */}
-      <Rect x="1.0" y="4.5" width="3.4" height="0.7" rx="0.35" fill={STUMP} />
-      <Rect x="1.1" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="1.1" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="1.1" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="2.4" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="2.4" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="2.4" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="3.65" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="3.65" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="3.65" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
+      {/* ── Top stumps (3 horizontal bars) ── */}
+      {/* bail — vertical bar spanning all three stumps */}
+      <Rect x="4.5" y="1.0" width="0.7" height="3.4" rx="0.35" fill={STUMP} />
+      {/* stump 1 */}
+      <Rect x="4.5" y="1.1" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="1.1" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="1.1" width="0.8" height="0.75" fill={STRIPE} />
+      {/* stump 2 */}
+      <Rect x="4.5" y="2.4" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="2.4" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="2.4" width="0.8" height="0.75" fill={STRIPE} />
+      {/* stump 3 */}
+      <Rect x="4.5" y="3.65" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="3.65" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="3.65" width="0.8" height="0.75" fill={STRIPE} />
 
-      {/* ── Right stumps (mirror of left) ── */}
-      <Rect x="19.6" y="4.5" width="3.4" height="0.7" rx="0.35" fill={STUMP} />
-      <Rect x="19.6" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="19.6" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="19.6" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="20.9" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="20.9" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="20.9" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="22.15" y="4.5" width="0.75" height="4.5" rx="0.38" fill={STUMP} />
-      <Rect x="22.15" y="6.0" width="0.75" height="0.8" fill={STRIPE} />
-      <Rect x="22.15" y="7.5" width="0.75" height="0.8" fill={STRIPE} />
+      {/* ── Bottom stumps (mirror of top) ── */}
+      {/* bail */}
+      <Rect x="4.5" y="19.6" width="0.7" height="3.4" rx="0.35" fill={STUMP} />
+      {/* stump 1 */}
+      <Rect x="4.5" y="19.6" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="19.6" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="19.6" width="0.8" height="0.75" fill={STRIPE} />
+      {/* stump 2 */}
+      <Rect x="4.5" y="20.9" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="20.9" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="20.9" width="0.8" height="0.75" fill={STRIPE} />
+      {/* stump 3 */}
+      <Rect x="4.5" y="22.15" width="4.5" height="0.75" rx="0.38" fill={STUMP} />
+      <Rect x="6.0" y="22.15" width="0.8" height="0.75" fill={STRIPE} />
+      <Rect x="7.5" y="22.15" width="0.8" height="0.75" fill={STRIPE} />
     </Svg>
   );
 }
