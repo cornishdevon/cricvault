@@ -171,7 +171,7 @@ export default function Matches() {
                   <div>
                     <div className="font-semibold text-lg">vs {match.opponent}</div>
                     <div className="text-sm text-muted-foreground">
-                      {format(new Date(match.date), "MMM d, yyyy")} • {match.matchType}
+                      {format(new Date(match.date), "d MMM yyyy")} • {match.matchType}
                       {match.venue ? ` • ${match.venue}` : ""}
                     </div>
                     {match.playingFor && (

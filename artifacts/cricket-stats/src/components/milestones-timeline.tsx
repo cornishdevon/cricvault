@@ -39,7 +39,7 @@ function buildMilestones(data: PerMatchStat[]): Milestone[] {
 
   for (const m of sorted) {
     const fmt = (d: string) => {
-      try { return format(new Date(d), "MMM d, yyyy"); } catch { return d; }
+      try { return format(new Date(d), "d MMM yyyy"); } catch { return d; }
     };
 
     const runs = m.runs ?? null;
@@ -196,7 +196,7 @@ export function MilestonesTimeline({ data }: { data: PerMatchStat[] }) {
                     vs {m.opponent}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {(() => { try { return format(new Date(m.date), "MMM d, yyyy"); } catch { return m.date; } })()}
+                    {(() => { try { return format(new Date(m.date), "d MMM yyyy"); } catch { return m.date; } })()}
                   </p>
                 </div>
               </div>

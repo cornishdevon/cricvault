@@ -1264,7 +1264,7 @@ export default function MatchDetail() {
             <Badge variant="outline">{match.matchType}</Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {format(new Date(match.date), "MMMM d, yyyy")}
+            {format(new Date(match.date), "d MMMM yyyy")}
             {match.venue ? ` • ${match.venue}` : ""}
           </p>
         </div>

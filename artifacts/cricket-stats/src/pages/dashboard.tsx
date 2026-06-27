@@ -424,7 +424,7 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
                 {b.sub && <p className="text-xs text-muted-foreground">{b.sub}</p>}
                 <div className="pt-2 border-t border-border">
                   <p className="text-sm font-medium text-foreground">vs {b.opponent}</p>
-                  <p className="text-xs text-muted-foreground">{format(new Date(b.date), "MMM d, yyyy")}</p>
+                  <p className="text-xs text-muted-foreground">{format(new Date(b.date), "d MMM yyyy")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -892,7 +892,7 @@ export default function Dashboard() {
                     <div>
                       <div className="font-semibold text-lg text-foreground">vs {match.opponent}</div>
                       <div className="text-sm text-muted-foreground">
-                        {format(new Date(match.date), "MMM d, yyyy")} • {match.matchType}
+                        {format(new Date(match.date), "d MMM yyyy")} • {match.matchType}
                         {match.venue ? ` • ${match.venue}` : ""}
                       </div>
                     </div>
