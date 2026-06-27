@@ -455,7 +455,7 @@ function HeadToHeadSection({ data, colors, onPress }: {
 
 const SHORTCUTS = [
   { label: "📊 Stats", key: "stats" },
-  { label: "🎯 Goals", key: "goals" },
+  { label: "🎯 Targets", key: "goals" },
   { label: "📈 Form", key: "form" },
   { label: "🎳 Dismissals", key: "dismissals" },
   { label: "🏟 Match Types", key: "matchtype" },
