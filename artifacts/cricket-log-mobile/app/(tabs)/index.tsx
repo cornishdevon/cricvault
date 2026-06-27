@@ -574,6 +574,44 @@ export default function DashboardScreen() {
     .reduce((s, m) => s + (m.wickets ?? 0), 0);
   const seasonMatches = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear)).length;
 
+  // ── Detailed season batting stats ──────────────────────────────────────────
+  const seasonBatted = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear) && m.runs != null);
+  const seasonHS = seasonBatted.reduce((max, m) => Math.max(max, m.runs ?? 0), 0);
+  const seasonFifties = seasonBatted.filter((m) => (m.runs ?? 0) >= 50 && (m.runs ?? 0) < 100).length;
+  const seasonCenturies = seasonBatted.filter((m) => (m.runs ?? 0) >= 100).length;
+  const seasonInnings = seasonBatted.length;
+  const seasonNotOuts = seasonBatted.filter(
+    (m) => !m.howOut || m.howOut.toLowerCase() === "not out"
+  ).length;
+  const seasonBattingDismissals = seasonInnings - seasonNotOuts;
+  const seasonBattingAvg =
+    seasonBattingDismissals > 0
+      ? (seasonRuns / seasonBattingDismissals).toFixed(1)
+      : "—";
+  const seasonBallsFaced = seasonBatted.reduce((s, m) => s + (m.ballsFaced ?? 0), 0);
+  const seasonSR =
+    seasonBallsFaced > 0
+      ? ((seasonRuns / seasonBallsFaced) * 100).toFixed(1)
+      : "—";
+
+  // ── Detailed season bowling stats ──────────────────────────────────────────
+  const seasonBowled = allPerMatchEarly.filter((m) => m.date?.startsWith(currentYear) && m.wickets != null);
+  const seasonRunsConceded = seasonBowled.reduce((s, m) => s + (m.runsConceded ?? 0), 0);
+  const seasonOvers = seasonBowled.reduce((s, m) => s + (m.overs ?? 0), 0);
+  const seasonEconomy = seasonOvers > 0 ? (seasonRunsConceded / seasonOvers).toFixed(2) : "—";
+  const seasonBowlingAvg =
+    seasonWickets > 0 ? (seasonRunsConceded / seasonWickets).toFixed(1) : "—";
+  const seasonBestBowling = seasonBowled
+    .slice()
+    .sort(
+      (a, b) =>
+        (b.wickets ?? 0) - (a.wickets ?? 0) ||
+        (a.runsConceded ?? 999) - (b.runsConceded ?? 999)
+    )[0];
+  const seasonBest = seasonBestBowling
+    ? `${seasonBestBowling.wickets}/${seasonBestBowling.runsConceded ?? "?"}`
+    : "—";
+
   const [flapValue, setFlapValue] = useState(0);
   const flapIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -731,8 +769,50 @@ export default function DashboardScreen() {
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : summary ? (
         <>
+          {/* ── Season headline card ── */}
           <View onLayout={measureSection("stats")} />
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Batting</Text>
+          <View style={[styles.headlineCard, { backgroundColor: colors.primary }]}>
+            <View style={styles.headlineStat}>
+              <Text style={styles.headlineValue}>{seasonRuns}</Text>
+              <Text style={styles.headlineLabel}>Runs</Text>
+            </View>
+            <View style={styles.headlineDivider} />
+            <View style={styles.headlineStat}>
+              <Text style={styles.headlineValue}>{seasonWickets}</Text>
+              <Text style={styles.headlineLabel}>Wickets</Text>
+            </View>
+            <View style={styles.headlineDivider} />
+            <View style={styles.headlineStat}>
+              <Text style={styles.headlineValue}>{summary.fielding.totalCatches}</Text>
+              <Text style={styles.headlineLabel}>Catches</Text>
+            </View>
+          </View>
+
+          {/* ── Current Season ── */}
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{currentYear} Season — Batting</Text>
+          <View style={styles.statsGrid}>
+            <StatCard label="Runs" value={seasonRuns} colors={colors} />
+            <StatCard label="Innings" value={seasonInnings} colors={colors} />
+            <StatCard label="Average" value={seasonBattingAvg} colors={colors} />
+            <StatCard label="High Score" value={seasonHS} colors={colors} />
+            <StatCard label="Strike Rate" value={seasonSR} colors={colors} />
+            <StatCard label="50s" value={seasonFifties} colors={colors} />
+            <StatCard label="100s" value={seasonCenturies} colors={colors} />
+            <StatCard label="Not Outs" value={seasonNotOuts} colors={colors} />
+            <StatCard label="Matches" value={seasonMatches} colors={colors} />
+          </View>
+
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{currentYear} Season — Bowling</Text>
+          <View style={styles.statsGrid}>
+            <StatCard label="Wickets" value={seasonWickets} colors={colors} />
+            <StatCard label="Best" value={seasonBest} colors={colors} />
+            <StatCard label="Average" value={seasonBowlingAvg} colors={colors} />
+            <StatCard label="Economy" value={seasonEconomy} colors={colors} />
+            <StatCard label="Overs" value={seasonOvers > 0 ? seasonOvers.toFixed(1) : "—"} colors={colors} />
+          </View>
+
+          {/* ── Career Totals ── */}
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Batting</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Total Runs" value={summary.batting.totalRuns} colors={colors} />
             <StatCard label="High Score" value={summary.batting.highScore} colors={colors} />
@@ -752,7 +832,7 @@ export default function DashboardScreen() {
             <StatCard label="Innings" value={summary.batting.innings} colors={colors} />
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Bowling</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Bowling</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Wickets" value={summary.bowling.totalWickets} colors={colors} />
             <StatCard label="Best" value={summary.bowling.bestFigures} colors={colors} />
@@ -766,11 +846,7 @@ export default function DashboardScreen() {
               value={summary.bowling.averageEconomyRate.toFixed(2)}
               colors={colors}
             />
-            <StatCard
-              label="Overs"
-              value={summary.bowling.totalOvers.toFixed(1)}
-              colors={colors}
-            />
+            <StatCard label="Overs" value={summary.bowling.totalOvers.toFixed(1)} colors={colors} />
             <StatCard label="Maidens" value={totalMaidens} colors={colors} />
             <StatCard label="5-Wkt Hauls" value={fiveWicketHauls} colors={colors} />
             <StatCard label="No Balls" value={totalNoBalls} colors={colors} />
@@ -801,16 +877,12 @@ export default function DashboardScreen() {
             </Text>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Fielding</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Fielding</Text>
           <View style={styles.statsGrid}>
             <StatCard label="Catches" value={summary.fielding.totalCatches} colors={colors} />
             <StatCard label="Run Outs" value={summary.fielding.totalRunOuts} colors={colors} />
             <StatCard label="Stumpings" value={summary.fielding.totalStumpings} colors={colors} />
-            <StatCard
-              label="Dropped"
-              value={summary.fielding.totalDroppedCatches}
-              colors={colors}
-            />
+            <StatCard label="Dropped" value={summary.fielding.totalDroppedCatches} colors={colors} />
           </View>
 
           {/* ── Season Targets ── */}
@@ -930,6 +1002,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     opacity: 0.6,
   },
+  headlineCard: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 8,
+  },
+  headlineStat: { flex: 1, alignItems: "center" },
+  headlineValue: { fontSize: 28, fontFamily: "Inter_700Bold", color: "#FFFDF8" },
+  headlineLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "rgba(255,255,255,0.65)", marginTop: 2, letterSpacing: 0.8, textTransform: "uppercase" },
+  headlineDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginVertical: 4 },
+
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
