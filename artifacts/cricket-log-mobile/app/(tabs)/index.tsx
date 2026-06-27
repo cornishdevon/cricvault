@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
-import { BallHitsStumps, StumpsExploding } from "@/components/CricketIcons";
+import { BallHitsStumps, StumpsExploding, CricketPitch } from "@/components/CricketIcons";
 
 // ── Bar Chart (pure View — fixed pixel heights, works on web + native) ──────────
 
@@ -462,7 +462,7 @@ const SHORTCUTS = [
   { label: "🎯 Targets", key: "goals" },
   { label: "📈 Form", key: "form" },
   { label: "Dismissals", key: "dismissals" },
-  { label: "🏟 Match Types", key: "matchtype" },
+  { label: "Match Types", key: "matchtype" },
   { label: "👊 Head-to-Head", key: "h2h" },
   { label: "🗂 Recent", key: "recent" },
 ];
@@ -490,6 +490,11 @@ function ShortcutPills({
           {s.key === "dismissals" ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <StumpsExploding size={15} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "matchtype" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <CricketPitch size={20} />
               <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
             </View>
           ) : (
