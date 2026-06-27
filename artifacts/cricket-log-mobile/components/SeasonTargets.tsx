@@ -85,7 +85,7 @@ export function SeasonTargets({
   if (editing) {
     return (
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.primary + "44" }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>🎯 Set Season Targets</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>Set Season Targets</Text>
         <View style={styles.inputRow}>
           <View style={styles.inputWrap}>
             <Text style={[styles.label, { color: colors.mutedForeground }]}>Runs target</Text>
@@ -125,7 +125,7 @@ export function SeasonTargets({
   if (!targets || (targets.runs === 0 && targets.wickets === 0)) {
     return (
       <View style={[styles.emptyCard, { borderColor: colors.border }]}>
-        <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>🎯 Set season targets to track your progress</Text>
+        <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Set season targets to track your progress</Text>
         <TouchableOpacity onPress={() => { setRunsInput(""); setWicketsInput(""); setEditing(true); }} style={[styles.btnSmall, { borderColor: colors.border }]}>
           <Text style={[styles.btnSmallText, { color: colors.primary }]}>Set goals</Text>
         </TouchableOpacity>
@@ -141,7 +141,7 @@ export function SeasonTargets({
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.cardHeader}>
-        <Text style={[styles.title, { color: colors.foreground }]}>🎯 {season} Goals</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>{season} Goals</Text>
         <TouchableOpacity onPress={() => { setRunsInput(String(targets.runs)); setWicketsInput(String(targets.wickets)); setEditing(true); }}>
           <Text style={[styles.editLink, { color: colors.primary }]}>Edit</Text>
         </TouchableOpacity>
@@ -150,7 +150,7 @@ export function SeasonTargets({
       {targets.runs > 0 && (
         <View style={styles.goalRow}>
           <View style={styles.goalMeta}>
-            <Text style={[styles.goalLabel, { color: colors.foreground }]}>🏏 Runs {runsDone ? "✅" : ""}</Text>
+            <Text style={[styles.goalLabel, { color: colors.foreground }]}>Runs {runsDone ? "✓" : ""}</Text>
             <Text style={[styles.goalCount, { color: colors.mutedForeground }]}>
               {currentRuns}/{targets.runs}{!runsDone ? `  (${runsLeft} to go)` : ""}
             </Text>
@@ -162,7 +162,7 @@ export function SeasonTargets({
       {targets.wickets > 0 && (
         <View style={styles.goalRow}>
           <View style={styles.goalMeta}>
-            <Text style={[styles.goalLabel, { color: colors.foreground }]}>🎳 Wickets {wktsDone ? "✅" : ""}</Text>
+            <Text style={[styles.goalLabel, { color: colors.foreground }]}>Wickets {wktsDone ? "✓" : ""}</Text>
             <Text style={[styles.goalCount, { color: colors.mutedForeground }]}>
               {currentWickets}/{targets.wickets}{!wktsDone ? `  (${wktsLeft} to go)` : ""}
             </Text>

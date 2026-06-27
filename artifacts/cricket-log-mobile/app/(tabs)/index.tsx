@@ -770,7 +770,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* ── Milestone Progress ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🎯 Milestones</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Milestones</Text>
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.milestoneLabel, { color: colors.foreground }]}>
               Runs — {summary.batting.totalRuns} / {nextRunTarget}
