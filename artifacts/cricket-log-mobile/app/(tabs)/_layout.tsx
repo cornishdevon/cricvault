@@ -42,7 +42,7 @@ function NativeTabLayout() {
         <Label>{labels.achievements}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="coaching">
-        <Icon sf={{ default: "book.open", selected: "book.open.fill" }} />
+        <Icon sf={{ default: "list.clipboard", selected: "list.clipboard.fill" }} />
         <Label>{labels.coaching}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="media">
@@ -140,9 +140,9 @@ function ClassicTabLayout() {
           title: labels.coaching,
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="book.fill" tintColor={color} size={22} />
+              <SymbolView name="list.clipboard.fill" tintColor={color} size={22} />
             ) : (
-              <Feather name="book-open" size={22} color={color} />
+              <Feather name="clipboard" size={22} color={color} />
             ),
         }}
       />
