@@ -294,8 +294,12 @@ function SectionCard({
 
   return (
     <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      {/* Header row */}
-      <View style={styles.sectionCardHeader}>
+      {/* Header row — fully tappable */}
+      <TouchableOpacity
+        style={styles.sectionCardHeader}
+        onPress={() => onToggle && onToggle(!enabled)}
+        activeOpacity={onToggle ? 0.65 : 1}
+      >
         {typeof icon === "string"
           ? <Text style={styles.sectionIcon}>{icon}</Text>
           : <View style={styles.sectionIconWrap}>{icon}</View>}
@@ -306,9 +310,10 @@ function SectionCard({
             onValueChange={onToggle}
             trackColor={{ false: colors.border, true: colors.primary }}
             thumbColor="#fff"
+            pointerEvents="none"
           />
         )}
-      </View>
+      </TouchableOpacity>
 
       {isOpen && (
         <View style={[styles.sectionBody, { borderTopColor: colors.border }]}>
