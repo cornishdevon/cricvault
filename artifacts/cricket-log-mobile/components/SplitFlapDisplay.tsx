@@ -33,21 +33,29 @@ function HalfDigit({
         borderBottomRightRadius: isTop ? 0 : RADIUS,
       }}
     >
-      <Text
+      {/* Inner view is full tile height — flex-centred text sits at tile midpoint */}
+      <View
         style={{
-          position: "absolute",
-          top: isTop ? 2 : 2 - HALF_H,
           width: TILE_W,
-          textAlign: "center",
-          fontSize: FONT_SIZE,
-          fontFamily: "Inter_700Bold",
-          color: INK,
-          lineHeight: TILE_H - 4,
+          height: TILE_H,
+          marginTop: isTop ? 0 : -HALF_H,
+          justifyContent: "center",
+          alignItems: "center",
         }}
-        numberOfLines={1}
       >
-        {digit}
-      </Text>
+        <Text
+          style={{
+            fontSize: FONT_SIZE,
+            fontFamily: "Inter_700Bold",
+            color: INK,
+            textAlign: "center",
+            includeFontPadding: false,
+          }}
+          numberOfLines={1}
+        >
+          {digit}
+        </Text>
+      </View>
     </View>
   );
 }
