@@ -11,7 +11,7 @@ const DIVIDER = 2;
 const SLATE = "#3A3A3C";
 const INK = "#FFFDF8";
 const DIVIDER_COLOR = "rgba(0,0,0,0.55)";
-const TILE_BORDER = "rgba(255,255,255,0.12)";
+const TILE_BORDER = "rgba(210,160,40,0.55)";
 
 function HalfDigit({
   digit,
@@ -104,10 +104,10 @@ function SplitFlapDigit({ digit }: { digit: string }) {
         borderRadius: RADIUS,
         borderWidth: 1.5,
         borderColor: TILE_BORDER,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.45,
-        shadowRadius: 8,
+        shadowColor: "#D2A028",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 12,
         elevation: 8,
       }}
     >
@@ -166,18 +166,7 @@ export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minD
 
   if (Platform.OS === "web") {
     return (
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "rgba(210,160,40,0.13)",
-        borderRadius: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        shadowColor: "#D2A028",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.35,
-        shadowRadius: 18,
-      }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         {digits.map((d, i) => (
           <View
             key={i}
@@ -191,6 +180,10 @@ export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minD
               borderColor: TILE_BORDER,
               justifyContent: "center",
               alignItems: "center",
+              shadowColor: "#D2A028",
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.7,
+              shadowRadius: 12,
             }}
           >
             <Text
@@ -209,19 +202,7 @@ export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minD
   }
 
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "rgba(210,160,40,0.13)",
-      borderRadius: 16,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      shadowColor: "#D2A028",
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.35,
-      shadowRadius: 18,
-      elevation: 6,
-    }}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
       {digits.map((d, i) => (
         <SplitFlapDigit key={i} digit={d} />
       ))}
