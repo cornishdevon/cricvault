@@ -202,8 +202,8 @@ export function CricketPitch({ size = 20 }: { size?: number }) {
   const w = (size / 24) * 14;
   return (
     <Svg width={w} height={size} viewBox="0 0 14 24">
-      {/* Outfield */}
-      <Rect x="0" y="0" width="14" height="24" rx="2" fill="#7f1d1d" />
+      {/* Grass either side of pitch */}
+      <Rect x="0" y="0" width="14" height="24" rx="2" fill="#2E7D32" />
       {/* Pitch strip */}
       <Rect x="4" y="0" width="6" height="24" fill="#C8A84B" />
       {/* Creases */}
