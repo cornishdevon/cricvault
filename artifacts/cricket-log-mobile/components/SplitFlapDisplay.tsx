@@ -8,7 +8,7 @@ const FONT_SIZE = 58;
 const RADIUS = 12;
 const DIVIDER = 2;
 
-const SLATE = "#3A3A3C";
+const SLATE = "#1C1C1E";
 const INK = "#FFFDF8";
 const DIVIDER_COLOR = "rgba(0,0,0,0.55)";
 const TILE_BORDER = "rgba(210,160,40,0.55)";
