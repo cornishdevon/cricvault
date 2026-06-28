@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { CricketBallSvg, CatchingHandsSvg } from "@/components/CricketIcons";
 import {
   Alert,
   Animated,
@@ -281,7 +282,7 @@ function SectionCard({
   children,
   alwaysOpen,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   enabled: boolean;
   onToggle?: (v: boolean) => void;
@@ -295,7 +296,9 @@ function SectionCard({
     <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header row */}
       <View style={styles.sectionCardHeader}>
-        <Text style={styles.sectionIcon}>{icon}</Text>
+        {typeof icon === "string"
+          ? <Text style={styles.sectionIcon}>{icon}</Text>
+          : <View style={styles.sectionIconWrap}>{icon}</View>}
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
         {onToggle && (
           <Switch
@@ -1136,7 +1139,7 @@ export default function LogMatchScreen() {
 
         {/* ── Bowling ── */}
         <SectionCard
-          icon="🎳"
+          icon={<CricketBallSvg size={22} />}
           title="Bowling"
           enabled={hasBowling}
           onToggle={setHasBowling}
@@ -1236,7 +1239,7 @@ export default function LogMatchScreen() {
 
         {/* ── Fielding ── */}
         <SectionCard
-          icon="🧤"
+          icon={<CatchingHandsSvg size={22} />}
           title="Fielding"
           enabled={hasFielding}
           onToggle={setHasFielding}
@@ -1344,6 +1347,7 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
   },
   sectionIcon: { fontSize: 20 },
+  sectionIconWrap: { width: 24, height: 24, alignItems: "center", justifyContent: "center" },
   sectionTitle: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold" },
   sectionBody: { borderTopWidth: StyleSheet.hairlineWidth, padding: 14, gap: 4 },
 
