@@ -5,30 +5,52 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "cricket-log-mobile",
+    "scheme": "cricvault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0a1a6b"
+      "backgroundColor": "#1B5E2B"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cricvault.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "CricVault uses your camera so you can add match photos to your cricket diary.",
+        "NSPhotoLibraryUsageDescription": "CricVault accesses your photo library so you can attach match photos.",
+        "NSPhotoLibraryAddUsageDescription": "CricVault saves match photos to your photo library.",
+        "NSLocationWhenInUseUsageDescription": "CricVault can use your location to auto-fill match venues."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
-    "android": {},
+    "android": {
+      "package": "com.cricvault.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://replit.com/"
-        }
-      ],
+      "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CricVault accesses your photo library so you can attach match photos.",
+          "cameraPermission": "CricVault uses your camera so you can add match photos to your cricket diary."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
