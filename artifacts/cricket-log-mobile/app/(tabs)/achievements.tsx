@@ -230,12 +230,29 @@ export default function AchievementsScreen() {
               </View>
             )}
 
-            {/* Positive badges */}
-            <View style={styles.grid}>
-              {positive.filter((b) => b.earned).map((badge) => (
-                <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
-              ))}
-            </View>
+            {/* Earned positive badges */}
+            {positive.some((b) => b.earned) && (
+              <>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Earned</Text>
+                <View style={styles.grid}>
+                  {positive.filter((b) => b.earned).map((badge) => (
+                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* Locked positive badges */}
+            {positive.some((b) => !b.earned) && (
+              <>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Locked</Text>
+                <View style={styles.grid}>
+                  {positive.filter((b) => !b.earned).map((badge) => (
+                    <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
+                  ))}
+                </View>
+              </>
+            )}
 
             {negative.some((b) => b.earned) && (
               <>
