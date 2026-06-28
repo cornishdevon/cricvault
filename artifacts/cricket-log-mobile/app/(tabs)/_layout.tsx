@@ -38,7 +38,7 @@ function NativeTabLayout() {
         <Label>{labels.matches}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="achievements">
-        <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
+        <Icon sf={{ default: "medal", selected: "medal.fill" }} />
         <Label>{labels.achievements}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="coaching">
