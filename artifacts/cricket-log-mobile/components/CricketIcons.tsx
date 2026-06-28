@@ -1,25 +1,24 @@
 import React from "react";
 import Svg, { Circle, G, Line, Path, Polygon, Rect } from "react-native-svg";
 
-// ── Cricket ball — straight seam across the equator ──────────────────────────
+// ── Cricket ball — twin parallel seam lines with thread between them ──────────
 export function CricketBallSvg({ size = 24 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 40 40">
       <Circle cx="20" cy="20" r="19" fill={RED} />
-      {/* Straight seam */}
-      <Line x1="1" y1="20" x2="39" y2="20" stroke={CREAM} strokeWidth="2.2" strokeLinecap="round" opacity={0.9} />
-      {/* Stitch marks above seam (angled /) */}
-      <Line x1="8"  y1="17" x2="10" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="14" y1="16" x2="16" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="20" y1="16" x2="22" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="26" y1="16" x2="28" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="32" y1="17" x2="34" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      {/* Stitch marks below seam (angled \) */}
-      <Line x1="10" y1="20.5" x2="8"  y2="23" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="16" y1="20.5" x2="14" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="22" y1="20.5" x2="20" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="28" y1="20.5" x2="26" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
-      <Line x1="34" y1="20.5" x2="32" y2="23" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      {/* Top seam line */}
+      <Line x1="2" y1="18" x2="38" y2="18" stroke={CREAM} strokeWidth="1.6" strokeLinecap="round" opacity={0.9} />
+      {/* Bottom seam line */}
+      <Line x1="2" y1="22" x2="38" y2="22" stroke={CREAM} strokeWidth="1.6" strokeLinecap="round" opacity={0.9} />
+      {/* Thread stitches between the two lines only */}
+      <Line x1="7"  y1="18" x2="7"  y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="11" y1="18" x2="11" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="15" y1="18" x2="15" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="19" y1="18" x2="19" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="23" y1="18" x2="23" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="27" y1="18" x2="27" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="31" y1="18" x2="31" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
+      <Line x1="35" y1="18" x2="35" y2="22" stroke={CREAM} strokeWidth="1.1" opacity={0.7} strokeLinecap="round" />
     </Svg>
   );
 }
