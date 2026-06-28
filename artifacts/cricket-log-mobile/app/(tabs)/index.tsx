@@ -25,7 +25,7 @@ import { useSeasonContext } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
-import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards } from "@/components/CricketIcons";
+import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards, CricketBallSvg } from "@/components/CricketIcons";
 
 // ── Season list builder ────────────────────────────────────────────────────────
 type SeasonDef = { label: string; startDate: string; endDate: string };
@@ -931,9 +931,12 @@ export default function DashboardScreen() {
               🏏 {nextRunTarget - summary.batting.totalRuns} to {nextRunTarget} runs
             </Text>
             <Text style={[styles.milestoneStripSep, { color: colors.border }]}> · </Text>
-            <Text style={[styles.milestoneStripItem, { color: colors.accent }]}>
-              🎳 {nextWicketTarget - summary.bowling.totalWickets} to {nextWicketTarget} wickets
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <CricketBallSvg size={13} />
+              <Text style={[styles.milestoneStripItem, { color: colors.accent }]}>
+                {nextWicketTarget - summary.bowling.totalWickets} to {nextWicketTarget} wickets
+              </Text>
+            </View>
           </View>
 
           {/* ── Season headline card ── */}
