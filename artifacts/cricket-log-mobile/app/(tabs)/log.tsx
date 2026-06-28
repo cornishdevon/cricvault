@@ -97,6 +97,7 @@ const HOW_OUT_OPTIONS = [
   "Stumped",
   "Hit Wicket",
   "Handled Ball",
+  "Obstructing the Field",
   "Timed Out",
   "Retired",
 ];
