@@ -128,9 +128,9 @@ function ClassicTabLayout() {
           title: labels.achievements,
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="trophy.fill" tintColor={color} size={22} />
+              <SymbolView name="medal.fill" tintColor={color} size={22} />
             ) : (
-              <Feather name="award" size={22} color={color} />
+              <Feather name="shield" size={22} color={color} />
             ),
         }}
       />
