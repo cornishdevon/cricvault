@@ -96,6 +96,7 @@ const HOW_OUT_OPTIONS = [
   "Run Out",
   "Stumped",
   "Hit Wicket",
+  "Hit the Ball Twice",
   "Handled Ball",
   "Obstructing the Field",
   "Timed Out",
