@@ -1,52 +1,52 @@
 import React from "react";
 import Svg, { Circle, G, Line, Path, Polygon, Rect } from "react-native-svg";
 
-// ── Standalone cricket ball ───────────────────────────────────────────────────
+// ── Cricket ball — straight seam across the equator ──────────────────────────
 export function CricketBallSvg({ size = 24 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 40 40">
       <Circle cx="20" cy="20" r="19" fill={RED} />
-      {/* Upper seam arc */}
-      <Path d="M 6,18 C 10,12 30,12 34,18" stroke={CREAM} strokeWidth="2" fill="none" strokeLinecap="round" opacity={0.8} />
-      {/* Lower seam arc */}
-      <Path d="M 6,22 C 10,28 30,28 34,22" stroke={CREAM} strokeWidth="2" fill="none" strokeLinecap="round" opacity={0.8} />
-      {/* Stitch marks upper */}
-      <Line x1="11" y1="15" x2="11" y2="18" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="17" y1="13" x2="17" y2="16" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="23" y1="13" x2="23" y2="16" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="29" y1="15" x2="29" y2="18" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      {/* Stitch marks lower */}
-      <Line x1="11" y1="22" x2="11" y2="25" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="17" y1="24" x2="17" y2="27" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="23" y1="24" x2="23" y2="27" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
-      <Line x1="29" y1="22" x2="29" y2="25" stroke={CREAM} strokeWidth="1.3" opacity={0.65} strokeLinecap="round" />
+      {/* Straight seam */}
+      <Line x1="1" y1="20" x2="39" y2="20" stroke={CREAM} strokeWidth="2.2" strokeLinecap="round" opacity={0.9} />
+      {/* Stitch marks above seam (angled /) */}
+      <Line x1="8"  y1="17" x2="10" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="14" y1="16" x2="16" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="20" y1="16" x2="22" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="26" y1="16" x2="28" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="32" y1="17" x2="34" y2="19.5" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      {/* Stitch marks below seam (angled \) */}
+      <Line x1="10" y1="20.5" x2="8"  y2="23" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="16" y1="20.5" x2="14" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="22" y1="20.5" x2="20" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="28" y1="20.5" x2="26" y2="24" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
+      <Line x1="34" y1="20.5" x2="32" y2="23" stroke={CREAM} strokeWidth="1.2" opacity={0.65} strokeLinecap="round" />
     </Svg>
   );
 }
 
-// ── Hands about to catch a cricket ball ───────────────────────────────────────
+// ── Single hand — palm facing viewer, fingers up ───────────────────────────────
 export function CatchingHandsSvg({ size = 24 }: { size?: number }) {
   const SKIN = "#C89060";
+  const DARK = "#A0724A";
   return (
-    <Svg width={size} height={size} viewBox="0 0 48 48">
-      {/* Ball dropping */}
-      <Circle cx="24" cy="9" r="8" fill={RED} />
-      <Path d="M 17,9 C 19,6 29,6 31,9"  stroke={CREAM} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity={0.75} />
-      <Path d="M 17,9 C 19,12 29,12 31,9" stroke={CREAM} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity={0.75} />
-      {/* Left hand — palm arc */}
-      <Path d="M 3,44 C 3,36 7,28 14,26" stroke={SKIN} strokeWidth="4.5" fill="none" strokeLinecap="round" />
-      {/* Left fingers */}
-      <Path d="M 14,26 L 11,19" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 16,25 L 15,18" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 18,24.5 L 18,17" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 20,24.5 L 21,18" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      {/* Right hand — palm arc */}
-      <Path d="M 45,44 C 45,36 41,28 34,26" stroke={SKIN} strokeWidth="4.5" fill="none" strokeLinecap="round" />
-      {/* Right fingers */}
-      <Path d="M 34,26 L 37,19" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 32,25 L 33,18" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 30,24.5 L 30,17" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
-      <Path d="M 28,24.5 L 27,18" stroke={SKIN} strokeWidth="3.5" strokeLinecap="round" />
+    <Svg width={size} height={size} viewBox="0 0 32 40">
+      {/* Palm */}
+      <Path d="M 5,38 C 5,32 6,28 8,27 L 24,27 C 26,28 27,32 27,38 Z" fill={SKIN} />
+      {/* Index finger */}
+      <Path d="M 8,27 L 8,10" stroke={SKIN} strokeWidth="4.8" strokeLinecap="round" />
+      {/* Middle finger */}
+      <Path d="M 13.5,27 L 13.5,7" stroke={SKIN} strokeWidth="4.8" strokeLinecap="round" />
+      {/* Ring finger */}
+      <Path d="M 19,27 L 19,8" stroke={SKIN} strokeWidth="4.8" strokeLinecap="round" />
+      {/* Little finger */}
+      <Path d="M 24,27 L 24,12" stroke={SKIN} strokeWidth="4.3" strokeLinecap="round" />
+      {/* Thumb */}
+      <Path d="M 5,33 C 1,30 1,24 5,21" stroke={SKIN} strokeWidth="4.3" strokeLinecap="round" fill="none" />
+      {/* Knuckle hints */}
+      <Line x1="8"    y1="20" x2="8"    y2="21.5" stroke={DARK} strokeWidth="1" opacity={0.25} strokeLinecap="round" />
+      <Line x1="13.5" y1="19" x2="13.5" y2="20.5" stroke={DARK} strokeWidth="1" opacity={0.25} strokeLinecap="round" />
+      <Line x1="19"   y1="19" x2="19"   y2="20.5" stroke={DARK} strokeWidth="1" opacity={0.25} strokeLinecap="round" />
+      <Line x1="24"   y1="21" x2="24"   y2="22.5" stroke={DARK} strokeWidth="1" opacity={0.25} strokeLinecap="round" />
     </Svg>
   );
 }
