@@ -100,8 +100,14 @@ export function BallHitsStumps({ size = 28 }: { size?: number }) {
       </G>
       {/* Cricket ball */}
       <Circle cx="9" cy="37" r="9" fill={RED} />
-      <Path d="M 5,30 C 2,34 2,40 5,44" stroke={CREAM} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity={0.6} />
-      <Path d="M 13,30 C 16,34 16,40 13,44" stroke={CREAM} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity={0.6} />
+      {/* Seam — two parallel lines with thread between */}
+      <Line x1="1"  y1="35.5" x2="17" y2="35.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
+      <Line x1="1"  y1="38.5" x2="17" y2="38.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
+      <Line x1="3"  y1="35.5" x2="3"  y2="38.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="6"  y1="35.5" x2="6"  y2="38.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="9"  y1="35.5" x2="9"  y2="38.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="12" y1="35.5" x2="12" y2="38.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="15" y1="35.5" x2="15" y2="38.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
     </Svg>
   );
 }
