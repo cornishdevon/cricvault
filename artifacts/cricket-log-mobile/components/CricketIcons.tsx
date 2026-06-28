@@ -53,15 +53,16 @@ export function CatchingHandsSvg({ size = 24 }: { size?: number }) {
       <Line x1="30" y1="23" x2="34" y2="24" stroke={DARK} strokeWidth="1" opacity={0.2} strokeLinecap="round" />
 
       {/* Cricket ball landing in palm */}
-      <Circle cx="24" cy="31" r="8.5" fill={RED} />
+      <Circle cx="24" cy="30" r="11" fill={RED} />
       {/* Ball seam — two parallel lines with thread */}
-      <Line x1="16" y1="29.5" x2="32" y2="29.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
-      <Line x1="16" y1="32.5" x2="32" y2="32.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
-      <Line x1="18" y1="29.5" x2="18" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
-      <Line x1="21" y1="29.5" x2="21" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
-      <Line x1="24" y1="29.5" x2="24" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
-      <Line x1="27" y1="29.5" x2="27" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
-      <Line x1="30" y1="29.5" x2="30" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="14" y1="28.5" x2="34" y2="28.5" stroke={CREAM} strokeWidth="1.5" opacity={0.9} strokeLinecap="round" />
+      <Line x1="14" y1="31.5" x2="34" y2="31.5" stroke={CREAM} strokeWidth="1.5" opacity={0.9} strokeLinecap="round" />
+      <Line x1="17" y1="28.5" x2="17" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="20" y1="28.5" x2="20" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="23" y1="28.5" x2="23" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="26" y1="28.5" x2="26" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="29" y1="28.5" x2="29" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="32" y1="28.5" x2="32" y2="31.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
     </Svg>
   );
 }
