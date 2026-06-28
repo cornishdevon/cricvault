@@ -166,7 +166,18 @@ export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minD
 
   if (Platform.OS === "web") {
     return (
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "rgba(210,160,40,0.13)",
+        borderRadius: 16,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        shadowColor: "#D2A028",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.35,
+        shadowRadius: 18,
+      }}>
         {digits.map((d, i) => (
           <View
             key={i}
@@ -198,7 +209,19 @@ export function SplitFlapDisplay({ value, minDigits = 1 }: { value: number; minD
   }
 
   return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <View style={{
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "rgba(210,160,40,0.13)",
+      borderRadius: 16,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      shadowColor: "#D2A028",
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.35,
+      shadowRadius: 18,
+      elevation: 6,
+    }}>
       {digits.map((d, i) => (
         <SplitFlapDigit key={i} digit={d} />
       ))}
