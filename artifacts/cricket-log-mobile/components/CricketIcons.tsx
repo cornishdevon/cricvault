@@ -25,31 +25,43 @@ export function CricketBallSvg({ size = 24 }: { size?: number }) {
 
 // ── Hand with fingers spread, ball landing in palm ────────────────────────────
 export function CatchingHandsSvg({ size = 24 }: { size?: number }) {
-  const SKIN = "#C89060";
+  const SKIN  = "#C89060";
+  const DARK  = "#9A6B3A";
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
-      {/* Palm */}
-      <Path d="M 13,44 C 11,40 12,35 16,33 L 34,33 C 38,35 38,40 36,44 Z" fill={SKIN} />
-      {/* Thumb — spreading left */}
-      <Line x1="15" y1="34" x2="4"  y2="28" stroke={SKIN} strokeWidth="4.5" strokeLinecap="round" />
-      {/* Index — upper-left */}
-      <Line x1="18" y1="31" x2="9"  y2="17" stroke={SKIN} strokeWidth="4.2" strokeLinecap="round" />
-      {/* Middle — straight up */}
-      <Line x1="23" y1="30" x2="22" y2="13" stroke={SKIN} strokeWidth="4.2" strokeLinecap="round" />
-      {/* Ring — upper-right */}
-      <Line x1="29" y1="31" x2="38" y2="17" stroke={SKIN} strokeWidth="4.2" strokeLinecap="round" />
-      {/* Pinky — spreading right */}
-      <Line x1="33" y1="34" x2="44" y2="28" stroke={SKIN} strokeWidth="4.0" strokeLinecap="round" />
+      {/* Palm — wide rounded base */}
+      <Path d="M 9,47 C 7,43 7,37 11,34 L 37,34 C 41,37 41,43 39,47 Z" fill={SKIN} />
+
+      {/* Thumb — curving down-left from lower palm */}
+      <Path d="M 11,38 C 8,36 4,33 2,28" stroke={SKIN} strokeWidth="4.8" strokeLinecap="round" fill="none" />
+
+      {/* Index — curving upper-left, medium length */}
+      <Path d="M 16,32 C 14,26 12,20 10,13" stroke={SKIN} strokeWidth="4.3" strokeLinecap="round" fill="none" />
+
+      {/* Middle — tallest, nearly straight up */}
+      <Path d="M 22,31 C 22,25 22,18 22,9" stroke={SKIN} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+
+      {/* Ring — curving upper-right, slightly shorter than middle */}
+      <Path d="M 28,32 C 30,25 33,19 36,12" stroke={SKIN} strokeWidth="4.3" strokeLinecap="round" fill="none" />
+
+      {/* Pinky — shorter, spreading right */}
+      <Path d="M 35,36 C 39,33 43,29 45,24" stroke={SKIN} strokeWidth="4.0" strokeLinecap="round" fill="none" />
+
+      {/* Knuckle crease hints on each finger */}
+      <Line x1="15" y1="23" x2="11" y2="24" stroke={DARK} strokeWidth="1" opacity={0.2} strokeLinecap="round" />
+      <Line x1="22" y1="22" x2="22" y2="23.5" stroke={DARK} strokeWidth="1" opacity={0.2} strokeLinecap="round" />
+      <Line x1="30" y1="23" x2="34" y2="24" stroke={DARK} strokeWidth="1" opacity={0.2} strokeLinecap="round" />
+
       {/* Cricket ball landing in palm */}
-      <Circle cx="24" cy="28" r="8" fill={RED} />
-      {/* Ball seam — two parallel lines */}
-      <Line x1="17" y1="26.5" x2="31" y2="26.5" stroke={CREAM} strokeWidth="1.3" opacity={0.9} strokeLinecap="round" />
-      <Line x1="17" y1="29.5" x2="31" y2="29.5" stroke={CREAM} strokeWidth="1.3" opacity={0.9} strokeLinecap="round" />
-      {/* Thread between seam lines */}
-      <Line x1="19" y1="26.5" x2="19" y2="29.5" stroke={CREAM} strokeWidth="0.9" opacity={0.7} strokeLinecap="round" />
-      <Line x1="22" y1="26.5" x2="22" y2="29.5" stroke={CREAM} strokeWidth="0.9" opacity={0.7} strokeLinecap="round" />
-      <Line x1="25" y1="26.5" x2="25" y2="29.5" stroke={CREAM} strokeWidth="0.9" opacity={0.7} strokeLinecap="round" />
-      <Line x1="28" y1="26.5" x2="28" y2="29.5" stroke={CREAM} strokeWidth="0.9" opacity={0.7} strokeLinecap="round" />
+      <Circle cx="24" cy="31" r="8.5" fill={RED} />
+      {/* Ball seam — two parallel lines with thread */}
+      <Line x1="16" y1="29.5" x2="32" y2="29.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
+      <Line x1="16" y1="32.5" x2="32" y2="32.5" stroke={CREAM} strokeWidth="1.4" opacity={0.9} strokeLinecap="round" />
+      <Line x1="18" y1="29.5" x2="18" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="21" y1="29.5" x2="21" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="24" y1="29.5" x2="24" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="27" y1="29.5" x2="27" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
+      <Line x1="30" y1="29.5" x2="30" y2="32.5" stroke={CREAM} strokeWidth="1.0" opacity={0.7} strokeLinecap="round" />
     </Svg>
   );
 }
