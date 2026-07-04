@@ -25,6 +25,7 @@ import { useSeasonContext } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
+import { ScoreboardCard } from "@/components/ScoreboardCard";
 import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards, CricketBallSvg } from "@/components/CricketIcons";
 
 // ── Season list builder ────────────────────────────────────────────────────────
@@ -726,6 +727,7 @@ export default function DashboardScreen() {
     }
   }
 
+  // ── Career runs flip (hero) ────────────────────────────────────────────────
   const [flapValue, setFlapValue] = useState(0);
   const flapIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -750,18 +752,63 @@ export default function DashboardScreen() {
     }, INTERVAL);
   }, []);
 
+  // ── Season scoreboard flaps ────────────────────────────────────────────────
+  const [seasonFlapRuns,    setSeasonFlapRuns]    = useState(0);
+  const [seasonFlapWickets, setSeasonFlapWickets] = useState(0);
+  const [seasonFlapCatches, setSeasonFlapCatches] = useState(0);
+  const [seasonFlapMatches, setSeasonFlapMatches] = useState(0);
+  const seasonFlapRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const triggerSeasonFlaps = useCallback((runs: number, wickets: number, catches: number, matches: number) => {
+    if (seasonFlapRef.current) clearInterval(seasonFlapRef.current);
+    setSeasonFlapRuns(0);
+    setSeasonFlapWickets(0);
+    setSeasonFlapCatches(0);
+    setSeasonFlapMatches(0);
+    if (runs === 0 && wickets === 0 && catches === 0 && matches === 0) return;
+    const DURATION = 1400;
+    const STEPS = 40;
+    const INTERVAL = DURATION / STEPS;
+    let step = 0;
+    seasonFlapRef.current = setInterval(() => {
+      step++;
+      const t = step / STEPS;
+      const eased = 1 - Math.pow(1 - t, 3);
+      setSeasonFlapRuns(Math.round(eased * runs));
+      setSeasonFlapWickets(Math.round(eased * wickets));
+      setSeasonFlapCatches(Math.round(eased * catches));
+      setSeasonFlapMatches(Math.round(eased * matches));
+      if (step >= STEPS) {
+        clearInterval(seasonFlapRef.current!);
+        seasonFlapRef.current = null;
+        setSeasonFlapRuns(runs);
+        setSeasonFlapWickets(wickets);
+        setSeasonFlapCatches(catches);
+        setSeasonFlapMatches(matches);
+      }
+    }, INTERVAL);
+  }, []);
+
+  const careerRuns = summary?.batting.totalRuns ?? 0;
+
   useFocusEffect(
     useCallback(() => {
-      triggerCountUp(seasonRuns);
+      triggerCountUp(careerRuns);
+      triggerSeasonFlaps(seasonRuns, seasonWickets, seasonCatches, seasonMatches);
       return () => {
         if (flapIntervalRef.current) clearInterval(flapIntervalRef.current);
+        if (seasonFlapRef.current)   clearInterval(seasonFlapRef.current);
       };
-    }, [seasonRuns, triggerCountUp])
+    }, [careerRuns, seasonRuns, seasonWickets, seasonCatches, seasonMatches, triggerCountUp, triggerSeasonFlaps])
   );
 
   useEffect(() => {
-    if (seasonRuns > 0) triggerCountUp(seasonRuns);
-  }, [seasonRuns]);
+    if (careerRuns > 0) triggerCountUp(careerRuns);
+  }, [careerRuns]);
+
+  useEffect(() => {
+    triggerSeasonFlaps(seasonRuns, seasonWickets, seasonCatches, seasonMatches);
+  }, [seasonRuns, seasonWickets, seasonCatches, seasonMatches]);
 
   const isRefreshing = summaryRefetching || matchesRefetching || perMatchRefetching;
 
@@ -874,18 +921,18 @@ export default function DashboardScreen() {
           {summary ? (
             <View style={styles.splitFlapRow}>
               <SplitFlapDisplay value={flapValue} />
-              <Text style={[styles.runsLabel, { color: colors.pavilionForeground }]}>Runs</Text>
+              <View>
+                <Text style={[styles.runsLabel, { color: colors.pavilionForeground }]}>Career Runs</Text>
+                <Text style={[styles.heroSub, { color: colors.pavilionMuted, marginTop: 2 }]}>
+                  Avg {battingAvg} · {summary.bowling.totalWickets ?? 0} wkts
+                </Text>
+              </View>
             </View>
           ) : (
             <Text style={[styles.heroTitle, { color: colors.pavilionForeground }]}>
               {isLoading ? "Loading…" : "No data yet"}
             </Text>
           )}
-          {summary ? (
-            <Text style={[styles.heroSub, { color: colors.pavilionMuted }]}>
-              {activeSeasonLabel} Season · {seasonMatches} matches · {seasonWickets} wkts
-            </Text>
-          ) : null}
         </View>
       </LinearGradient>
 
@@ -893,41 +940,10 @@ export default function DashboardScreen() {
         <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
       ) : summary ? (
         <>
-          {/* ── Season picker ── */}
+          {/* ── Layout anchor ── */}
           <View onLayout={measureSection("stats")} />
-          {availableSeasons.length > 1 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.seasonPickerScroll}
-              contentContainerStyle={styles.seasonPickerContent}
-            >
-              {availableSeasons.map((s, i) => (
-                <TouchableOpacity
-                  key={s.label}
-                  style={[
-                    styles.seasonPill,
-                    {
-                      backgroundColor: i === selectedSeasonIdx ? colors.primary : "transparent",
-                      borderColor: i === selectedSeasonIdx ? colors.primary : colors.border,
-                    },
-                  ]}
-                  onPress={() => setSelectedSeasonIdx(i)}
-                >
-                  <Text
-                    style={[
-                      styles.seasonPillText,
-                      { color: i === selectedSeasonIdx ? colors.primaryForeground : colors.foreground },
-                    ]}
-                  >
-                    {s.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
 
-          {/* ── Milestone strip ── */}
+          {/* ── Career milestone strip ── */}
           <View style={[styles.milestoneStrip, { backgroundColor: colors.muted, borderColor: colors.border }]}>
             <Text style={[styles.milestoneStripItem, { color: colors.primary }]}>
               🏏 {nextRunTarget - summary.batting.totalRuns} to {nextRunTarget} runs
@@ -941,38 +957,21 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          {/* ── Season headline card ── */}
-          <View style={[styles.headlineCard, { backgroundColor: colors.primary }]}>
-            <View style={styles.headlineStat}>
-              <Text style={styles.headlineValue}>{seasonRuns}</Text>
-              <Text style={styles.headlineLabel}>Runs</Text>
-              {runsDelta !== null && (
-                <Text style={[styles.headlineDelta, { color: runsDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
-                  {runsDelta >= 0 ? "+" : ""}{runsDelta} vs {prevSeason?.label}
-                </Text>
-              )}
-            </View>
-            <View style={styles.headlineDivider} />
-            <View style={styles.headlineStat}>
-              <Text style={styles.headlineValue}>{seasonWickets}</Text>
-              <Text style={styles.headlineLabel}>Wickets</Text>
-              {wicketsDelta !== null && (
-                <Text style={[styles.headlineDelta, { color: wicketsDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
-                  {wicketsDelta >= 0 ? "+" : ""}{wicketsDelta}
-                </Text>
-              )}
-            </View>
-            <View style={styles.headlineDivider} />
-            <View style={styles.headlineStat}>
-              <Text style={styles.headlineValue}>{seasonCatches}</Text>
-              <Text style={styles.headlineLabel}>Catches</Text>
-              {catchesDelta !== null && (
-                <Text style={[styles.headlineDelta, { color: catchesDelta >= 0 ? "#A8D5B5" : "#F4A29A" }]}>
-                  {catchesDelta >= 0 ? "+" : ""}{catchesDelta}
-                </Text>
-              )}
-            </View>
-          </View>
+          {/* ── Season scoreboard card ── */}
+          <ScoreboardCard
+            seasonLabel={activeSeasonLabel}
+            availableSeasons={availableSeasons}
+            selectedSeasonIdx={selectedSeasonIdx}
+            onSeasonChange={setSelectedSeasonIdx}
+            runsFlap={seasonFlapRuns}
+            wicketsFlap={seasonFlapWickets}
+            catchesFlap={seasonFlapCatches}
+            matchesFlap={seasonFlapMatches}
+            battingAvg={seasonBattingAvg}
+            nextRunTarget={nextRunTarget}
+            runsDelta={runsDelta}
+            prevSeasonLabel={prevSeason?.label}
+          />
 
           {/* ── Share button ── */}
           <TouchableOpacity
