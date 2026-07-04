@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { Fixture } from "@workspace/api-client-react";
+import { exportFixtureToCalendar } from "@/utils/calendarExport";
 
 const BOARD_BG     = "#0c1a0e";
 const BOARD_BORDER = "#1a3320";
@@ -35,6 +36,18 @@ export function NextMatchCard({
   onAddFixture: () => void;
   onDelete?: (id: number) => void;
 }) {
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!fixture) return;
+    setExporting(true);
+    try {
+      await exportFixtureToCalendar(fixture);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (!fixture) {
     return (
       <TouchableOpacity
@@ -72,31 +85,20 @@ export function NextMatchCard({
   }
 
   const days = daysUntil(fixture.date);
-  const isToday = days === 0;
+  const isToday    = days === 0;
   const isTomorrow = days === 1;
-  const isPast = days < 0;
+  const isPast     = days < 0;
 
-  const countdownLabel = isPast
-    ? "Match passed"
-    : isToday
-    ? "TODAY"
-    : isTomorrow
-    ? "Tomorrow"
-    : `In ${days} days`;
-
+  const countdownLabel = isPast ? "Match passed" : isToday ? "TODAY" : isTomorrow ? "Tomorrow" : `In ${days} days`;
   const countdownColor = isPast ? "#f87171" : isToday ? AMBER : GREEN_LIGHT;
 
   return (
     <View style={{
-      marginHorizontal: 16,
-      marginBottom: 14,
-      borderRadius: 14,
-      overflow: "hidden",
-      backgroundColor: BOARD_BG,
-      borderWidth: 1.5,
-      borderColor: BOARD_BORDER,
+      marginHorizontal: 16, marginBottom: 14,
+      borderRadius: 14, overflow: "hidden",
+      backgroundColor: BOARD_BG, borderWidth: 1.5, borderColor: BOARD_BORDER,
     }}>
-      {/* Header strip */}
+      {/* ── Header strip ── */}
       <View style={{
         flexDirection: "row", alignItems: "center", justifyContent: "space-between",
         paddingHorizontal: 14, paddingVertical: 7,
@@ -113,25 +115,21 @@ export function NextMatchCard({
           </TouchableOpacity>
           {onDelete && (
             <TouchableOpacity onPress={() => onDelete(fixture.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="trash-2" size={13} color="#4a7c59" />
+              <Feather name="trash-2" size={13} color={LABEL} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* Body */}
-      <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
-        {/* Opponent */}
+      {/* ── Body ── */}
+      <View style={{ paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4 }}>
         <Text style={{ fontFamily: "Inter_700Bold", fontSize: 22, color: AMBER, marginBottom: 4 }}>
           vs {fixture.opponent}
         </Text>
-
-        {/* Date + time row */}
         <Text style={{ fontFamily: "Inter_500Medium", fontSize: 13, color: GREEN_LIGHT, marginBottom: 6 }}>
           {formatDate(fixture.date)}{fixture.time ? ` · ${fixture.time}` : ""}
         </Text>
 
-        {/* Meta row */}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {fixture.venue ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -163,6 +161,27 @@ export function NextMatchCard({
           </Text>
         ) : null}
       </View>
+
+      {/* ── Add to Calendar button ── */}
+      <TouchableOpacity
+        onPress={handleExport}
+        disabled={exporting}
+        style={{
+          flexDirection: "row", alignItems: "center", justifyContent: "center",
+          gap: 7, margin: 10,
+          paddingVertical: 8, borderRadius: 10,
+          backgroundColor: "#1a3320",
+          borderWidth: 1, borderColor: "#2a5530",
+        }}
+      >
+        {exporting
+          ? <ActivityIndicator size="small" color={AMBER} />
+          : <Feather name="calendar" size={13} color={AMBER} />
+        }
+        <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 13, color: AMBER }}>
+          {Platform.OS === "web" ? "Download .ics" : "Add to Calendar"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

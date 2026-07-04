@@ -21,7 +21,9 @@
         "NSCameraUsageDescription": "CricVault uses your camera so you can add match photos to your cricket diary.",
         "NSPhotoLibraryUsageDescription": "CricVault accesses your photo library so you can attach match photos.",
         "NSPhotoLibraryAddUsageDescription": "CricVault saves match photos to your photo library.",
-        "NSLocationWhenInUseUsageDescription": "CricVault can use your location to auto-fill match venues."
+        "NSLocationWhenInUseUsageDescription": "CricVault can use your location to auto-fill match venues.",
+        "NSCalendarsUsageDescription": "CricVault adds your fixtures to your calendar so you never miss a match.",
+        "NSRemindersUsageDescription": "CricVault can set reminders for upcoming fixtures."
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -34,7 +36,9 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_FINE_LOCATION",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
       ]
     },
     "web": {
@@ -55,6 +59,12 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "CricVault can use your location to auto-fill match venues."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "CricVault adds your fixtures to your calendar so you never miss a match."
         }
       ]
     ],
