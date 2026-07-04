@@ -51,13 +51,13 @@ function labelPos(angle: number, r: number) {
 
 interface Props {
   shots: WheelShot[];
-  onChange: (shots: WheelShot[]) => void;
+  onShotsChange: (shots: WheelShot[]) => void;
 }
 
 const RUN_OPTS: (1 | 2 | 4 | 6)[] = [1, 2, 4, 6];
 const RUN_LABELS: Record<number, string> = { 1: "1 run", 2: "2 runs", 4: "Four", 6: "Six" };
 
-export function WagonWheel({ shots, onChange }: Props) {
+export function WagonWheel({ shots, onShotsChange }: Props) {
   const [pendingRuns, setPendingRuns] = useState<1 | 2 | 4 | 6>(1);
   const [pendingPoint, setPendingPoint] = useState<{ x: number; y: number } | null>(null);
   const [chooseOpen, setChooseOpen] = useState(false);
@@ -76,13 +76,13 @@ export function WagonWheel({ shots, onChange }: Props) {
 
   function confirmShot(runs: 1 | 2 | 4 | 6) {
     if (!pendingPoint) return;
-    onChange([...shots, { x: pendingPoint.x, y: pendingPoint.y, runs }]);
+    onShotsChange([...shots, { x: pendingPoint.x, y: pendingPoint.y, runs }]);
     setChooseOpen(false);
     setPendingPoint(null);
   }
 
   function removeShot(idx: number) {
-    onChange(shots.filter((_, i) => i !== idx));
+    onShotsChange(shots.filter((_, i) => i !== idx));
   }
 
   return (
@@ -162,7 +162,7 @@ export function WagonWheel({ shots, onChange }: Props) {
       </Text>
 
       {shots.length > 0 && (
-        <TouchableOpacity onPress={() => onChange([])} style={styles.clearBtn}>
+        <TouchableOpacity onPress={() => onShotsChange([])} style={styles.clearBtn}>
           <Text style={styles.clearBtnText}>Clear all shots</Text>
         </TouchableOpacity>
       )}
