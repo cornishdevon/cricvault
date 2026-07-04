@@ -1,6 +1,7 @@
 import {
   useListMatches,
   useDeleteMatch,
+  useGetPerMatchStats,
   getGetPerMatchStatsQueryKey,
   getGetStatsSummaryQueryKey,
   getListMatchesQueryKey,
@@ -9,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
+import { exportStatsCsv } from "@/utils/exportCsv";
 import {
   ActivityIndicator,
   Alert,
@@ -124,10 +126,27 @@ export default function MatchesScreen() {
 
   const queryClient = useQueryClient();
   const { data: matches, isLoading, refetch, isRefetching } = useListMatches();
+  const { data: perMatchData } = useGetPerMatchStats();
   const { mutate: deleteMatch } = useDeleteMatch();
 
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!perMatchData || perMatchData.length === 0) {
+      Alert.alert("No Data", "Log some matches first before exporting.");
+      return;
+    }
+    setExporting(true);
+    try {
+      await exportStatsCsv(perMatchData as any);
+    } catch (e: any) {
+      Alert.alert("Export Failed", e?.message ?? "Could not export stats.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!matches) return [];
@@ -214,6 +233,20 @@ export default function MatchesScreen() {
             <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>Total</Text>
           </View>
         </View>
+      )}
+
+      {/* Export button */}
+      {matches && matches.length > 0 && (
+        <TouchableOpacity
+          onPress={handleExport}
+          disabled={exporting}
+          style={[styles.exportBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+        >
+          <Feather name="download" size={13} color={colors.mutedForeground} />
+          <Text style={[styles.exportBtnText, { color: colors.mutedForeground }]}>
+            {exporting ? "Exporting…" : "Export CSV"}
+          </Text>
+        </TouchableOpacity>
       )}
 
       {/* Search */}
@@ -376,6 +409,18 @@ const styles = StyleSheet.create({
   potmBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   potmText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
   deleteBtn: { padding: 4 },
+  exportBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  exportBtnText: { fontSize: 13, fontFamily: "Inter_500Medium" },
   empty: {
     flex: 1,
     alignItems: "center",

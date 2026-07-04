@@ -1113,6 +1113,7 @@ export default function DashboardScreen() {
           <SeasonTargets
             currentRuns={seasonRuns}
             currentWickets={seasonWickets}
+            currentCatches={seasonCatches}
             season={activeSeasonLabel}
             colors={colors}
           />

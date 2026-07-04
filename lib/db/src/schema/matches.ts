@@ -16,6 +16,8 @@ export const matchesTable = pgTable("matches", {
   weatherConditions: text("weather_conditions"),
   tossWinner: text("toss_winner"),
   tossDecision: text("toss_decision"),
+  series: text("series"),
+  isPractice: boolean("is_practice").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -37,6 +39,9 @@ export const battingStatsTable = pgTable("batting_stats", {
   ballsToFifty: integer("balls_to_fifty"),
   ballsToHundred: integer("balls_to_hundred"),
   ballsToHundredFifty: integer("balls_to_hundred_fifty"),
+  oppositionBowler: text("opposition_bowler"),
+  caughtPosition: text("caught_position"),
+  shotData: text("shot_data"),
 });
 
 export const insertBattingStatsSchema = createInsertSchema(battingStatsTable).omit({ id: true });

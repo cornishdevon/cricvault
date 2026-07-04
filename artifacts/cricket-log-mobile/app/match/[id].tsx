@@ -49,6 +49,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
 import { useColors } from "@/hooks/useColors";
+import { ShareCard } from "@/components/ShareCard";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -437,6 +438,7 @@ export default function MatchDetailScreen() {
 
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   // Match fields
   const [editOpponent, setEditOpponent] = useState("");
@@ -670,7 +672,7 @@ export default function MatchDetailScreen() {
               <TouchableOpacity onPress={enterEditMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Feather name="edit-2" size={17} color={colors.foreground} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleShare} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity onPress={() => setShowShareCard(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Feather name="share-2" size={18} color={colors.foreground} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -706,7 +708,36 @@ export default function MatchDetailScreen() {
   const econ = bowling ? Number(bowling.economyRate).toFixed(2) : null;
   const overs = bowling ? Number(bowling.overs).toFixed(1) : null;
 
+  const shareCardData = match ? {
+    date: (match as any).date ?? "",
+    opponent: (match as any).opponent ?? "",
+    venue: (match as any).venue,
+    matchType: (match as any).matchType ?? "",
+    result: (match as any).result,
+    playerOfTheMatch: (match as any).playerOfTheMatch,
+    runs: (batting as any)?.runs,
+    ballsFaced: (batting as any)?.ballsFaced,
+    strikeRate: (batting as any)?.strikeRate,
+    fours: (batting as any)?.fours,
+    sixes: (batting as any)?.sixes,
+    howOut: (batting as any)?.howOut,
+    wickets: (bowling as any)?.wickets,
+    overs: (bowling as any)?.overs,
+    runsConceded: (bowling as any)?.runsConceded,
+    economyRate: (bowling as any)?.economyRate,
+    catches: (fielding as any)?.catches,
+    stumpings: (fielding as any)?.stumpings,
+  } : null;
+
   return (
+    <>
+    {shareCardData && (
+      <ShareCard
+        visible={showShareCard}
+        onClose={() => setShowShareCard(false)}
+        data={shareCardData}
+      />
+    )}
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
@@ -862,6 +893,7 @@ export default function MatchDetailScreen() {
         </View>
       ) : null}
     </ScrollView>
+    </>
   );
 }
 

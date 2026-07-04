@@ -15,11 +15,13 @@ type Colors = {
   card: string;
   border: string;
   primary: string;
+  accent: string;
 };
 
 type Targets = {
   runs: number;
   wickets: number;
+  catches: number;
   season: string;
 };
 
@@ -52,11 +54,13 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 export function SeasonTargets({
   currentRuns,
   currentWickets,
+  currentCatches,
   season,
   colors,
 }: {
   currentRuns: number;
   currentWickets: number;
+  currentCatches: number;
   season: string;
   colors: Colors;
 }) {
@@ -64,6 +68,7 @@ export function SeasonTargets({
   const [editing, setEditing] = useState(false);
   const [runsInput, setRunsInput] = useState("");
   const [wicketsInput, setWicketsInput] = useState("");
+  const [catchesInput, setCatchesInput] = useState("");
 
   useEffect(() => {
     getStoredTargets().then((stored) => {
@@ -75,6 +80,7 @@ export function SeasonTargets({
     const t: Targets = {
       runs: Number(runsInput) || 0,
       wickets: Number(wicketsInput) || 0,
+      catches: Number(catchesInput) || 0,
       season,
     };
     await saveTargets(t);
@@ -88,7 +94,7 @@ export function SeasonTargets({
         <Text style={[styles.title, { color: colors.foreground }]}>Set Season Targets</Text>
         <View style={styles.inputRow}>
           <View style={styles.inputWrap}>
-            <Text style={[styles.label, { color: colors.mutedForeground }]}>Runs target</Text>
+            <Text style={[styles.label, { color: colors.mutedForeground }]}>Runs</Text>
             <TextInput
               style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
               keyboardType="number-pad"
@@ -99,7 +105,7 @@ export function SeasonTargets({
             />
           </View>
           <View style={styles.inputWrap}>
-            <Text style={[styles.label, { color: colors.mutedForeground }]}>Wickets target</Text>
+            <Text style={[styles.label, { color: colors.mutedForeground }]}>Wickets</Text>
             <TextInput
               style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
               keyboardType="number-pad"
@@ -107,6 +113,17 @@ export function SeasonTargets({
               placeholderTextColor={colors.mutedForeground}
               value={wicketsInput}
               onChangeText={setWicketsInput}
+            />
+          </View>
+          <View style={styles.inputWrap}>
+            <Text style={[styles.label, { color: colors.mutedForeground }]}>Catches</Text>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              keyboardType="number-pad"
+              placeholder="e.g. 15"
+              placeholderTextColor={colors.mutedForeground}
+              value={catchesInput}
+              onChangeText={setCatchesInput}
             />
           </View>
         </View>
@@ -122,11 +139,11 @@ export function SeasonTargets({
     );
   }
 
-  if (!targets || (targets.runs === 0 && targets.wickets === 0)) {
+  if (!targets || (targets.runs === 0 && targets.wickets === 0 && (targets.catches ?? 0) === 0)) {
     return (
       <View style={[styles.emptyCard, { borderColor: colors.border }]}>
         <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Set season targets to track your progress</Text>
-        <TouchableOpacity onPress={() => { setRunsInput(""); setWicketsInput(""); setEditing(true); }} style={[styles.btnSmall, { borderColor: colors.border }]}>
+        <TouchableOpacity onPress={() => { setRunsInput(""); setWicketsInput(""); setCatchesInput(""); setEditing(true); }} style={[styles.btnSmall, { borderColor: colors.border }]}>
           <Text style={[styles.btnSmallText, { color: colors.primary }]}>Set goals</Text>
         </TouchableOpacity>
       </View>
@@ -135,14 +152,16 @@ export function SeasonTargets({
 
   const runsLeft = Math.max(targets.runs - currentRuns, 0);
   const wktsLeft = Math.max(targets.wickets - currentWickets, 0);
+  const catchesLeft = Math.max((targets.catches ?? 0) - currentCatches, 0);
   const runsDone = currentRuns >= targets.runs;
   const wktsDone = currentWickets >= targets.wickets;
+  const catchesDone = currentCatches >= (targets.catches ?? 0);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.cardHeader}>
         <Text style={[styles.title, { color: colors.foreground }]}>{season} Goals</Text>
-        <TouchableOpacity onPress={() => { setRunsInput(String(targets.runs)); setWicketsInput(String(targets.wickets)); setEditing(true); }}>
+        <TouchableOpacity onPress={() => { setRunsInput(String(targets.runs)); setWicketsInput(String(targets.wickets)); setCatchesInput(String(targets.catches ?? 0)); setEditing(true); }}>
           <Text style={[styles.editLink, { color: colors.primary }]}>Edit</Text>
         </TouchableOpacity>
       </View>
@@ -168,6 +187,18 @@ export function SeasonTargets({
             </Text>
           </View>
           <ProgressBar value={currentWickets} max={targets.wickets} color={colors.accent} />
+        </View>
+      )}
+
+      {(targets.catches ?? 0) > 0 && (
+        <View style={styles.goalRow}>
+          <View style={styles.goalMeta}>
+            <Text style={[styles.goalLabel, { color: colors.foreground }]}>Catches {catchesDone ? "✓" : ""}</Text>
+            <Text style={[styles.goalCount, { color: colors.mutedForeground }]}>
+              {currentCatches}/{targets.catches}{!catchesDone ? `  (${catchesLeft} to go)` : ""}
+            </Text>
+          </View>
+          <ProgressBar value={currentCatches} max={targets.catches ?? 0} color="#6366f1" />
         </View>
       )}
     </View>
@@ -211,15 +242,15 @@ const styles = StyleSheet.create({
   btnSmall: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   btnSmallText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
 
-  inputRow: { flexDirection: "row", gap: 10 },
+  inputRow: { flexDirection: "row", gap: 8 },
   inputWrap: { flex: 1, gap: 4 },
   label: { fontSize: 11, fontFamily: "Inter_500Medium" },
   input: {
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 8,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   btnRow: { flexDirection: "row", gap: 8 },

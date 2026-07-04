@@ -110,6 +110,33 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     else streak = 0;
   }
 
+  // Wicket streak: 2+ wickets in 3 consecutive bowling matches
+  let maxWicketStreak = 0;
+  let curWicketStreak = 0;
+  for (const d of bowlingInnings) {
+    if ((d.wickets ?? 0) >= 2) { curWicketStreak++; maxWicketStreak = Math.max(maxWicketStreak, curWicketStreak); }
+    else curWicketStreak = 0;
+  }
+  const wicketStreakEarned = maxWicketStreak >= 3;
+
+  // Boundary streak: innings with 2+ boundaries (4s + 6s) in a row, 5+ times
+  let maxBoundaryStreak = 0;
+  let curBoundaryStreak = 0;
+  for (const d of battingInnings) {
+    if ((d.fours ?? 0) + (d.sixes ?? 0) >= 2) { curBoundaryStreak++; maxBoundaryStreak = Math.max(maxBoundaryStreak, curBoundaryStreak); }
+    else curBoundaryStreak = 0;
+  }
+  const boundaryStreakEarned = maxBoundaryStreak >= 5;
+
+  // Run streak: 30+ runs in 5 consecutive innings
+  let maxRunStreak30 = 0;
+  let curRunStreak30 = 0;
+  for (const d of battingInnings) {
+    if ((d.runs ?? 0) >= 30) { curRunStreak30++; maxRunStreak30 = Math.max(maxRunStreak30, curRunStreak30); }
+    else curRunStreak30 = 0;
+  }
+  const hotStreak30Earned = maxRunStreak30 >= 5;
+
   const lineAndLengthEarned = totalOvers >= 40 && careerEconomy < 3;
   const lwEarned = battingInnings.length >= 10 && careerRuns / battingInnings.length >= 40;
   const lwAvg    = battingInnings.length > 0 ? (careerRuns / battingInnings.length).toFixed(1) : "0";
@@ -205,6 +232,9 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     })),
 
     { id: "consistent",    label: "Consistent",      description: "5 consecutive innings of 25+",  icon: "📈", earned: consistentEarned },
+    { id: "hotStreak",     label: "Hot Streak",      description: "30+ runs in 5 consecutive innings", icon: "🔥", earned: hotStreak30Earned, detail: hotStreak30Earned ? `${maxRunStreak30} in a row` : undefined },
+    { id: "wicketStreak",  label: "On The Hunt",     description: "2+ wickets in 3 consecutive matches", icon: "🎯", earned: wicketStreakEarned, detail: wicketStreakEarned ? `${maxWicketStreak} in a row` : undefined },
+    { id: "boundaryStreak", label: "Boundary Machine", description: "Boundaries in 5 consecutive innings", icon: "🏅", earned: boundaryStreakEarned, detail: boundaryStreakEarned ? `${maxBoundaryStreak} innings` : undefined },
     { id: "raisethebat",   label: "Raise the Bat",   description: "5 fifties in a single season",  icon: "🏏", earned: raiseTheBatEarned, detail: raiseTheBatSeason ? `${raiseTheBatSeason} season` : undefined },
     { id: "doffhelmet",    label: "Doff Your Helmet", description: "3 centuries in your career",   icon: "⛑️", imageKey: "doffYourHelmet", earned: careerHundreds.length >= 3, detail: careerHundreds.length >= 3 ? `${careerHundreds.length} hundreds` : undefined },
     { id: "leatherWillow", label: "Leather on Willow", description: "Avg 40+ over 10 innings",    icon: "🪵", earned: lwEarned, detail: lwEarned ? `Avg ${lwAvg}` : undefined },

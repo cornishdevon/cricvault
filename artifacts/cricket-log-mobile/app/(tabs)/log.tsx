@@ -39,6 +39,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { computeBadges, type PerMatchStat } from "@/utils/computeBadges";
+import { WagonWheel, type WheelShot } from "@/components/WagonWheel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,11 @@ type MatchForm = {
   playingFor: string;
   result: string;
   playerOfTheMatch: boolean;
+  notes: string;
+  series: string;
+  isPractice: boolean;
+  pitchType: string;
+  weatherConditions: string;
 };
 
 type BattingForm = {
@@ -63,6 +69,8 @@ type BattingForm = {
   ballsToFifty: string;
   ballsToHundred: string;
   ballsToHundredFifty: string;
+  oppositionBowler: string;
+  caughtPosition: string;
 };
 
 type BowlingForm = {
@@ -87,6 +95,15 @@ type FieldingForm = {
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
+
+const CAUGHT_POSITIONS = [
+  "Slip", "2nd Slip", "3rd Slip", "Gully", "Point", "Cover", "Mid-off",
+  "Mid-on", "Mid-wicket", "Square Leg", "Fine Leg", "Third Man",
+  "Long-on", "Long-off", "Deep Cover", "Wicket Keeper",
+];
+
+const PITCH_TYPES = ["Flat", "Good", "Uneven", "Slow", "Fast", "Wet", "Dusty"];
+const WEATHER_OPTIONS = ["Sunny", "Overcast", "Humid", "Windy", "Hot", "Cold", "Drizzle"];
 
 const HOW_OUT_OPTIONS = [
   "Not Out",
@@ -120,6 +137,11 @@ const defaultMatch: MatchForm = {
   playingFor: "",
   result: "",
   playerOfTheMatch: false,
+  notes: "",
+  series: "",
+  isPractice: false,
+  pitchType: "",
+  weatherConditions: "",
 };
 
 const defaultBatting: BattingForm = {
@@ -133,6 +155,8 @@ const defaultBatting: BattingForm = {
   ballsToFifty: "",
   ballsToHundred: "",
   ballsToHundredFifty: "",
+  oppositionBowler: "",
+  caughtPosition: "",
 };
 
 const defaultBowling: BowlingForm = {
@@ -698,6 +722,7 @@ export default function LogMatchScreen() {
 
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatch);
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
+  const [wheelShots, setWheelShots] = useState<WheelShot[]>([]);
   const [bowlingForm, setBowlingForm] = useState<BowlingForm>(defaultBowling);
   const [fieldingForm, setFieldingForm] = useState<FieldingForm>(defaultFielding);
   const [customDismissals, setCustomDismissals] = useState<string[]>([]);
@@ -766,6 +791,11 @@ export default function LogMatchScreen() {
           playingFor: matchForm.playingFor || undefined,
           result: matchForm.result || undefined,
           playerOfTheMatch: matchForm.playerOfTheMatch,
+          notes: matchForm.notes || undefined,
+          series: matchForm.series || undefined,
+          isPractice: matchForm.isPractice,
+          pitchType: matchForm.pitchType || undefined,
+          weatherConditions: matchForm.weatherConditions || undefined,
         },
       });
 
@@ -787,6 +817,9 @@ export default function LogMatchScreen() {
               ballsToFifty: battingForm.ballsToFifty ? Number(battingForm.ballsToFifty) : undefined,
               ballsToHundred: battingForm.ballsToHundred ? Number(battingForm.ballsToHundred) : undefined,
               ballsToHundredFifty: battingForm.ballsToHundredFifty ? Number(battingForm.ballsToHundredFifty) : undefined,
+              oppositionBowler: battingForm.oppositionBowler || undefined,
+              caughtPosition: battingForm.caughtPosition || undefined,
+              shotData: wheelShots.length > 0 ? JSON.stringify(wheelShots) : undefined,
             },
           })
         );
@@ -892,6 +925,7 @@ export default function LogMatchScreen() {
       setFieldingForm(defaultFielding);
       setCustomDismissals([]);
       setCustomHowOutInput("");
+      setWheelShots([]);
       setHasBatting(true);
       setHasBowling(false);
       setHasFielding(false);
@@ -1049,6 +1083,51 @@ export default function LogMatchScreen() {
             value={matchForm.playerOfTheMatch}
             onValueChange={(v) => updateMatch("playerOfTheMatch", v)}
           />
+
+          <ToggleRow
+            label="Practice Match"
+            value={matchForm.isPractice}
+            onValueChange={(v) => updateMatch("isPractice", v)}
+          />
+
+          <Field label="Series / Tournament">
+            <Input
+              value={matchForm.series}
+              onChangeText={(v) => updateMatch("series", v)}
+              placeholder="e.g. State League 2026"
+            />
+          </Field>
+
+          <Field label="Pitch Type">
+            <ChipGroup
+              options={PITCH_TYPES}
+              selected={matchForm.pitchType}
+              onSelect={(v) => updateMatch("pitchType", v)}
+            />
+          </Field>
+
+          <Field label="Weather">
+            <ChipGroup
+              options={WEATHER_OPTIONS}
+              selected={matchForm.weatherConditions}
+              onSelect={(v) => updateMatch("weatherConditions", v)}
+            />
+          </Field>
+
+          <Field label="Match Notes">
+            <TextInput
+              style={[
+                styles.notesInput,
+                { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+              value={matchForm.notes}
+              onChangeText={(v) => updateMatch("notes", v)}
+              placeholder="Any notes about the match…"
+              placeholderTextColor={colors.mutedForeground}
+              multiline
+              numberOfLines={3}
+            />
+          </Field>
         </SectionCard>
 
         {/* ── Batting ── */}
@@ -1153,6 +1232,24 @@ export default function LogMatchScreen() {
             )}
           </Field>
 
+          <Field label="Opposition Bowler">
+            <Input
+              value={battingForm.oppositionBowler}
+              onChangeText={(v) => updateBatting("oppositionBowler", v)}
+              placeholder="e.g. J. Smith"
+            />
+          </Field>
+
+          {battingForm.howOut === "Caught" && (
+            <Field label="Caught At">
+              <ChipGroup
+                options={CAUGHT_POSITIONS}
+                selected={battingForm.caughtPosition}
+                onSelect={(v) => updateBatting("caughtPosition", v)}
+              />
+            </Field>
+          )}
+
           <ToggleRow
             label="Bad Umpire Decision?"
             sublabel="Were you given out incorrectly?"
@@ -1185,6 +1282,10 @@ export default function LogMatchScreen() {
               placeholder="e.g. 121"
               keyboardType="numeric"
             />
+          </Field>
+
+          <Field label="Wagon Wheel">
+            <WagonWheel shots={wheelShots} onShotsChange={setWheelShots} />
           </Field>
         </SectionCard>
 
@@ -1434,6 +1535,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
     gap: 8,
+  },
+  notesInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    minHeight: 72,
+    textAlignVertical: "top",
   },
   customDismissalInput: {
     flex: 1,

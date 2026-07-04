@@ -30,13 +30,27 @@ router.get("/matches", async (req, res) => {
 });
 
 router.post("/matches", async (req, res) => {
-  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch } = req.body;
+  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch, notes, pitchType, weatherConditions, tossWinner, tossDecision, series, isPractice } = req.body;
   if (!date || !opponent || !matchType) {
     return res.status(400).json({ error: "date, opponent, and matchType are required" });
   }
   const [match] = await db
     .insert(matchesTable)
-    .values({ date, opponent, venue: venue ?? null, matchType, playingFor: playingFor ?? null, result: result ?? null, playerOfTheMatch: !!playerOfTheMatch })
+    .values({
+      date, opponent,
+      venue: venue ?? null,
+      matchType,
+      playingFor: playingFor ?? null,
+      result: result ?? null,
+      playerOfTheMatch: !!playerOfTheMatch,
+      notes: notes ?? null,
+      pitchType: pitchType ?? null,
+      weatherConditions: weatherConditions ?? null,
+      tossWinner: tossWinner ?? null,
+      tossDecision: tossDecision ?? null,
+      series: series ?? null,
+      isPractice: !!isPractice,
+    })
     .returning();
   res.status(201).json({ ...match, createdAt: match.createdAt.toISOString() });
 });
@@ -50,7 +64,7 @@ router.get("/matches/:matchId", async (req, res) => {
 
 router.patch("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch, notes, pitchType, weatherConditions, tossWinner, tossDecision } = req.body;
+  const { date, opponent, venue, matchType, playingFor, result, playerOfTheMatch, notes, pitchType, weatherConditions, tossWinner, tossDecision, series, isPractice } = req.body;
   const updates: Record<string, unknown> = {};
   if (date !== undefined) updates.date = date;
   if (opponent !== undefined) updates.opponent = opponent;
@@ -64,6 +78,8 @@ router.patch("/matches/:matchId", async (req, res) => {
   if (weatherConditions !== undefined) updates.weatherConditions = weatherConditions || null;
   if (tossWinner !== undefined) updates.tossWinner = tossWinner || null;
   if (tossDecision !== undefined) updates.tossDecision = tossDecision || null;
+  if (series !== undefined) updates.series = series || null;
+  if (isPractice !== undefined) updates.isPractice = !!isPractice;
   const [match] = await db
     .update(matchesTable)
     .set(updates)
@@ -98,7 +114,7 @@ router.get("/matches/:matchId/batting", async (req, res) => {
 
 router.post("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty } = req.body;
+  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty, oppositionBowler, caughtPosition, shotData } = req.body;
   const strikeRate = calcStrikeRate(runs, ballsFaced);
   const [row] = await db
     .insert(battingStatsTable)
@@ -115,6 +131,9 @@ router.post("/matches/:matchId/batting", async (req, res) => {
       ballsToFifty: ballsToFifty ?? null,
       ballsToHundred: ballsToHundred ?? null,
       ballsToHundredFifty: ballsToHundredFifty ?? null,
+      oppositionBowler: oppositionBowler ?? null,
+      caughtPosition: caughtPosition ?? null,
+      shotData: shotData ?? null,
     })
     .returning();
   res.status(201).json({ ...row, strikeRate: Number(row.strikeRate) });
@@ -122,7 +141,7 @@ router.post("/matches/:matchId/batting", async (req, res) => {
 
 router.patch("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty } = req.body;
+  const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty, oppositionBowler, caughtPosition, shotData } = req.body;
   const [existing] = await db
     .select()
     .from(battingStatsTable)
@@ -139,6 +158,9 @@ router.patch("/matches/:matchId/batting", async (req, res) => {
   if (ballsToFifty !== undefined) updates.ballsToFifty = ballsToFifty;
   if (ballsToHundred !== undefined) updates.ballsToHundred = ballsToHundred;
   if (ballsToHundredFifty !== undefined) updates.ballsToHundredFifty = ballsToHundredFifty;
+  if (oppositionBowler !== undefined) updates.oppositionBowler = oppositionBowler || null;
+  if (caughtPosition !== undefined) updates.caughtPosition = caughtPosition || null;
+  if (shotData !== undefined) updates.shotData = shotData || null;
   const newRuns = runs ?? existing.runs;
   const newBalls = ballsFaced ?? existing.ballsFaced;
   updates.strikeRate = String(calcStrikeRate(newRuns, newBalls));
@@ -409,6 +431,8 @@ router.get("/stats/per-match", async (req, res) => {
         venue: m.venue ?? null,
         matchType: m.matchType,
         playingFor: m.playingFor ?? null,
+        series: m.series ?? null,
+        isPractice: m.isPractice ?? false,
         runs: batting ? batting.runs : null,
         ballsFaced: batting ? batting.ballsFaced : null,
         strikeRate: batting ? Number(batting.strikeRate) : null,
@@ -419,6 +443,9 @@ router.get("/stats/per-match", async (req, res) => {
         badUmpireDecision: batting ? batting.badUmpireDecision ?? null : null,
         ballsToFifty: batting ? batting.ballsToFifty ?? null : null,
         ballsToHundred: batting ? batting.ballsToHundred ?? null : null,
+        oppositionBowler: batting ? batting.oppositionBowler ?? null : null,
+        caughtPosition: batting ? batting.caughtPosition ?? null : null,
+        shotData: batting ? batting.shotData ?? null : null,
         wickets: bowling ? bowling.wickets : null,
         runsConceded: bowling ? bowling.runsConceded : null,
         economyRate: bowling ? Number(bowling.economyRate) : null,

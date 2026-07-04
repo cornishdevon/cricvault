@@ -154,6 +154,12 @@ export interface BattingStats {
      * @nullable
      */
   ballsToHundredFifty?: number | null;
+  /** @nullable */
+  oppositionBowler?: string | null;
+  /** @nullable */
+  caughtPosition?: string | null;
+  /** @nullable */
+  shotData?: string | null;
 }
 
 export type BattingStatsInputHowOut = typeof BattingStatsInputHowOut[keyof typeof BattingStatsInputHowOut];
@@ -188,6 +194,9 @@ export interface BattingStatsInput {
   ballsToHundred?: number;
   /** @minimum 0 */
   ballsToHundredFifty?: number;
+  oppositionBowler?: string;
+  caughtPosition?: string;
+  shotData?: string;
 }
 
 export type BattingStatsUpdateHowOut = typeof BattingStatsUpdateHowOut[keyof typeof BattingStatsUpdateHowOut];
@@ -222,6 +231,9 @@ export interface BattingStatsUpdate {
   ballsToHundred?: number;
   /** @minimum 0 */
   ballsToHundredFifty?: number;
+  oppositionBowler?: string;
+  caughtPosition?: string;
+  shotData?: string;
 }
 
 export interface BowlingStats {
@@ -389,13 +401,25 @@ export interface PerMatchStat {
   opponent: string;
   matchType: string;
   /** @nullable */
+  venue?: string | null;
+  /** @nullable */
+  playingFor?: string | null;
+  /** @nullable */
+  series?: string | null;
+  /** @nullable */
+  isPractice?: boolean | null;
+  /** @nullable */
   runs?: number | null;
   /** @nullable */
   ballsFaced?: number | null;
   /** @nullable */
   strikeRate?: number | null;
   /** @nullable */
+  battingPosition?: number | null;
+  /** @nullable */
   wickets?: number | null;
+  /** @nullable */
+  overs?: number | null;
   /** @nullable */
   runsConceded?: number | null;
   /** @nullable */
@@ -407,13 +431,25 @@ export interface PerMatchStat {
   /** @nullable */
   howOut?: string | null;
   /** @nullable */
+  oppositionBowler?: string | null;
+  /** @nullable */
+  caughtPosition?: string | null;
+  /** @nullable */
+  shotData?: string | null;
+  /** @nullable */
   hatTrick?: boolean | null;
   /** @nullable */
   catches?: number | null;
   /** @nullable */
   stumpings?: number | null;
   /** @nullable */
+  droppedCatches?: number | null;
+  /** @nullable */
+  runOuts?: number | null;
+  /** @nullable */
   result?: string | null;
+  /** @nullable */
+  playerOfTheMatch?: boolean | null;
 }
 
 export type StatsSummaryBatting = {
