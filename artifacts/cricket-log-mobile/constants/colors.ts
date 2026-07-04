@@ -1,78 +1,334 @@
+export type PaletteId = "green" | "navy" | "maroon" | "dusk" | "tawny";
+
+export interface ColorTokens {
+  text: string;
+  tint: string;
+  background: string;
+  foreground: string;
+  card: string;
+  cardForeground: string;
+  primary: string;
+  primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
+  destructive: string;
+  destructiveForeground: string;
+  border: string;
+  input: string;
+  success: string;
+  warning: string;
+  info: string;
+  pavilion: string;
+  pavilionForeground: string;
+  pavilionMuted: string;
+}
+
+type SchemeTokens = { light: ColorTokens; dark: ColorTokens };
+
+export const PALETTES: Record<PaletteId, { label: string; swatch: string; schemes: SchemeTokens }> = {
+  green: {
+    label: "Cricket Green",
+    swatch: "#1B5E2B",
+    schemes: {
+      light: {
+        text: "#1A1A2E",
+        tint: "#1B5E2B",
+        background: "#F5F0E8",
+        foreground: "#1A1A2E",
+        card: "#FFFDF8",
+        cardForeground: "#1A1A2E",
+        primary: "#1B5E2B",
+        primaryForeground: "#FFFFFF",
+        secondary: "#EDE8DC",
+        secondaryForeground: "#1A1A2E",
+        muted: "#EDE8DC",
+        mutedForeground: "#7A6E5F",
+        accent: "#C0392B",
+        accentForeground: "#FFFFFF",
+        destructive: "#C0392B",
+        destructiveForeground: "#FFFFFF",
+        border: "#D4CCBA",
+        input: "#D4CCBA",
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#1E40AF",
+        pavilion: "#1A3520",
+        pavilionForeground: "#FFFDF8",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: "#E8E0CC",
+        tint: "#3D8B52",
+        background: "#0D1A10",
+        foreground: "#E8E0CC",
+        card: "#142019",
+        cardForeground: "#E8E0CC",
+        primary: "#3D8B52",
+        primaryForeground: "#0D1A10",
+        secondary: "#1E2E20",
+        secondaryForeground: "#E8E0CC",
+        muted: "#1E2E20",
+        mutedForeground: "#9A9080",
+        accent: "#C0392B",
+        accentForeground: "#FFFFFF",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: "#2A3D2C",
+        input: "#2A3D2C",
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#3B82F6",
+        pavilion: "#0D1F14",
+        pavilionForeground: "#FFFDF8",
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  },
+
+  navy: {
+    label: "Navy Blue",
+    swatch: "#0D2B6E",
+    schemes: {
+      light: {
+        text: "#0A1428",
+        tint: "#0D2B6E",
+        background: "#EEF1F8",
+        foreground: "#0A1428",
+        card: "#F8FAFF",
+        cardForeground: "#0A1428",
+        primary: "#0D2B6E",
+        primaryForeground: "#FFFFFF",
+        secondary: "#D8DEEE",
+        secondaryForeground: "#0A1428",
+        muted: "#D8DEEE",
+        mutedForeground: "#5A6480",
+        accent: "#CF142B",
+        accentForeground: "#FFFFFF",
+        destructive: "#CF142B",
+        destructiveForeground: "#FFFFFF",
+        border: "#C0C8DC",
+        input: "#C0C8DC",
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#0D2B6E",
+        pavilion: "#071847",
+        pavilionForeground: "#F0F4FF",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: "#D0D8F0",
+        tint: "#4D72C8",
+        background: "#090F1E",
+        foreground: "#D0D8F0",
+        card: "#101828",
+        cardForeground: "#D0D8F0",
+        primary: "#4D72C8",
+        primaryForeground: "#090F1E",
+        secondary: "#151F38",
+        secondaryForeground: "#D0D8F0",
+        muted: "#151F38",
+        mutedForeground: "#7A86A8",
+        accent: "#CF142B",
+        accentForeground: "#FFFFFF",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: "#202D50",
+        input: "#202D50",
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#4D72C8",
+        pavilion: "#060C18",
+        pavilionForeground: "#D0D8F0",
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  },
+
+  maroon: {
+    label: "Maroon",
+    swatch: "#7B1C3C",
+    schemes: {
+      light: {
+        text: "#2A0A14",
+        tint: "#7B1C3C",
+        background: "#F5EDE8",
+        foreground: "#2A0A14",
+        card: "#FFF8F5",
+        cardForeground: "#2A0A14",
+        primary: "#7B1C3C",
+        primaryForeground: "#FFFFFF",
+        secondary: "#EDD8D0",
+        secondaryForeground: "#2A0A14",
+        muted: "#EDD8D0",
+        mutedForeground: "#7A5A52",
+        accent: "#C8A84B",
+        accentForeground: "#2A0A14",
+        destructive: "#B91C1C",
+        destructiveForeground: "#FFFFFF",
+        border: "#DEC4B8",
+        input: "#DEC4B8",
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#1E40AF",
+        pavilion: "#4A0E22",
+        pavilionForeground: "#FFF4EE",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: "#F0D8D0",
+        tint: "#C05878",
+        background: "#1A080E",
+        foreground: "#F0D8D0",
+        card: "#281018",
+        cardForeground: "#F0D8D0",
+        primary: "#C05878",
+        primaryForeground: "#1A080E",
+        secondary: "#301018",
+        secondaryForeground: "#F0D8D0",
+        muted: "#301018",
+        mutedForeground: "#A07878",
+        accent: "#C8A84B",
+        accentForeground: "#1A080E",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: "#401828",
+        input: "#401828",
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#3B82F6",
+        pavilion: "#120609",
+        pavilionForeground: "#F0D8D0",
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  },
+
+  dusk: {
+    label: "Dusk",
+    swatch: "#4C3D8F",
+    schemes: {
+      light: {
+        text: "#1A1530",
+        tint: "#4C3D8F",
+        background: "#F0EEF8",
+        foreground: "#1A1530",
+        card: "#FAF9FF",
+        cardForeground: "#1A1530",
+        primary: "#4C3D8F",
+        primaryForeground: "#FFFFFF",
+        secondary: "#DDD8F0",
+        secondaryForeground: "#1A1530",
+        muted: "#DDD8F0",
+        mutedForeground: "#6A6080",
+        accent: "#E67E22",
+        accentForeground: "#FFFFFF",
+        destructive: "#C0392B",
+        destructiveForeground: "#FFFFFF",
+        border: "#C8C2DC",
+        input: "#C8C2DC",
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#4C3D8F",
+        pavilion: "#2C2057",
+        pavilionForeground: "#F0EEFF",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: "#D8D0F0",
+        tint: "#8070C8",
+        background: "#0E0C1C",
+        foreground: "#D8D0F0",
+        card: "#181428",
+        cardForeground: "#D8D0F0",
+        primary: "#8070C8",
+        primaryForeground: "#0E0C1C",
+        secondary: "#201A38",
+        secondaryForeground: "#D8D0F0",
+        muted: "#201A38",
+        mutedForeground: "#8878A8",
+        accent: "#E67E22",
+        accentForeground: "#FFFFFF",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: "#2C2450",
+        input: "#2C2450",
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#8070C8",
+        pavilion: "#090714",
+        pavilionForeground: "#D8D0F0",
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  },
+
+  tawny: {
+    label: "Tawny",
+    swatch: "#7A4F1D",
+    schemes: {
+      light: {
+        text: "#2A1A08",
+        tint: "#7A4F1D",
+        background: "#F5EDE0",
+        foreground: "#2A1A08",
+        card: "#FFFCF5",
+        cardForeground: "#2A1A08",
+        primary: "#7A4F1D",
+        primaryForeground: "#FFFFFF",
+        secondary: "#EAD8BC",
+        secondaryForeground: "#2A1A08",
+        muted: "#EAD8BC",
+        mutedForeground: "#7A6040",
+        accent: "#1B5E2B",
+        accentForeground: "#FFFFFF",
+        destructive: "#C0392B",
+        destructiveForeground: "#FFFFFF",
+        border: "#D9C8A8",
+        input: "#D9C8A8",
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#1E40AF",
+        pavilion: "#4A2E0D",
+        pavilionForeground: "#FFF8EC",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: "#EED8B8",
+        tint: "#B8803A",
+        background: "#180E04",
+        foreground: "#EED8B8",
+        card: "#22140A",
+        cardForeground: "#EED8B8",
+        primary: "#B8803A",
+        primaryForeground: "#180E04",
+        secondary: "#2C1C0C",
+        secondaryForeground: "#EED8B8",
+        muted: "#2C1C0C",
+        mutedForeground: "#9A7850",
+        accent: "#3D8B52",
+        accentForeground: "#FFFFFF",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: "#3C2A10",
+        input: "#3C2A10",
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#3B82F6",
+        pavilion: "#100900",
+        pavilionForeground: "#EED8B8",
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  },
+};
+
 const colors = {
-  light: {
-    text: "#1A1A2E",
-    tint: "#1B5E2B",
-
-    background: "#F5F0E8",
-    foreground: "#1A1A2E",
-
-    card: "#FFFDF8",
-    cardForeground: "#1A1A2E",
-
-    primary: "#1B5E2B",
-    primaryForeground: "#FFFFFF",
-
-    secondary: "#EDE8DC",
-    secondaryForeground: "#1A1A2E",
-
-    muted: "#EDE8DC",
-    mutedForeground: "#7A6E5F",
-
-    accent: "#C0392B",
-    accentForeground: "#FFFFFF",
-
-    destructive: "#C0392B",
-    destructiveForeground: "#FFFFFF",
-
-    border: "#D4CCBA",
-    input: "#D4CCBA",
-
-    success: "#1B5E2B",
-    warning: "#B45309",
-    info: "#1E40AF",
-
-    pavilion: "#1A3520",
-    pavilionForeground: "#FFFDF8",
-    pavilionMuted: "rgba(255,255,255,0.55)",
-  },
-
-  dark: {
-    text: "#E8E0CC",
-    tint: "#3D8B52",
-
-    background: "#0D1A10",
-    foreground: "#E8E0CC",
-
-    card: "#142019",
-    cardForeground: "#E8E0CC",
-
-    primary: "#3D8B52",
-    primaryForeground: "#0D1A10",
-
-    secondary: "#1E2E20",
-    secondaryForeground: "#E8E0CC",
-
-    muted: "#1E2E20",
-    mutedForeground: "#9A9080",
-
-    accent: "#C0392B",
-    accentForeground: "#FFFFFF",
-
-    destructive: "#E55A4A",
-    destructiveForeground: "#FFFFFF",
-
-    border: "#2A3D2C",
-    input: "#2A3D2C",
-
-    success: "#3D8B52",
-    warning: "#D97706",
-    info: "#3B82F6",
-
-    pavilion: "#0D1F14",
-    pavilionForeground: "#FFFDF8",
-    pavilionMuted: "rgba(255,255,255,0.50)",
-  },
-
+  light: PALETTES.green.schemes.light,
+  dark: PALETTES.green.schemes.dark,
   radius: 10,
 };
 

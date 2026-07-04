@@ -13,6 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
+import { PALETTES, type PaletteId } from "@/constants/colors";
 import { useSeasonContext, type CricketRegion } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
@@ -29,7 +30,7 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
 
 export default function SettingsModal() {
   const colors = useColors();
-  const { override, setOverride } = useAppearance();
+  const { override, setOverride, palette, setPalette } = useAppearance();
   const { region, setRegion } = useSeasonContext();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -110,6 +111,42 @@ export default function SettingsModal() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+        </View>
+
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="droplet" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Colour palette</Text>
+            <View style={styles.swatchRow}>
+              {(Object.entries(PALETTES) as [PaletteId, typeof PALETTES[PaletteId]][]).map(([id, pal]) => {
+                const active = palette === id;
+                return (
+                  <TouchableOpacity
+                    key={id}
+                    onPress={() => setPalette(id)}
+                    style={[
+                      styles.swatchWrap,
+                      active && { borderColor: pal.swatch, borderWidth: 2.5 },
+                      !active && { borderColor: colors.border, borderWidth: 1.5 },
+                    ]}
+                    activeOpacity={0.75}
+                  >
+                    <View style={[styles.swatch, { backgroundColor: pal.swatch }]} />
+                    {active && (
+                      <View style={styles.swatchCheck}>
+                        <Feather name="check" size={10} color="#fff" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={[styles.paletteName, { color: colors.mutedForeground }]}>
+              {PALETTES[palette].label}
+            </Text>
           </View>
         </View>
 
@@ -293,4 +330,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   schemeBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
+  swatchRow: { flexDirection: "row", gap: 10, marginTop: 6 },
+  swatchWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  swatch: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  swatchCheck: {
+    position: "absolute",
+    bottom: 1,
+    right: 1,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paletteName: { fontSize: 12, fontFamily: "Inter_500Medium", marginTop: 4 },
 });

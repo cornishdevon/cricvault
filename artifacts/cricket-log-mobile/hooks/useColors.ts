@@ -1,16 +1,13 @@
 import { useAppearance } from "@/contexts/AppearanceContext";
-import colors from "@/constants/colors";
+import { PALETTES } from "@/constants/colors";
 
 /**
- * Returns design tokens for the active colour scheme.
- * The scheme is controlled by AppearanceContext, which persists a user
- * override in AsyncStorage and falls back to the OS setting.
+ * Returns design tokens for the active colour scheme + palette.
+ * Both are controlled by AppearanceContext, persisted in AsyncStorage.
  */
 export function useColors() {
-  const { scheme } = useAppearance();
-  const palette =
-    scheme === "dark" && "dark" in colors
-      ? (colors as Record<string, typeof colors.light>).dark
-      : colors.light;
-  return { ...palette, radius: colors.radius };
+  const { scheme, palette } = useAppearance();
+  const paletteEntry = PALETTES[palette] ?? PALETTES.green;
+  const tokens = scheme === "dark" ? paletteEntry.schemes.dark : paletteEntry.schemes.light;
+  return { ...tokens, radius: 10 };
 }
