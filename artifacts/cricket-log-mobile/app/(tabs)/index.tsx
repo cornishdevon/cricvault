@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { SeasonTargets } from "@/components/SeasonTargets";
 import {
   ActivityIndicator,
+  Animated,
   RefreshControl,
   ScrollView,
   Share,
@@ -781,6 +782,7 @@ export default function DashboardScreen() {
   const [seasonFlapCatches, setSeasonFlapCatches] = useState(0);
   const [seasonFlapMatches, setSeasonFlapMatches] = useState(0);
   const seasonFlapRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressAnim  = useRef(new Animated.Value(0)).current;
 
   const triggerSeasonFlaps = useCallback((runs: number, wickets: number, catches: number, matches: number) => {
     if (seasonFlapRef.current) clearInterval(seasonFlapRef.current);
@@ -814,20 +816,31 @@ export default function DashboardScreen() {
 
   const careerRuns = summary?.batting.totalRuns ?? 0;
 
+  const animateProgress = useCallback((pct: number) => {
+    progressAnim.setValue(0);
+    Animated.timing(progressAnim, {
+      toValue: pct / 100,
+      duration: 1100,
+      delay: 350,
+      useNativeDriver: false,
+    }).start();
+  }, [progressAnim]);
+
   useFocusEffect(
     useCallback(() => {
       triggerCountUp(careerRuns);
       triggerSeasonFlaps(seasonRuns, seasonWickets, seasonCatches, seasonMatches);
+      animateProgress(runsPct);
       return () => {
         if (flapIntervalRef.current) clearInterval(flapIntervalRef.current);
         if (seasonFlapRef.current)   clearInterval(seasonFlapRef.current);
       };
-    }, [careerRuns, seasonRuns, seasonWickets, seasonCatches, seasonMatches, triggerCountUp, triggerSeasonFlaps])
+    }, [careerRuns, seasonRuns, seasonWickets, seasonCatches, seasonMatches, triggerCountUp, triggerSeasonFlaps, animateProgress, runsPct])
   );
 
   useEffect(() => {
-    if (careerRuns > 0) triggerCountUp(careerRuns);
-  }, [careerRuns]);
+    if (careerRuns > 0) { triggerCountUp(careerRuns); animateProgress(runsPct); }
+  }, [careerRuns, runsPct]);
 
   useEffect(() => {
     triggerSeasonFlaps(seasonRuns, seasonWickets, seasonCatches, seasonMatches);
@@ -858,9 +871,27 @@ export default function DashboardScreen() {
   const RUN_MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
   const WICKET_MILESTONES = [10, 25, 50, 100, 200];
   const nextRunTarget = RUN_MILESTONES.find((m) => m > (summary?.batting.totalRuns ?? 0)) ?? 5000;
+  const prevRunTarget = (() => {
+    const idx = RUN_MILESTONES.indexOf(nextRunTarget);
+    return idx > 0 ? RUN_MILESTONES[idx - 1] : 0;
+  })();
   const nextWicketTarget = WICKET_MILESTONES.find((m) => m > (summary?.bowling.totalWickets ?? 0)) ?? 200;
-  const runsPct = Math.min(100, Math.round(((summary?.batting.totalRuns ?? 0) / nextRunTarget) * 100));
+  const runsPct = Math.min(100, Math.round((((summary?.batting.totalRuns ?? 0) - prevRunTarget) / (nextRunTarget - prevRunTarget)) * 100));
   const wicketsPct = Math.min(100, Math.round(((summary?.bowling.totalWickets ?? 0) / nextWicketTarget) * 100));
+
+  const careerLevel = (() => {
+    const xp = careerRuns
+      + (summary?.batting.innings ?? 0) * 5
+      + (summary?.bowling.totalWickets ?? 0) * 15
+      + centuries * 300 + fifties * 100
+      + potmCount * 75;
+    if (xp >= 25000) return { label: "Legend",   color: "#FFB300", next: null };
+    if (xp >= 10000) return { label: "Elite",    color: "#A78BFA", next: 25000 - xp };
+    if (xp >= 4000)  return { label: "Semi-Pro", color: "#60A5FA", next: 10000 - xp };
+    if (xp >= 1500)  return { label: "Amateur",  color: "#34D399", next: 4000  - xp };
+    if (xp >= 500)   return { label: "Club",     color: "#FBBF24", next: 1500  - xp };
+    return              { label: "Novice",    color: "#9CA3AF", next: 500   - xp };
+  })();
 
   const chartMatches = (perMatch ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(-12);
 
@@ -955,26 +986,78 @@ export default function DashboardScreen() {
                 borderColor: "rgba(255,255,255,0.13)",
               }}
             >
-              <View style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 16,
-                paddingHorizontal: 20,
-                paddingVertical: 18,
-                backgroundColor: "rgba(255,255,255,0.06)",
-              }}>
-                <SplitFlapDisplay
-                  value={flapValue}
-                  tileColor="rgba(255,255,255,0.08)"
-                  inkColor="#FFFDF8"
-                  borderColor="rgba(255,255,255,0.22)"
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.runsLabel, { color: "#FFFDF8" }]}>Career Runs</Text>
-                  <Text style={[styles.heroSub, { color: "rgba(255,255,255,0.55)", marginTop: 4 }]}>
-                    Avg {battingAvg} · {summary.bowling.totalWickets ?? 0} wkts
-                  </Text>
+              <View style={{ backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
+
+                {/* ── Top row: flap + label + level badge ── */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                  <SplitFlapDisplay
+                    value={flapValue}
+                    tileColor="rgba(255,255,255,0.08)"
+                    inkColor="#FFFDF8"
+                    borderColor="rgba(255,255,255,0.22)"
+                  />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <Text style={[styles.runsLabel, { color: "#FFFDF8" }]}>Career Runs</Text>
+                      <View style={{
+                        paddingHorizontal: 8, paddingVertical: 2,
+                        borderRadius: 20,
+                        backgroundColor: careerLevel.color + "28",
+                        borderWidth: 1,
+                        borderColor: careerLevel.color + "66",
+                      }}>
+                        <Text style={{ fontFamily: "Inter_700Bold", fontSize: 9, color: careerLevel.color, letterSpacing: 1.2, textTransform: "uppercase" }}>
+                          {careerLevel.label}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* ── Micro-stat chips ── */}
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      {[
+                        { label: "Avg",  value: battingAvg,                          color: "#6ee7b7" },
+                        { label: "100s", value: String(centuries),                   color: "#fbbf24" },
+                        { label: "Wkts", value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
+                      ].map(({ label, value, color }) => (
+                        <View key={label} style={{ alignItems: "center" }}>
+                          <Text style={{ fontFamily: "Inter_700Bold", fontSize: 16, color, lineHeight: 19 }}>{value}</Text>
+                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "rgba(255,255,255,0.4)", letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 </View>
+
+                {/* ── Milestone progress bar ── */}
+                <View style={{ marginTop: 14 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "rgba(255,255,255,0.45)" }}>
+                      {careerRuns} runs
+                    </Text>
+                    <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
+                      {nextRunTarget} milestone
+                    </Text>
+                  </View>
+                  <View style={{ height: 4, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
+                    <Animated.View style={{
+                      height: 4,
+                      borderRadius: 4,
+                      backgroundColor: "#f59e0b",
+                      width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] }),
+                    }} />
+                  </View>
+                  {careerLevel.next != null && (
+                    <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 4, textAlign: "right" }}>
+                      {careerLevel.next} XP to {
+                        careerLevel.label === "Novice"   ? "Club" :
+                        careerLevel.label === "Club"     ? "Amateur" :
+                        careerLevel.label === "Amateur"  ? "Semi-Pro" :
+                        careerLevel.label === "Semi-Pro" ? "Elite" : "Legend"
+                      }
+                    </Text>
+                  )}
+                </View>
+
               </View>
             </BlurView>
           ) : (
