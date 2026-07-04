@@ -1120,7 +1120,7 @@ export default function DashboardScreen() {
 
           {/* ── Form Guide ── */}
           <View onLayout={measureSection("form")} />
-          {runStreak >= 3 && (
+          {runStreak >= 4 && (
             <View style={[styles.streakBanner, { backgroundColor: colors.accent + "22", borderColor: colors.accent + "55" }]}>
               <Text style={[styles.streakBannerText, { color: colors.accent }]}>
                 🔥 On a roll — {runStreak} innings in a row with 30+
