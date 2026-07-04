@@ -489,3 +489,27 @@ export type ListCoachingTipsParams = {
 category?: string;
 };
 
+export interface Fixture {
+  id: number;
+  date: string;
+  time?: string | null;
+  opponent: string;
+  venue?: string | null;
+  matchType: string;
+  playingFor?: string | null;
+  series?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface FixtureInput {
+  date: string;
+  time?: string;
+  opponent: string;
+  venue?: string;
+  matchType?: string;
+  playingFor?: string;
+  series?: string;
+  notes?: string;
+}
+

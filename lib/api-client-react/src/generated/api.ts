@@ -30,6 +30,8 @@ import type {
   FieldingStats,
   FieldingStatsInput,
   FieldingStatsUpdate,
+  Fixture,
+  FixtureInput,
   HealthStatus,
   ListCoachingTipsParams,
   Match,
@@ -2127,6 +2129,54 @@ export function useGetStatsSummary<TData = Awaited<ReturnType<typeof getStatsSum
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
   return { ...query, queryKey: queryOptions.queryKey };
+}
+
+// ── Fixtures ─────────────────────────────────────────────────────────────────
+
+export const getListFixturesUrl = () => `/api/fixtures`;
+
+export const listFixtures = async (options?: RequestInit): Promise<Fixture[]> =>
+  customFetch<Fixture[]>(getListFixturesUrl(), { ...options, method: 'GET' });
+
+export const getListFixturesQueryKey = () => [`/api/fixtures`] as const;
+
+export const getListFixturesQueryOptions = <TData = Awaited<ReturnType<typeof listFixtures>>, TError = ErrorType<unknown>>(
+  options?: { query?: UseQueryOptions<Awaited<ReturnType<typeof listFixtures>>, TError, TData>; request?: SecondParameter<typeof customFetch> }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getListFixturesQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listFixtures>>> = ({ signal }) => listFixtures({ signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<Awaited<ReturnType<typeof listFixtures>>, TError, TData> & { queryKey: QueryKey };
+};
+
+export function useListFixtures<TData = Awaited<ReturnType<typeof listFixtures>>, TError = ErrorType<unknown>>(
+  options?: { query?: UseQueryOptions<Awaited<ReturnType<typeof listFixtures>>, TError, TData>; request?: SecondParameter<typeof customFetch> }
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListFixturesQueryOptions(options);
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const createFixture = async (fixtureInput: FixtureInput, options?: RequestInit): Promise<Fixture> =>
+  customFetch<Fixture>(`/api/fixtures`, { ...options, method: 'POST', headers: { 'Content-Type': 'application/json', ...options?.headers }, body: JSON.stringify(fixtureInput) });
+
+export function useCreateFixture<TError = ErrorType<unknown>, TContext = unknown>(
+  options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof createFixture>>, TError, FixtureInput, TContext>; request?: SecondParameter<typeof customFetch> }
+): UseMutationResult<Awaited<ReturnType<typeof createFixture>>, TError, FixtureInput, TContext> {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFixture>>, FixtureInput> = (fixtureInput) => createFixture(fixtureInput, requestOptions);
+  return useMutation<Awaited<ReturnType<typeof createFixture>>, TError, FixtureInput, TContext>({ mutationFn, ...mutationOptions });
+}
+
+export const deleteFixture = async (fixtureId: number, options?: RequestInit): Promise<void> =>
+  customFetch<void>(`/api/fixtures/${fixtureId}`, { ...options, method: 'DELETE' });
+
+export function useDeleteFixture<TError = ErrorType<unknown>, TContext = unknown>(
+  options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteFixture>>, TError, number, TContext>; request?: SecondParameter<typeof customFetch> }
+): UseMutationResult<Awaited<ReturnType<typeof deleteFixture>>, TError, number, TContext> {
+  const { mutation: mutationOptions, request: requestOptions } = options ?? {};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFixture>>, number> = (fixtureId) => deleteFixture(fixtureId, requestOptions);
+  return useMutation<Awaited<ReturnType<typeof deleteFixture>>, TError, number, TContext>({ mutationFn, ...mutationOptions });
 }
 
 

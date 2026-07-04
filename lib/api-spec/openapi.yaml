@@ -44,6 +44,76 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
+  /fixtures:
+    get:
+      operationId: listFixtures
+      tags: [matches]
+      summary: List all upcoming fixtures
+      responses:
+        "200":
+          description: List of fixtures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fixture"
+    post:
+      operationId: createFixture
+      tags: [matches]
+      summary: Create a new fixture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixtureInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fixture"
+
+  /fixtures/{fixtureId}:
+    patch:
+      operationId: updateFixture
+      tags: [matches]
+      summary: Update a fixture
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixtureInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fixture"
+    delete:
+      operationId: deleteFixture
+      tags: [matches]
+      summary: Delete a fixture
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   /matches:
     get:
       operationId: listMatches
@@ -979,6 +1049,52 @@ components:
           type: string
         metadata:
           $ref: "#/components/schemas/UploadUrlRequest"
+
+    Fixture:
+      type: object
+      required: [id, date, opponent, matchType, createdAt]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        time:
+          type: ["string", "null"]
+        opponent:
+          type: string
+        venue:
+          type: ["string", "null"]
+        matchType:
+          type: string
+        playingFor:
+          type: ["string", "null"]
+        series:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    FixtureInput:
+      type: object
+      required: [date, opponent]
+      properties:
+        date:
+          type: string
+        time:
+          type: string
+        opponent:
+          type: string
+        venue:
+          type: string
+        matchType:
+          type: string
+        playingFor:
+          type: string
+        series:
+          type: string
+        notes:
+          type: string
 
     CoachingTip:
       type: object

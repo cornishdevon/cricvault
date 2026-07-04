@@ -2,7 +2,11 @@ import {
   useGetStatsSummary,
   useGetPerMatchStats,
   useListMatches,
+  useListFixtures,
+  useDeleteFixture,
+  getListFixturesQueryKey,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useFocusEffect } from "expo-router";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
@@ -26,6 +30,8 @@ import { useColors } from "@/hooks/useColors";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
 import { ScoreboardCard } from "@/components/ScoreboardCard";
+import { NextMatchCard } from "@/components/NextMatchCard";
+import { AddFixtureModal } from "@/components/AddFixtureModal";
 import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards, CricketBallSvg } from "@/components/CricketIcons";
 
 // ── Season list builder ────────────────────────────────────────────────────────
@@ -602,6 +608,22 @@ export default function DashboardScreen() {
     isRefetching: perMatchRefetching,
   } = useGetPerMatchStats();
 
+  const { data: fixtures = [] } = useListFixtures();
+  const { mutateAsync: deleteFixtureMutation } = useDeleteFixture();
+  const qc = useQueryClient();
+  const [showAddFixture, setShowAddFixture] = useState(false);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextFixture = fixtures
+    .filter((f) => new Date(f.date + "T00:00:00") >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
+
+  const handleDeleteFixture = async (id: number) => {
+    await deleteFixtureMutation(id);
+    await qc.invalidateQueries({ queryKey: getListFixturesQueryKey() });
+  };
+
   const isLoading = summaryLoading || matchesLoading;
 
   const { seasonLabel, isMatchInSeason, region } = useSeasonContext();
@@ -879,9 +901,10 @@ export default function DashboardScreen() {
   };
 
   return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
     <ScrollView
       ref={scrollViewRef}
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={{ flex: 1 }}
       contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       refreshControl={
         <RefreshControl
@@ -942,6 +965,13 @@ export default function DashboardScreen() {
         <>
           {/* ── Layout anchor ── */}
           <View onLayout={measureSection("stats")} />
+
+          {/* ── Next Match card ── */}
+          <NextMatchCard
+            fixture={nextFixture}
+            onAddFixture={() => setShowAddFixture(true)}
+            onDelete={handleDeleteFixture}
+          />
 
           {/* ── Career milestone strip ── */}
           <View style={[styles.milestoneStrip, { backgroundColor: colors.muted, borderColor: colors.border }]}>
@@ -1214,6 +1244,9 @@ export default function DashboardScreen() {
         </View>
       ) : null}
     </ScrollView>
+
+    <AddFixtureModal visible={showAddFixture} onClose={() => setShowAddFixture(false)} />
+    </View>
   );
 }
 
