@@ -25,6 +25,20 @@ function GearButton() {
   );
 }
 
+function BackButton() {
+  const router = useRouter();
+  const colors = useColors();
+  return (
+    <TouchableOpacity
+      onPress={() => router.navigate("/(tabs)/")}
+      style={{ paddingHorizontal: 14, paddingVertical: 6, flexDirection: "row", alignItems: "center", gap: 4 }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Feather name="chevron-left" size={22} color={colors.foreground} />
+    </TouchableOpacity>
+  );
+}
+
 function NativeTabLayout() {
   const { labels } = useTabLabels();
   return (
@@ -162,6 +176,7 @@ function ClassicTabLayout() {
         name="log"
         options={{
           title: labels.log,
+          headerLeft: () => <BackButton />,
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="plus.circle.fill" tintColor={color} size={22} />
