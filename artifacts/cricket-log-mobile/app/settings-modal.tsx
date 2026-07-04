@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  FlatList,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
 import { PALETTES, type PaletteId } from "@/constants/colors";
-import { useSeasonContext, type CricketRegion } from "@/contexts/SeasonContext";
+import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
@@ -31,7 +33,8 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
 export default function SettingsModal() {
   const colors = useColors();
   const { override, setOverride, palette, setPalette } = useAppearance();
-  const { region, setRegion } = useSeasonContext();
+  const { country, setCountry } = useSeasonContext();
+  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { labels, updateLabel, resetLabels } = useTabLabels();
@@ -161,46 +164,76 @@ export default function SettingsModal() {
         <Text style={[styles.heading, { color: colors.foreground }]}>
           Season
         </Text>
-        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <TouchableOpacity
+          style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => setCountryPickerOpen(true)}
+          activeOpacity={0.75}
+        >
           <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
             <Feather name="globe" size={18} color={colors.primary} />
           </View>
-          <View style={styles.rowBody}>
-            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Cricket region</Text>
-            <Text style={[styles.regionSub, { color: colors.mutedForeground }]}>
-              {region === "england"
-                ? "Calendar year season (e.g. 2026)"
-                : "Split-year season (e.g. 2026/27)"}
-            </Text>
-            <View style={styles.schemeRow}>
-              {([
-                { key: "england", label: "England / Aus" },
-                { key: "subcontinent", label: "Subcontinent" },
-              ] as { key: CricketRegion; label: string }[]).map(({ key, label }) => (
-                <TouchableOpacity
-                  key={key}
-                  style={[
-                    styles.schemeBtn,
-                    {
-                      backgroundColor: region === key ? colors.primary : colors.muted,
-                      borderColor: region === key ? colors.primary : colors.border,
-                    },
-                  ]}
-                  onPress={() => setRegion(key)}
-                >
-                  <Text
-                    style={[
-                      styles.schemeBtnText,
-                      { color: region === key ? colors.primaryForeground : colors.mutedForeground },
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+          <View style={[styles.rowBody, { flexDirection: "row", alignItems: "center" }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.hint, { color: colors.mutedForeground }]}>Country</Text>
+              <Text style={[styles.countryValue, { color: colors.foreground }]}>
+                {country.flag}  {country.name}
+              </Text>
+              <Text style={[styles.regionSub, { color: colors.mutedForeground, marginTop: 2 }]}>
+                {country.region === "england"
+                  ? "Calendar year season (e.g. 2026)"
+                  : "Split-year season (e.g. 2026/27)"}
+              </Text>
             </View>
+            <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
           </View>
-        </View>
+        </TouchableOpacity>
+
+        {/* Country picker modal */}
+        <Modal
+          visible={countryPickerOpen}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setCountryPickerOpen(false)}
+        >
+          <View style={[styles.pickerModal, { backgroundColor: colors.background }]}>
+            <View style={[styles.pickerHeader, { borderBottomColor: colors.border, backgroundColor: colors.pavilion }]}>
+              <Text style={[styles.pickerTitle, { color: colors.pavilionForeground }]}>Choose Country</Text>
+              <TouchableOpacity onPress={() => setCountryPickerOpen(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Feather name="x" size={22} color={colors.pavilionForeground} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={CRICKET_COUNTRIES}
+              keyExtractor={(item) => item.code}
+              contentContainerStyle={{ paddingVertical: 8 }}
+              renderItem={({ item }) => {
+                const active = item.code === country.code;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.countryRow,
+                      { borderBottomColor: colors.border },
+                      active && { backgroundColor: colors.primary + "12" },
+                    ]}
+                    onPress={() => { setCountry(item); setCountryPickerOpen(false); }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.countryFlag}>{item.flag}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.countryName, { color: active ? colors.primary : colors.foreground }]}>
+                        {item.name}
+                      </Text>
+                      <Text style={[styles.countryRegionLabel, { color: colors.mutedForeground }]}>
+                        {item.region === "england" ? "Calendar year" : "Split-year"}
+                      </Text>
+                    </View>
+                    {active && <Feather name="check" size={18} color={colors.primary} />}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </Modal>
 
         <Text style={[styles.heading, { color: colors.foreground }]}>
           Profile
@@ -339,7 +372,31 @@ const styles = StyleSheet.create({
   resetBtn: { alignItems: "center", paddingVertical: 12 },
   resetBtnText: { fontSize: 14, fontFamily: "Inter_400Regular" },
 
+  countryValue: { fontSize: 16, fontFamily: "Inter_600SemiBold", marginTop: 2 },
   regionSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
+
+  pickerModal: { flex: 1 },
+  pickerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  pickerTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
+  countryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  countryFlag: { fontSize: 26, width: 36, textAlign: "center" },
+  countryName: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
+  countryRegionLabel: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
   schemeRow: { flexDirection: "row", gap: 8, marginTop: 2 },
   schemeBtn: {
     flex: 1,
