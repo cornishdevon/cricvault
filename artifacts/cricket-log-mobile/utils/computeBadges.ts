@@ -110,28 +110,40 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     else streak = 0;
   }
 
-  // Wicket streak: 2+ wickets in 3 consecutive bowling matches
+  // Wicket streak: 2+ wickets in 3 consecutive bowling matches — within same season only
   let maxWicketStreak = 0;
   let curWicketStreak = 0;
+  let prevWicketYear = "";
   for (const d of bowlingInnings) {
+    const yr = d.date.slice(0, 4);
+    if (yr !== prevWicketYear) curWicketStreak = 0;
+    prevWicketYear = yr;
     if ((d.wickets ?? 0) >= 2) { curWicketStreak++; maxWicketStreak = Math.max(maxWicketStreak, curWicketStreak); }
     else curWicketStreak = 0;
   }
   const wicketStreakEarned = maxWicketStreak >= 3;
 
-  // Boundary streak: innings with 2+ boundaries (4s + 6s) in a row, 5+ times
+  // Boundary streak: innings with 2+ boundaries (4s + 6s) in a row, 5+ times — within same season only
   let maxBoundaryStreak = 0;
   let curBoundaryStreak = 0;
+  let prevBoundaryYear = "";
   for (const d of battingInnings) {
+    const yr = d.date.slice(0, 4);
+    if (yr !== prevBoundaryYear) curBoundaryStreak = 0;
+    prevBoundaryYear = yr;
     if ((d.fours ?? 0) + (d.sixes ?? 0) >= 2) { curBoundaryStreak++; maxBoundaryStreak = Math.max(maxBoundaryStreak, curBoundaryStreak); }
     else curBoundaryStreak = 0;
   }
   const boundaryStreakEarned = maxBoundaryStreak >= 5;
 
-  // Run streak: 30+ runs in 5 consecutive innings
+  // Run streak: 30+ runs in 5 consecutive innings — within same season only
   let maxRunStreak30 = 0;
   let curRunStreak30 = 0;
+  let prevRunYear = "";
   for (const d of battingInnings) {
+    const yr = d.date.slice(0, 4);
+    if (yr !== prevRunYear) curRunStreak30 = 0;
+    prevRunYear = yr;
     if ((d.runs ?? 0) >= 30) { curRunStreak30++; maxRunStreak30 = Math.max(maxRunStreak30, curRunStreak30); }
     else curRunStreak30 = 0;
   }
