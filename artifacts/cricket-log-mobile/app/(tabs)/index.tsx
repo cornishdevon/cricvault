@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useFocusEffect } from "expo-router";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SeasonTargets } from "@/components/SeasonTargets";
@@ -942,15 +943,40 @@ export default function DashboardScreen() {
             )}
           </View>
           {summary ? (
-            <View style={styles.splitFlapRow}>
-              <SplitFlapDisplay value={flapValue} />
-              <View>
-                <Text style={[styles.runsLabel, { color: colors.pavilionForeground }]}>Career Runs</Text>
-                <Text style={[styles.heroSub, { color: colors.pavilionMuted, marginTop: 2 }]}>
-                  Avg {battingAvg} · {summary.bowling.totalWickets ?? 0} wkts
-                </Text>
+            <BlurView
+              intensity={22}
+              tint="dark"
+              style={{
+                marginTop: 14,
+                marginBottom: 4,
+                borderRadius: 20,
+                overflow: "hidden",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.13)",
+              }}
+            >
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 16,
+                paddingHorizontal: 20,
+                paddingVertical: 18,
+                backgroundColor: "rgba(255,255,255,0.06)",
+              }}>
+                <SplitFlapDisplay
+                  value={flapValue}
+                  tileColor="rgba(255,255,255,0.08)"
+                  inkColor="#FFFDF8"
+                  borderColor="rgba(255,255,255,0.22)"
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.runsLabel, { color: "#FFFDF8" }]}>Career Runs</Text>
+                  <Text style={[styles.heroSub, { color: "rgba(255,255,255,0.55)", marginTop: 4 }]}>
+                    Avg {battingAvg} · {summary.bowling.totalWickets ?? 0} wkts
+                  </Text>
+                </View>
               </View>
-            </View>
+            </BlurView>
           ) : (
             <Text style={[styles.heroTitle, { color: colors.pavilionForeground }]}>
               {isLoading ? "Loading…" : "No data yet"}
