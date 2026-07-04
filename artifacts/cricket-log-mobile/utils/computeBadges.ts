@@ -105,7 +105,11 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
 
   let consistentEarned = false;
   let streak = 0;
+  let prevConsistentYear = "";
   for (const d of battingInnings) {
+    const yr = d.date.slice(0, 4);
+    if (yr !== prevConsistentYear) streak = 0;
+    prevConsistentYear = yr;
     if ((d.runs ?? 0) >= 25) { streak++; if (streak >= 5) { consistentEarned = true; break; } }
     else streak = 0;
   }

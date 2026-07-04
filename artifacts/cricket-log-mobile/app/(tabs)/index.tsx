@@ -792,7 +792,7 @@ export default function DashboardScreen() {
   const runsPct = Math.min(100, Math.round(((summary?.batting.totalRuns ?? 0) / nextRunTarget) * 100));
   const wicketsPct = Math.min(100, Math.round(((summary?.bowling.totalWickets ?? 0) / nextWicketTarget) * 100));
 
-  const chartMatches = (perMatch ?? []).slice(-12);
+  const chartMatches = (perMatch ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(-12);
 
   const runsData = chartMatches.map((m) => ({
     label: m.opponent.slice(0, 3).toUpperCase(),
