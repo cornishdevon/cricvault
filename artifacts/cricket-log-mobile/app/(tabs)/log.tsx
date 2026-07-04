@@ -700,6 +700,8 @@ export default function LogMatchScreen() {
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
   const [bowlingForm, setBowlingForm] = useState<BowlingForm>(defaultBowling);
   const [fieldingForm, setFieldingForm] = useState<FieldingForm>(defaultFielding);
+  const [customDismissals, setCustomDismissals] = useState<string[]>([]);
+  const [customHowOutInput, setCustomHowOutInput] = useState("");
 
   const [hasBatting, setHasBatting] = useState(true);
   const [hasBowling, setHasBowling] = useState(false);
@@ -888,6 +890,8 @@ export default function LogMatchScreen() {
       setBattingForm(defaultBatting);
       setBowlingForm(defaultBowling);
       setFieldingForm(defaultFielding);
+      setCustomDismissals([]);
+      setCustomHowOutInput("");
       setHasBatting(true);
       setHasBowling(false);
       setHasFielding(false);
@@ -1105,10 +1109,48 @@ export default function LogMatchScreen() {
 
           <Field label="How Out">
             <ChipGroup
-              options={HOW_OUT_OPTIONS}
+              options={[...HOW_OUT_OPTIONS, ...customDismissals]}
               selected={battingForm.howOut}
               onSelect={(v) => updateBatting("howOut", v)}
             />
+            {matchForm.matchType.toLowerCase().includes("back yard") && (
+              <View style={styles.customDismissalRow}>
+                <TextInput
+                  style={[
+                    styles.customDismissalInput,
+                    { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border },
+                  ]}
+                  placeholder="Add custom dismissal…"
+                  placeholderTextColor={colors.mutedForeground}
+                  value={customHowOutInput}
+                  onChangeText={setCustomHowOutInput}
+                  returnKeyType="done"
+                  onSubmitEditing={() => {
+                    const val = customHowOutInput.trim();
+                    if (!val) return;
+                    if (![...HOW_OUT_OPTIONS, ...customDismissals].includes(val)) {
+                      setCustomDismissals(prev => [...prev, val]);
+                    }
+                    updateBatting("howOut", val);
+                    setCustomHowOutInput("");
+                  }}
+                />
+                <TouchableOpacity
+                  style={[styles.customDismissalBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => {
+                    const val = customHowOutInput.trim();
+                    if (!val) return;
+                    if (![...HOW_OUT_OPTIONS, ...customDismissals].includes(val)) {
+                      setCustomDismissals(prev => [...prev, val]);
+                    }
+                    updateBatting("howOut", val);
+                    setCustomHowOutInput("");
+                  }}
+                >
+                  <Text style={[styles.customDismissalBtnText, { color: colors.primaryForeground }]}>Add</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </Field>
 
           <ToggleRow
@@ -1386,6 +1428,33 @@ const styles = StyleSheet.create({
   chipGroup: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
   chipText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+
+  customDismissalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 8,
+  },
+  customDismissalInput: {
+    flex: 1,
+    height: 38,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+  customDismissalBtn: {
+    height: 38,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  customDismissalBtnText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
 
   badgePopup: {
     position: "absolute",
