@@ -681,7 +681,9 @@ export default function DashboardScreen() {
   const catchesDelta = prevSeason != null ? seasonCatches - prevSeasonCatches : null;
 
   // ── Form streak ─────────────────────────────────────────────────────────────
-  const sortedForStreak = [...allPerMatchEarly].sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+  const sortedForStreak = [...allPerMatchEarly]
+    .filter((m) => activeIsMatchInSeason(m.date))
+    .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
   let runStreak = 0;
   for (let i = sortedForStreak.length - 1; i >= 0; i--) {
     const m = sortedForStreak[i];
