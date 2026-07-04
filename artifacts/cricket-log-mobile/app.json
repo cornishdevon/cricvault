@@ -50,6 +50,12 @@
           "photosPermission": "CricVault accesses your photo library so you can attach match photos.",
           "cameraPermission": "CricVault uses your camera so you can add match photos to your cricket diary."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "CricVault can use your location to auto-fill match venues."
+        }
       ]
     ],
     "experiments": {
