@@ -1128,7 +1128,11 @@ export default function DashboardScreen() {
             </View>
           )}
           {allPerMatch.length > 0 && (
-            <FormGuideSection data={allPerMatch} colors={colors} onPress={handleMatchPress} />
+            <FormGuideSection
+              data={allPerMatch.filter((m) => activeIsMatchInSeason(m.date))}
+              colors={colors}
+              onPress={handleMatchPress}
+            />
           )}
 
           {/* ── Best Performances ── */}
