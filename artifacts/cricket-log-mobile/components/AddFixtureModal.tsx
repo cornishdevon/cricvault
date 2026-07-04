@@ -38,13 +38,28 @@ export function AddFixtureModal({ visible, onClose }: { visible: boolean; onClos
 
   const handleClose = () => { reset(); onClose(); };
 
+  const parseDateToISO = (raw: string): string | null => {
+    const parts = raw.trim().split(/[-\/\s]+/);
+    if (parts.length !== 3) return null;
+    const [d, m, y] = parts;
+    if (!d || !m || !y || y.length !== 4) return null;
+    const day = d.padStart(2, "0");
+    const mon = m.padStart(2, "0");
+    const iso = `${y}-${mon}-${day}`;
+    const dt = new Date(iso + "T00:00:00");
+    if (isNaN(dt.getTime())) return null;
+    return iso;
+  };
+
   const handleSave = async () => {
-    if (!date.trim()) { setError("Date is required (YYYY-MM-DD)"); return; }
+    if (!date.trim()) { setError("Date is required (DD-MM-YYYY)"); return; }
+    const isoDate = parseDateToISO(date);
+    if (!isoDate) { setError("Enter date as DD-MM-YYYY, e.g. 15-08-2026"); return; }
     if (!opponent.trim()) { setError("Opponent is required"); return; }
     setError("");
     try {
       await createFixture({
-        date: date.trim(),
+        date: isoDate,
         time: time.trim() || undefined,
         opponent: opponent.trim(),
         venue: venue.trim() || undefined,
@@ -114,7 +129,7 @@ export function AddFixtureModal({ visible, onClose }: { visible: boolean; onClos
             <Text style={labelStyle}>Date *</Text>
             <TextInput
               style={inputStyle} value={date} onChangeText={setDate}
-              placeholder="YYYY-MM-DD" placeholderTextColor={colors.mutedForeground}
+              placeholder="DD-MM-YYYY" placeholderTextColor={colors.mutedForeground}
               keyboardType="numeric"
             />
 
