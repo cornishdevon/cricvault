@@ -71,6 +71,14 @@ export default function SettingsModal() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.pavilion }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Feather name="chevron-left" size={24} color={colors.pavilionForeground} />
+          <Text style={[styles.backLabel, { color: colors.pavilionForeground }]}>Back</Text>
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.pavilionForeground }]}>Settings</Text>
+        <View style={styles.backBtn} />
+      </View>
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -276,6 +284,17 @@ export default function SettingsModal() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
+  backBtn: { flexDirection: "row", alignItems: "center", gap: 4, minWidth: 70 },
+  backLabel: { fontSize: 16, fontFamily: "Inter_500Medium" },
+  headerTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
+
   content: { padding: 20, gap: 12 },
   heading: { fontSize: 22, fontFamily: "Inter_700Bold", marginBottom: 2 },
   sub: { fontSize: 14, fontFamily: "Inter_400Regular", marginBottom: 8 },
