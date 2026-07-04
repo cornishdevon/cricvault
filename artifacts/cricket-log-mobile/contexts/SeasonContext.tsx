@@ -12,7 +12,7 @@ export interface CricketCountry {
 
 export const CRICKET_COUNTRIES: CricketCountry[] = [
   { code: "ENG", name: "England",          flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", region: "england" },
-  { code: "AUS", name: "Australia",        flag: "🇦🇺", region: "england" },
+  { code: "AUS", name: "Australia",        flag: "🇦🇺", region: "subcontinent" },
   { code: "NZL", name: "New Zealand",      flag: "🇳🇿", region: "england" },
   { code: "ZIM", name: "Zimbabwe",         flag: "🇿🇼", region: "england" },
   { code: "IRE", name: "Ireland",          flag: "🇮🇪", region: "england" },
@@ -38,12 +38,14 @@ interface SeasonContextValue {
   setRegion: (r: CricketRegion) => void;
   country: CricketCountry;
   setCountry: (c: CricketCountry) => void;
+  setSeasonFormat: (r: CricketRegion) => void;
   seasonLabel: string;
   isMatchInSeason: (date: string | null | undefined) => boolean;
 }
 
-const REGION_KEY = "@cricvault:region";
-const COUNTRY_KEY = "@cricvault:country";
+const REGION_KEY    = "@cricvault:region";
+const COUNTRY_KEY   = "@cricvault:country";
+const FORMAT_KEY    = "@cricvault:format";
 
 const DEFAULT_COUNTRY = CRICKET_COUNTRIES[0]; // England
 
@@ -52,6 +54,7 @@ const SeasonContext = createContext<SeasonContextValue>({
   setRegion: () => {},
   country: DEFAULT_COUNTRY,
   setCountry: () => {},
+  setSeasonFormat: () => {},
   seasonLabel: String(new Date().getFullYear()),
   isMatchInSeason: () => false,
 });
@@ -65,47 +68,61 @@ function computeSeason(region: CricketRegion) {
     const startYear = month >= 9 ? year : year - 1;
     const endYear = startYear + 1;
     const label = `${startYear}/${String(endYear).slice(2)}`;
-    const startDate = `${startYear}-10-01`;
-    const endDate = `${endYear}-09-30`;
-    return { label, startDate, endDate };
-  } else {
-    const label = String(year);
-    return { label, startDate: `${year}-01-01`, endDate: `${year}-12-31` };
+    return { label, startDate: `${startYear}-10-01`, endDate: `${endYear}-09-30` };
   }
+  return { label: String(year), startDate: `${year}-01-01`, endDate: `${year}-12-31` };
 }
 
 export function SeasonProvider({ children }: { children: React.ReactNode }) {
   const [country, setCountryState] = useState<CricketCountry>(DEFAULT_COUNTRY);
+  // null = use country default; set explicitly when user overrides
+  const [formatOverride, setFormatOverride] = useState<CricketRegion | null>(null);
 
   useEffect(() => {
-    AsyncStorage.multiGet([REGION_KEY, COUNTRY_KEY]).then(([regionPair, countryPair]) => {
-      const savedCode = countryPair[1];
-      if (savedCode) {
-        const found = CRICKET_COUNTRIES.find((c) => c.code === savedCode);
-        if (found) { setCountryState(found); return; }
+    AsyncStorage.multiGet([REGION_KEY, COUNTRY_KEY, FORMAT_KEY]).then(
+      ([regionPair, countryPair, formatPair]) => {
+        const savedCode   = countryPair[1];
+        const savedFormat = formatPair[1];
+
+        if (savedCode) {
+          const found = CRICKET_COUNTRIES.find((c) => c.code === savedCode);
+          if (found) setCountryState(found);
+        } else {
+          // Legacy: restore from old region key
+          const savedRegion = regionPair[1];
+          if (savedRegion === "subcontinent") {
+            const fallback = CRICKET_COUNTRIES.find((c) => c.code === "IND") ?? DEFAULT_COUNTRY;
+            setCountryState(fallback);
+          }
+        }
+
+        if (savedFormat === "england" || savedFormat === "subcontinent") {
+          setFormatOverride(savedFormat);
+        }
       }
-      // Fall back to legacy region key
-      const savedRegion = regionPair[1];
-      if (savedRegion === "subcontinent") {
-        const fallback = CRICKET_COUNTRIES.find((c) => c.code === "IND") ?? DEFAULT_COUNTRY;
-        setCountryState(fallback);
-      }
-    });
+    );
   }, []);
 
+  // Pick country and reset any format override to that country's default
   const setCountry = useCallback((c: CricketCountry) => {
     setCountryState(c);
-    AsyncStorage.multiSet([[COUNTRY_KEY, c.code], [REGION_KEY, c.region]]);
+    setFormatOverride(null);
+    AsyncStorage.multiSet([[COUNTRY_KEY, c.code], [REGION_KEY, c.region], [FORMAT_KEY, ""]]);
   }, []);
 
-  // Keep legacy setRegion for any existing callers
+  // Override just the season format without changing the country
+  const setSeasonFormat = useCallback((r: CricketRegion) => {
+    setFormatOverride(r);
+    AsyncStorage.setItem(FORMAT_KEY, r);
+  }, []);
+
+  // Legacy shim
   const setRegion = useCallback((r: CricketRegion) => {
-    const found = CRICKET_COUNTRIES.find((c) => c.region === r) ?? DEFAULT_COUNTRY;
-    setCountryState(found);
-    AsyncStorage.multiSet([[COUNTRY_KEY, found.code], [REGION_KEY, r]]);
+    setFormatOverride(r);
+    AsyncStorage.setItem(FORMAT_KEY, r);
   }, []);
 
-  const region = country.region;
+  const region: CricketRegion = formatOverride ?? country.region;
   const { label, startDate, endDate } = useMemo(() => computeSeason(region), [region]);
 
   const isMatchInSeason = useCallback(
@@ -117,7 +134,7 @@ export function SeasonProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <SeasonContext.Provider value={{ region, setRegion, country, setCountry, seasonLabel: label, isMatchInSeason }}>
+    <SeasonContext.Provider value={{ region, setRegion, country, setCountry, setSeasonFormat, seasonLabel: label, isMatchInSeason }}>
       {children}
     </SeasonContext.Provider>
   );

@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
 import { PALETTES, type PaletteId } from "@/constants/colors";
-import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry } from "@/contexts/SeasonContext";
+import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry, type CricketRegion } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
@@ -33,7 +33,7 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
 export default function SettingsModal() {
   const colors = useColors();
   const { override, setOverride, palette, setPalette } = useAppearance();
-  const { country, setCountry } = useSeasonContext();
+  const { country, setCountry, region, setSeasonFormat } = useSeasonContext();
   const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -178,15 +178,46 @@ export default function SettingsModal() {
               <Text style={[styles.countryValue, { color: colors.foreground }]}>
                 {country.flag}  {country.name}
               </Text>
-              <Text style={[styles.regionSub, { color: colors.mutedForeground, marginTop: 2 }]}>
-                {country.region === "england"
-                  ? "Calendar year season (e.g. 2026)"
-                  : "Split-year season (e.g. 2026/27)"}
-              </Text>
             </View>
             <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
           </View>
         </TouchableOpacity>
+
+        {/* Season format toggle */}
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="calendar" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Season format</Text>
+            <View style={styles.schemeRow}>
+              {([
+                { key: "england",      label: "Calendar year", eg: "e.g. 2026" },
+                { key: "subcontinent", label: "Split year",     eg: "e.g. 2025/26" },
+              ] as { key: CricketRegion; label: string; eg: string }[]).map(({ key, label, eg }) => (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.schemeBtn,
+                    {
+                      backgroundColor: region === key ? colors.primary : colors.muted,
+                      borderColor: region === key ? colors.primary : colors.border,
+                      flex: 1,
+                    },
+                  ]}
+                  onPress={() => setSeasonFormat(key)}
+                >
+                  <Text style={[styles.schemeBtnText, { color: region === key ? colors.primaryForeground : colors.mutedForeground }]}>
+                    {label}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: region === key ? colors.primaryForeground + "CC" : colors.mutedForeground, fontFamily: "Inter_400Regular" }}>
+                    {eg}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
 
         {/* Country picker modal */}
         <Modal
