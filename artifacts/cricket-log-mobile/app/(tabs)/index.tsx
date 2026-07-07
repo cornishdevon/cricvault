@@ -826,6 +826,17 @@ export default function DashboardScreen() {
     }).start();
   }, [progressAnim]);
 
+  const RUN_MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
+  const WICKET_MILESTONES = [10, 25, 50, 100, 200];
+  const nextRunTarget = RUN_MILESTONES.find((m) => m > (summary?.batting.totalRuns ?? 0)) ?? 5000;
+  const prevRunTarget = (() => {
+    const idx = RUN_MILESTONES.indexOf(nextRunTarget);
+    return idx > 0 ? RUN_MILESTONES[idx - 1] : 0;
+  })();
+  const nextWicketTarget = WICKET_MILESTONES.find((m) => m > (summary?.bowling.totalWickets ?? 0)) ?? 200;
+  const runsPct = Math.min(100, Math.round((((summary?.batting.totalRuns ?? 0) - prevRunTarget) / (nextRunTarget - prevRunTarget)) * 100));
+  const wicketsPct = Math.min(100, Math.round(((summary?.bowling.totalWickets ?? 0) / nextWicketTarget) * 100));
+
   useFocusEffect(
     useCallback(() => {
       triggerCountUp(careerRuns);
@@ -867,17 +878,6 @@ export default function DashboardScreen() {
   const totalWides = (summary?.bowling as any)?.totalWides ?? 0;
   const potmCount = (summary as any)?.potmCount ?? 0;
   const bowlingAverage = (summary?.bowling as any)?.bowlingAverage ?? 0;
-
-  const RUN_MILESTONES = [50, 100, 250, 500, 1000, 2000, 5000];
-  const WICKET_MILESTONES = [10, 25, 50, 100, 200];
-  const nextRunTarget = RUN_MILESTONES.find((m) => m > (summary?.batting.totalRuns ?? 0)) ?? 5000;
-  const prevRunTarget = (() => {
-    const idx = RUN_MILESTONES.indexOf(nextRunTarget);
-    return idx > 0 ? RUN_MILESTONES[idx - 1] : 0;
-  })();
-  const nextWicketTarget = WICKET_MILESTONES.find((m) => m > (summary?.bowling.totalWickets ?? 0)) ?? 200;
-  const runsPct = Math.min(100, Math.round((((summary?.batting.totalRuns ?? 0) - prevRunTarget) / (nextRunTarget - prevRunTarget)) * 100));
-  const wicketsPct = Math.min(100, Math.round(((summary?.bowling.totalWickets ?? 0) / nextWicketTarget) * 100));
 
   const careerLevel = (() => {
     const xp = careerRuns
