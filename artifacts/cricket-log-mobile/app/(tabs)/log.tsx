@@ -16,6 +16,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CricketBallSvg, CatchingHandsSvg } from "@/components/CricketIcons";
@@ -1025,6 +1026,18 @@ export default function LogMatchScreen() {
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + (Platform.OS === "web" ? 180 : 140) }]}
         keyboardShouldPersistTaps="handled"
       >
+        {/* ── In-page back button (NativeTabs / iOS only — header doesn't support headerLeft there) */}
+        {isLiquidGlassAvailable() && (
+          <TouchableOpacity
+            onPress={() => router.navigate("/(tabs)/")}
+            style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="chevron-left" size={20} color={colors.foreground} />
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 15, color: colors.foreground }}>Back</Text>
+          </TouchableOpacity>
+        )}
+
         {/* ── Match Info ── */}
         <SectionCard icon="🏏" title="Match Info" enabled alwaysOpen>
           <Field label="Date">
