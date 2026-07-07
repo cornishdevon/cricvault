@@ -955,7 +955,7 @@ export default function DashboardScreen() {
         colors={["#1F4028", "#152C1E", "#0E1A12"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={styles.pavilion}
+        style={[styles.pavilion, { paddingTop: insets.top }]}
       >
         <ShortcutPills colors={colors} onPress={handleShortcut} />
 
