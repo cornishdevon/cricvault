@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, View, Text, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { Fixture } from "@workspace/api-client-react";
 import { exportFixtureToCalendar } from "@/utils/calendarExport";
@@ -48,37 +48,71 @@ export function NextMatchCard({
     }
   };
 
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.18, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 900, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulseAnim]);
+
   if (!fixture) {
     return (
       <TouchableOpacity
         onPress={onAddFixture}
+        activeOpacity={0.75}
         style={{
           marginHorizontal: 16,
           marginBottom: 14,
           borderRadius: 14,
           borderWidth: 1.5,
-          borderColor: BOARD_BORDER,
-          borderStyle: "dashed",
+          borderColor: "#2a5530",
           backgroundColor: BOARD_BG,
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          paddingVertical: 14,
-          gap: 12,
+          overflow: "hidden",
         }}
       >
+        {/* header strip */}
         <View style={{
-          width: 36, height: 36, borderRadius: 18,
-          backgroundColor: "#1a3320",
-          alignItems: "center", justifyContent: "center",
+          paddingHorizontal: 14, paddingVertical: 7,
+          backgroundColor: "#0f2014",
+          borderBottomWidth: 1, borderBottomColor: BOARD_BORDER,
         }}>
-          <Feather name="plus" size={18} color={AMBER} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 14, color: AMBER }}>Add next fixture</Text>
-          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: LABEL, marginTop: 2 }}>
-            Schedule your upcoming match
+          <Text style={{ fontFamily: "Inter_700Bold", fontSize: 9, color: LABEL, letterSpacing: 1.6, textTransform: "uppercase" }}>
+            Next Match
           </Text>
+        </View>
+
+        {/* body */}
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 16, gap: 14 }}>
+          <View style={{ alignItems: "center", justifyContent: "center", width: 44, height: 44 }}>
+            <Animated.View style={{
+              position: "absolute",
+              width: 44, height: 44, borderRadius: 22,
+              backgroundColor: AMBER + "18",
+              transform: [{ scale: pulseAnim }],
+            }} />
+            <View style={{
+              width: 36, height: 36, borderRadius: 18,
+              backgroundColor: "#1a3320",
+              borderWidth: 1, borderColor: "#2a5530",
+              alignItems: "center", justifyContent: "center",
+            }}>
+              <Feather name="plus" size={18} color={AMBER} />
+            </View>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: "Inter_700Bold", fontSize: 16, color: AMBER }}>Schedule a fixture</Text>
+            <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: LABEL, marginTop: 3, lineHeight: 17 }}>
+              Add your next match to track upcoming games and export to your calendar
+            </Text>
+          </View>
+
+          <Feather name="chevron-right" size={16} color={LABEL} />
         </View>
       </TouchableOpacity>
     );

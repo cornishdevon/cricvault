@@ -989,43 +989,43 @@ export default function DashboardScreen() {
               <View style={{ backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
 
                 {/* ── Top row: flap + label + level badge ── */}
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
                   <SplitFlapDisplay
                     value={flapValue}
                     tileColor="rgba(255,255,255,0.08)"
                     inkColor="#FFFDF8"
                     borderColor="rgba(255,255,255,0.22)"
                   />
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <Text style={[styles.runsLabel, { color: "#FFFDF8" }]}>Career Runs</Text>
-                      <View style={{
-                        paddingHorizontal: 8, paddingVertical: 2,
-                        borderRadius: 20,
-                        backgroundColor: careerLevel.color + "28",
-                        borderWidth: 1,
-                        borderColor: careerLevel.color + "66",
-                      }}>
-                        <Text style={{ fontFamily: "Inter_700Bold", fontSize: 9, color: careerLevel.color, letterSpacing: 1.2, textTransform: "uppercase" }}>
-                          {careerLevel.label}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* ── Micro-stat chips ── */}
-                    <View style={{ flexDirection: "row", gap: 10 }}>
-                      {[
-                        { label: "Avg",  value: battingAvg,                          color: "#6ee7b7" },
-                        { label: "100s", value: String(centuries),                   color: "#fbbf24" },
-                        { label: "Wkts", value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
-                      ].map(({ label, value, color }) => (
-                        <View key={label} style={{ alignItems: "center" }}>
-                          <Text style={{ fontFamily: "Inter_700Bold", fontSize: 16, color, lineHeight: 19 }}>{value}</Text>
-                          <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "rgba(255,255,255,0.4)", letterSpacing: 0.8, textTransform: "uppercase" }}>{label}</Text>
-                        </View>
-                      ))}
+                  <View style={{ flex: 1, paddingTop: 4 }}>
+                    <Text style={[styles.runsLabel, { color: "#FFFDF8", marginBottom: 6 }]}>Career Runs</Text>
+                    <View style={{
+                      flexShrink: 0,
+                      alignSelf: "flex-start",
+                      paddingHorizontal: 10, paddingVertical: 3,
+                      borderRadius: 20,
+                      backgroundColor: careerLevel.color + "28",
+                      borderWidth: 1,
+                      borderColor: careerLevel.color + "66",
+                    }}>
+                      <Text style={{ fontFamily: "Inter_700Bold", fontSize: 10, color: careerLevel.color, letterSpacing: 1.0, textTransform: "uppercase" }}>
+                        {careerLevel.label}
+                      </Text>
                     </View>
                   </View>
+                </View>
+
+                {/* ── Micro-stat chips — full-width row below the flip display ── */}
+                <View style={{ flexDirection: "row", marginTop: 14, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 12 }}>
+                  {[
+                    { label: "Avg",  value: battingAvg,                               color: "#6ee7b7" },
+                    { label: "100s", value: String(centuries),                        color: "#fbbf24" },
+                    { label: "Wkts", value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
+                  ].map(({ label, value, color }, i) => (
+                    <View key={label} style={{ flex: 1, alignItems: "center", borderLeftWidth: i > 0 ? 1 : 0, borderLeftColor: "rgba(255,255,255,0.10)" }}>
+                      <Text style={{ fontFamily: "Inter_700Bold", fontSize: 20, color, lineHeight: 24 }}>{value}</Text>
+                      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 0.8, textTransform: "uppercase", marginTop: 2 }}>{label}</Text>
+                    </View>
+                  ))}
                 </View>
 
                 {/* ── Milestone progress bar ── */}
