@@ -12,3 +12,9 @@ id = "VxFAH8lU-By1adjanNX2h"
 uri = "file://attached_assets/generated_images/cricvault_icon_traditional.png"
 type = "image"
 title = "CricVault traditional app icon"
+
+[[generated]]
+id = "dKOtb8DU2ZHqdZjUEYbWf"
+uri = "file://attached_assets/generated_images/cricvault_icon_traditional_v2.png"
+type = "image"
+title = "CricVault traditional icon right handed"
