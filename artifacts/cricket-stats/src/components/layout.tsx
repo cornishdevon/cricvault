@@ -83,10 +83,7 @@ function BackToTopButton() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const viewportHeight = window.innerHeight;
-      const fullHeight = document.documentElement.scrollHeight;
-      const distanceFromBottom = fullHeight - (scrollTop + viewportHeight);
-      setVisible(distanceFromBottom < 150 && fullHeight > viewportHeight * 1.5);
+      setVisible(scrollTop > 300);
     };
 
     handleScroll();
