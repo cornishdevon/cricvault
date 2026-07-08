@@ -1,3 +1,8 @@
 uploads = []
-generated = []
 outputs = []
+
+[[generated]]
+id = "uLjx2ouItwLggvLfNtFky"
+uri = "file://attached_assets/generated_images/cricvault_icon_simplified.png"
+type = "image"
+title = "CricVault simplified app icon"
