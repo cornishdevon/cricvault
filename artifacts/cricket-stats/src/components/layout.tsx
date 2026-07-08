@@ -171,6 +171,17 @@ export function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
+      <footer className="w-full border-t py-4">
+        <div className="container max-w-5xl mx-auto px-4 flex items-center justify-center">
+          <Link
+            href="/privacy"
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+        </div>
+      </footer>
+
       {isDashboard && <BackToTopButton />}
     </div>
   );
