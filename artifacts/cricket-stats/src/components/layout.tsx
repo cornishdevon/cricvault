@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun } from "lucide-react";
+import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun, ArrowUp } from "lucide-react";
 
 const DASHBOARD_SHORTCUTS = [
   { label: "📊 Stats", anchor: "stats" },
@@ -77,6 +77,41 @@ function DarkModeToggle() {
   );
 }
 
+function BackToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+      const distanceFromBottom = fullHeight - (scrollTop + viewportHeight);
+      setVisible(distanceFromBottom < 150 && fullHeight > viewportHeight * 1.5);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all animate-in fade-in slide-in-from-bottom-2"
+      title="Back to top"
+      aria-label="Back to top"
+    >
+      <ArrowUp className="h-5 w-5" />
+    </button>
+  );
+}
+
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const isDashboard = location === "/";
@@ -135,6 +170,8 @@ export function Layout({ children }: { children: ReactNode }) {
       <main className="flex-1 container max-w-5xl mx-auto px-4 py-8">
         {children}
       </main>
+
+      {isDashboard && <BackToTopButton />}
     </div>
   );
 }
