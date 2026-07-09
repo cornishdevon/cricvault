@@ -3,7 +3,6 @@ import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -108,7 +107,7 @@ function BadgeModal({
   const bgColor     = isLocked ? "#27272a" : badge.isNegative ? "#2a1010" : colors.card;
 
   return (
-    <Modal transparent animationType="fade" visible={!!badge} onRequestClose={onClose}>
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
       <Pressable style={styles.modalBackdrop} onPress={onClose}>
         <Pressable
           style={[styles.modalCard, { backgroundColor: bgColor, borderColor: accentColor + "60" }]}
@@ -163,7 +162,7 @@ function BadgeModal({
           </Pressable>
         </Pressable>
       </Pressable>
-    </Modal>
+    </View>
   );
 }
 
