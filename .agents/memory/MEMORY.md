@@ -3,3 +3,4 @@
 - [Career XP system](career-xp.md) — XP formula for cricket level badge (Novice→Legend), computed client-side from summary stats.
 - [Per-match stats API fields](per-match-api.md) — /stats/per-match includes venue, playingFor, series, isPractice, battingPosition, overs, oppositionBowler, caughtPosition, shotData, droppedCatches, runOuts, playerOfTheMatch.
 - [Mobile share & export packages](mobile-share-export.md) — expo-sharing + expo-file-system + react-native-view-shot installed for CSV export and ShareCard; ShareCard captures with ViewShot then falls back to Share.share() text if capture fails.
+- [NativeTabs breaks RN Modal on iOS](native-tabs-modal-conflict.md) — RN's <Modal> silently fails under expo-router's NativeTabs; use an absolute-fill View overlay instead.
