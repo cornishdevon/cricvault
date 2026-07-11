@@ -1030,7 +1030,7 @@ export default function LogMatchScreen() {
         {isLiquidGlassAvailable() && (
           <TouchableOpacity
             onPress={() => router.navigate("/(tabs)/")}
-            style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 4 }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Feather name="chevron-left" size={20} color={colors.foreground} />
