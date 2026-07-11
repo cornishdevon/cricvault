@@ -41,6 +41,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { computeBadges, type PerMatchStat } from "@/utils/computeBadges";
 import { WagonWheel, type WheelShot } from "@/components/WagonWheel";
+import { DatePickerCalendar } from "@/components/DatePickerCalendar";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -743,6 +744,8 @@ export default function LogMatchScreen() {
   const { mutateAsync: createBowlingStats } = useCreateBowlingStats();
   const { mutateAsync: createFieldingStats } = useCreateFieldingStats();
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const updateMatch   = (k: keyof MatchForm,   v: string | boolean) => setMatchForm(p => ({ ...p, [k]: v }));
   const updateBatting = (k: keyof BattingForm, v: string | boolean) => setBattingForm(p => ({ ...p, [k]: v }));
   const updateBowling = (k: keyof BowlingForm, v: string | boolean) => setBowlingForm(p => ({ ...p, [k]: v }));
@@ -1041,12 +1044,19 @@ export default function LogMatchScreen() {
         {/* ── Match Info ── */}
         <SectionCard icon="🏏" title="Match Info" enabled alwaysOpen>
           <Field label="Date">
-            <Input
-              value={isoToDisplay(matchForm.date)}
-              onChangeText={(v) => updateMatch("date", displayToIso(v))}
-              placeholder="DD/MM/YYYY"
-              keyboardType="numbers-and-punctuation"
-            />
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={[
+                styles.datePressable,
+                { backgroundColor: colors.input, borderColor: colors.border },
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: colors.foreground, fontSize: 15, fontFamily: "Inter_400Regular" }}>
+                {isoToDisplay(matchForm.date)}
+              </Text>
+              <Feather name="calendar" size={16} color={colors.mutedForeground} />
+            </TouchableOpacity>
           </Field>
 
           <Field label="Opponent *">
@@ -1490,6 +1500,14 @@ export default function LogMatchScreen() {
           <Text style={styles.saveBtnText}>{isPending ? "Saving…" : "Save Match"}</Text>
         </TouchableOpacity>
       </View>
+
+      {showDatePicker && (
+        <DatePickerCalendar
+          value={matchForm.date}
+          onChange={(iso) => updateMatch("date", iso)}
+          onClose={() => setShowDatePicker(false)}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -1524,6 +1542,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
     fontSize: 15,
+  },
+  datePressable: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   row: { flexDirection: "row", marginBottom: 0 },
