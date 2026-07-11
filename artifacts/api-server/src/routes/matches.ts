@@ -500,10 +500,10 @@ router.get("/stats/summary", async (req, res) => {
       : 0;
 
   const dismissals = battingRows.filter(
-    (r) => r.howOut && r.howOut.toLowerCase() !== "not out"
+    (r) => !r.howOut || r.howOut.toLowerCase() !== "not out"
   );
   const notOuts = battingRows.filter(
-    (r) => !r.howOut || r.howOut.toLowerCase() === "not out"
+    (r) => r.howOut && r.howOut.toLowerCase() === "not out"
   ).length;
   const battingAverage =
     dismissals.length > 0

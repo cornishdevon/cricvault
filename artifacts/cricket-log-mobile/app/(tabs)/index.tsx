@@ -659,7 +659,7 @@ export default function DashboardScreen() {
   const seasonCenturies = seasonBatted.filter((m) => (m.runs ?? 0) >= 100).length;
   const seasonInnings = seasonBatted.length;
   const seasonNotOuts = seasonBatted.filter(
-    (m) => !m.howOut || m.howOut.toLowerCase() === "not out"
+    (m) => m.howOut && m.howOut.toLowerCase() === "not out"
   ).length;
   const seasonBattingDismissals = seasonInnings - seasonNotOuts;
   const seasonBattingAvg =
@@ -724,7 +724,7 @@ export default function DashboardScreen() {
     if (!positionAccum[p]) positionAccum[p] = { runs: 0, innings: 0, notOuts: 0 };
     positionAccum[p].runs += m.runs ?? 0;
     positionAccum[p].innings++;
-    if (!m.howOut || m.howOut.toLowerCase() === "not out") positionAccum[p].notOuts++;
+    if (m.howOut && m.howOut.toLowerCase() === "not out") positionAccum[p].notOuts++;
   }
   const positionRows = Object.entries(positionAccum)
     .sort(([a], [b]) => Number(a) - Number(b))

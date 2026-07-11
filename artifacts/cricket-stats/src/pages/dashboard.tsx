@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -424,7 +424,7 @@ function PersonalBests({ data }: { data: PerMatchStat[] }) {
                 {b.sub && <p className="text-xs text-muted-foreground">{b.sub}</p>}
                 <div className="pt-2 border-t border-border">
                   <p className="text-sm font-medium text-foreground">vs {b.opponent}</p>
-                  <p className="text-xs text-muted-foreground">{format(new Date(b.date), "d MMM yyyy")}</p>
+                  <p className="text-xs text-muted-foreground">{(() => { const d = parseISO(b.date); return isValid(d) ? format(d, "d MMM yyyy") : b.date; })()}</p>
                 </div>
               </CardContent>
             </Card>
@@ -609,6 +609,21 @@ export default function Dashboard() {
     [filteredData]
   );
 
+  const filteredInnings = useMemo(
+    () => filteredData.filter((m) => m.runs != null).length,
+    [filteredData]
+  );
+
+  const filteredDismissals = useMemo(
+    () => filteredData.filter((m) => m.runs != null && (!m.howOut || m.howOut.toLowerCase() !== "not out")).length,
+    [filteredData]
+  );
+
+  const filteredBattingAvg = useMemo(() => {
+    if (filteredDismissals === 0) return seasonRuns > 0 ? seasonRuns.toFixed(1) : "—";
+    return (seasonRuns / filteredDismissals).toFixed(1);
+  }, [seasonRuns, filteredDismissals]);
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -678,13 +693,12 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">
-                {summary?.batting.totalRuns ?? 0}{" "}
+                {selectedSeason === "all" ? (summary?.batting.totalRuns ?? 0) : seasonRuns}{" "}
                 <span className="text-base font-normal text-muted-foreground">runs</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                HS: {summary?.batting.highScore ?? 0}{!summary?.batting.highScoreHowOut || summary.batting.highScoreHowOut.toLowerCase() === 'not out' ? '*' : ''} • SR:{" "}
-                {summary?.batting.averageStrikeRate?.toFixed(1) ?? "0.0"} •{" "}
-                {summary?.batting.innings ?? 0} innings
+                Avg: {selectedSeason === "all" ? (summary?.batting as any)?.battingAverage?.toFixed(1) ?? "—" : filteredBattingAvg} •{" "}
+                {selectedSeason === "all" ? (summary?.batting.innings ?? 0) : filteredInnings} innings
               </p>
             </CardContent>
           </Card>
@@ -892,7 +906,7 @@ export default function Dashboard() {
                     <div>
                       <div className="font-semibold text-lg text-foreground">vs {match.opponent}</div>
                       <div className="text-sm text-muted-foreground">
-                        {format(new Date(match.date), "d MMM yyyy")} • {match.matchType}
+                        {match.date ? (() => { const d = parseISO(match.date); return isValid(d) ? format(d, "d MMM yyyy") : match.date; })() : "Unknown date"} • {match.matchType}
                         {match.venue ? ` • ${match.venue}` : ""}
                       </div>
                     </div>

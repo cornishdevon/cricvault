@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/lib/utils";
 import { Search, PlusCircle, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -177,7 +177,7 @@ export default function Matches() {
                   <div className="min-w-0">
                     <div className="font-semibold text-lg">vs {match.opponent}</div>
                     <div className="text-sm text-muted-foreground">
-                      {format(new Date(match.date), "d MMM yyyy")} • {match.matchType}
+                      {safeFormatDate(match.date, "d MMM yyyy")} • {match.matchType}
                       {match.venue ? ` • ${match.venue}` : ""}
                     </div>
                     {match.playingFor && (

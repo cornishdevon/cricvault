@@ -59,7 +59,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Trash2, Save, X, Share2 } from "lucide-react";
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/lib/utils";
 
 function StatBadge({ label, value }: { label: string; value: string | number }) {
   return (
@@ -1264,7 +1264,7 @@ export default function MatchDetail() {
             <Badge variant="outline">{match.matchType}</Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {format(new Date(match.date), "d MMMM yyyy")}
+            {safeFormatDate(match.date, "d MMMM yyyy")}
             {match.venue ? ` • ${match.venue}` : ""}
           </p>
         </div>

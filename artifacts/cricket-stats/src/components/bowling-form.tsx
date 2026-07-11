@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/lib/utils";
 
 type PerMatchStat = {
   matchId: number;
@@ -104,7 +104,7 @@ export function BowlingForm({ data }: { data: PerMatchStat[] }) {
                 </div>
                 <div className={`text-center border-t border-current border-opacity-20 pt-1.5 w-full`}>
                   <p className={`text-[11px] font-medium ${label} opacity-80 truncate`}>vs {d.opponent}</p>
-                  <p className={`text-[10px] ${label} opacity-60`}>{format(new Date(d.date), "d MMM")}</p>
+                  <p className={`text-[10px] ${label} opacity-60`}>{safeFormatDate(d.date, "d MMM")}</p>
                 </div>
               </div>
             </Link>

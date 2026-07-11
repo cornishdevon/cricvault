@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/lib/utils";
 
 type MatchResult = {
   matchId: number;
@@ -86,7 +86,7 @@ export function RecentFormGuide({ data }: { data: MatchResult[] }) {
                     </p>
                   )}
                   <p className={`text-[11px] font-medium ${text} opacity-80 truncate mt-0.5`}>vs {m.opponent}</p>
-                  <p className={`text-[10px] ${text} opacity-60`}>{format(new Date(m.date), "d MMM")}</p>
+                  <p className={`text-[10px] ${text} opacity-60`}>{safeFormatDate(m.date, "d MMM")}</p>
                 </div>
               </div>
             </Link>

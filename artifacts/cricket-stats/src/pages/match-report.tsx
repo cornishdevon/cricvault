@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/lib/utils";
 import { useState } from "react";
 import { ArrowLeft, Printer, Share2 } from "lucide-react";
 
@@ -202,7 +202,7 @@ export default function MatchReport() {
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Match Report</p>
                 <h1 className="text-2xl font-bold text-foreground">vs {m.opponent}</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {format(new Date(m.date), "EEEE d MMMM yyyy")}
+                  {safeFormatDate(m.date, "EEEE d MMMM yyyy")}
                   {m.venue ? ` · ${m.venue}` : ""}
                   {" · "}{m.matchType}
                 </p>

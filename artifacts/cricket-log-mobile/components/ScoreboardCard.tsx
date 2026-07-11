@@ -85,7 +85,7 @@ export function ScoreboardCard({
                 <Text style={{
                   fontFamily: "Inter_600SemiBold",
                   fontSize: 10,
-                  color: i === selectedSeasonIdx ? "#6ee7b7" : BOARD_BORDER,
+                  color: i === selectedSeasonIdx ? "#6ee7b7" : "#7aaa8a",
                 }}>
                   {s.label}
                 </Text>
