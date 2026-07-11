@@ -859,7 +859,7 @@ export default function DashboardScreen() {
 
   const isRefreshing = summaryRefetching || matchesRefetching || perMatchRefetching;
 
-  const recentMatches = matches?.slice(0, 5) ?? [];
+  const recentMatches = (matches ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(0, 5);
 
   const battingAvg =
     summary && (summary.batting as any).battingAverage != null

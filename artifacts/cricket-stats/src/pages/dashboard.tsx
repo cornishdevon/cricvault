@@ -789,7 +789,7 @@ export default function Dashboard() {
       {chartLoading ? (
         <Skeleton className="h-48 rounded-xl" />
       ) : hasMatchData ? (
-        <RecentFormGuide data={filteredData} />
+        <RecentFormGuide data={selectedSeason === "all" && seasons.length > 0 ? filteredData.filter((d) => d.date.startsWith(seasons[0])) : filteredData} />
       ) : null}
 
       {/* Batting form guide */}
@@ -893,10 +893,9 @@ export default function Dashboard() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {(selectedSeason === "all"
-              ? matches
-              : matches?.filter((m) => m.date.startsWith(selectedSeason))
-            )?.map((match, i) => (
+            {matches?.filter((m) => m.date.startsWith(
+              selectedSeason === "all" && seasons.length > 0 ? seasons[0] : selectedSeason
+            )).map((match, i) => (
               <Link key={match.id} href={`/matches/${match.id}`} className="block">
                 <Card
                   className="hover:border-primary/50 transition-colors animate-in fade-in slide-in-from-bottom-2"
