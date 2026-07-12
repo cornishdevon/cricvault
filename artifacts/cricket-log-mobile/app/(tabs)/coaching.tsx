@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const CARD_H_PADDING = 16;
@@ -53,7 +54,6 @@ const CRICKET_QUOTES = [
 ];
 
 function QuoteBanner({ colors }: { colors: ReturnType<typeof useColors> }) {
-  // Rotates every hour so it feels fresh
   const q = CRICKET_QUOTES[Math.floor(Date.now() / 3_600_000) % CRICKET_QUOTES.length];
   return (
     <View style={[styles.quoteBanner, { backgroundColor: colors.card, borderColor: colors.primary + "40" }]}>
@@ -128,9 +128,22 @@ function PaginationDots({
 export default function CoachingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const t = useT();
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatRef = useRef<FlatList>(null);
+
+  const categoryLabel = (cat: Category): string => {
+    const map: Record<Category, string> = {
+      All:      t("coaching.all"),
+      Batting:  t("coaching.batting"),
+      Bowling:  t("coaching.bowling"),
+      Fielding: t("coaching.fielding"),
+      Fitness:  t("coaching.fitness"),
+      Mental:   t("coaching.mental"),
+    };
+    return map[cat];
+  };
 
   const { data: tips, isLoading, refetch, isRefetching } = useListCoachingTips(
     activeCategory !== "All" ? { category: activeCategory } : {},
@@ -204,7 +217,7 @@ export default function CoachingScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={[styles.chipText, { color: active ? "#fff" : colors.mutedForeground }]}>
-                  {cat}
+                  {categoryLabel(cat)}
                 </Text>
               </TouchableOpacity>
             );
@@ -218,7 +231,7 @@ export default function CoachingScreen() {
           <View style={styles.empty}>
             <Feather name="book-open" size={40} color={colors.mutedForeground} />
             <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              No tips in this category yet.
+              {t("coaching.noTips")}
             </Text>
           </View>
         ) : (
@@ -226,7 +239,7 @@ export default function CoachingScreen() {
             <FlatList
               ref={flatRef}
               data={tips}
-              keyExtractor={(t) => String(t.id)}
+              keyExtractor={(tip) => String(tip.id)}
               renderItem={({ item }) => <TipCard tip={item} colors={colors} />}
               horizontal
               pagingEnabled
@@ -256,12 +269,12 @@ export default function CoachingScreen() {
                 disabled={currentIndex === 0}
               >
                 <Feather name="chevron-left" size={20} color={colors.primary} />
-                <Text style={[styles.navBtnText, { color: colors.primary }]}>Prev</Text>
+                <Text style={[styles.navBtnText, { color: colors.primary }]}>{t("coaching.prev")}</Text>
               </TouchableOpacity>
 
               <View style={[styles.tipCounter, { backgroundColor: colors.secondary }]}>
                 <Text style={[styles.tipCounterText, { color: colors.mutedForeground }]}>
-                  {currentIndex + 1} of {tipCount}
+                  {currentIndex + 1} / {tipCount}
                 </Text>
               </View>
 
@@ -273,14 +286,14 @@ export default function CoachingScreen() {
                 onPress={goNext}
                 disabled={currentIndex === tipCount - 1}
               >
-                <Text style={[styles.navBtnText, { color: colors.primary }]}>Next</Text>
+                <Text style={[styles.navBtnText, { color: colors.primary }]}>{t("coaching.next")}</Text>
                 <Feather name="chevron-right" size={20} color={colors.primary} />
               </TouchableOpacity>
             </View>
 
             {/* Refresh hint */}
             <Text style={[styles.refreshHint, { color: colors.mutedForeground }]}>
-              Pull down to refresh · Tips update every 5 mins
+              {t("coaching.refreshHint")}
             </Text>
           </View>
         )}

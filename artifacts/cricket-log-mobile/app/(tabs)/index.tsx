@@ -29,6 +29,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSeasonContext } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
 import { ScoreboardCard } from "@/components/ScoreboardCard";
@@ -214,6 +215,7 @@ function FormGuideSection({ data, colors, onPress }: {
   colors: ReturnType<typeof useColors>;
   onPress: (id: number) => void;
 }) {
+  const t = useT();
   const last5 = data.slice(-5).reverse();
   if (last5.length === 0) return null;
 
@@ -226,7 +228,7 @@ function FormGuideSection({ data, colors, onPress }: {
 
   return (
     <View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Form</Text>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.recentForm")}</Text>
       <View style={styles.formRow}>
         {last5.map((m) => {
           const runs = m.runs;
@@ -266,6 +268,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
   colors: ReturnType<typeof useColors>;
   onPress: (id: number) => void;
 }) {
+  const t = useT();
   const bestBat = useMemo(() => {
     const innings = data.filter((m) => m.runs != null);
     return innings.reduce<PerMatchStat | null>((best, m) => {
@@ -290,7 +293,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
 
   return (
     <View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Best Performances</Text>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.bestPerformances")}</Text>
       <View style={styles.bestRow}>
         {bestBat && (
           <TouchableOpacity
@@ -301,7 +304,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
             <Text style={[styles.bestValue, { color: colors.primary }]}>
               {`${bestBat.runs}${!bestBat.howOut || bestBat.howOut.toLowerCase() === 'not out' ? '*' : ''}`}
             </Text>
-            <Text style={[styles.bestLabel, { color: colors.foreground }]}>Top Score</Text>
+            <Text style={[styles.bestLabel, { color: colors.foreground }]}>{t("home.topScore")}</Text>
             <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
               vs {bestBat.opponent}
             </Text>
@@ -316,7 +319,7 @@ function BestPerformancesSection({ data, colors, onPress }: {
             <Text style={[styles.bestValue, { color: colors.accent }]}>
               {bestBowl.wickets}/{bestBowl.runsConceded ?? 0}
             </Text>
-            <Text style={[styles.bestLabel, { color: colors.foreground }]}>Best Bowling</Text>
+            <Text style={[styles.bestLabel, { color: colors.foreground }]}>{t("home.bestBowling")}</Text>
             <Text style={[styles.bestSub, { color: colors.mutedForeground }]} numberOfLines={1}>
               vs {bestBowl.opponent}
             </Text>
@@ -335,6 +338,7 @@ function DismissalSection({ data, colors }: {
   data: PerMatchStat[];
   colors: ReturnType<typeof useColors>;
 }) {
+  const t = useT();
   const counts = React.useMemo(() => {
     const map = new Map<string, number>();
     for (const m of data) {
@@ -355,7 +359,7 @@ function DismissalSection({ data, colors }: {
 
   return (
     <View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Dismissal Breakdown</Text>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.dismissalBreakdown")}</Text>
       <View style={[styles.analysisCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         {counts.map((c, i) => {
           const barPct = c.value / maxVal;
@@ -392,6 +396,7 @@ function MatchTypeSection({ data, colors }: {
   data: PerMatchStat[];
   colors: ReturnType<typeof useColors>;
 }) {
+  const t = useT();
   const rows = React.useMemo(() => {
     const map = new Map<string, PerMatchStat[]>();
     for (const m of data) {
@@ -421,11 +426,18 @@ function MatchTypeSection({ data, colors }: {
 
   return (
     <View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>By Match Type</Text>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.byMatchType")}</Text>
       <View style={[styles.analysisCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={[styles.tableHeader, { borderBottomColor: colors.border }]}>
-          {["Type","M","Runs","Avg","Wkts","W"].map(h => (
-            <Text key={h} style={[styles.tableHead, { color: colors.mutedForeground, flex: h === "Type" ? 2 : 1 }]}>{h}</Text>
+          {[
+            { key: "type",     label: t("home.type") },
+            { key: "matches",  label: t("home.matches") },
+            { key: "runsStat", label: t("home.runsStat") },
+            { key: "avg",      label: t("home.avg") },
+            { key: "wkts",     label: t("home.wkts") },
+            { key: "won",      label: t("home.won") },
+          ].map(h => (
+            <Text key={h.key} style={[styles.tableHead, { color: colors.mutedForeground, flex: h.key === "type" ? 2 : 1 }]}>{h.label}</Text>
           ))}
         </View>
         {rows.map((r, i) => (
@@ -450,6 +462,7 @@ function HeadToHeadSection({ data, colors, onPress }: {
   colors: ReturnType<typeof useColors>;
   onPress: (id: number) => void;
 }) {
+  const t = useT();
   const records = useMemo(() => {
     const map = new Map<string, { played: number; wins: number; losses: number; avgRuns: number | null; lastMatchId: number }>();
     for (const m of data) {
@@ -475,15 +488,15 @@ function HeadToHeadSection({ data, colors, onPress }: {
 
   return (
     <View>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>vs Opponents</Text>
+      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.vsOpponents")}</Text>
       <View style={[styles.h2hCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         {/* Header */}
         <View style={[styles.h2hRow, styles.h2hHeader, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.h2hOpponent, styles.h2hHeaderText, { color: colors.mutedForeground }]}>Opponent</Text>
-          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>P</Text>
-          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>W</Text>
-          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>L</Text>
-          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>Avg</Text>
+          <Text style={[styles.h2hOpponent, styles.h2hHeaderText, { color: colors.mutedForeground }]}>{t("home.opponent")}</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>{t("home.played")}</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>{t("home.won")}</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>{t("home.lost")}</Text>
+          <Text style={[styles.h2hCell, styles.h2hHeaderText, { color: colors.mutedForeground }]}>{t("home.avg")}</Text>
         </View>
         {records.map(([opp, rec], i) => (
           <TouchableOpacity
@@ -508,16 +521,6 @@ function HeadToHeadSection({ data, colors, onPress }: {
 
 // ── Shortcut Pills ─────────────────────────────────────────────────────────────
 
-const SHORTCUTS = [
-  { label: "Stats", key: "stats" },
-  { label: "Targets", key: "goals" },
-  { label: "Form", key: "form" },
-  { label: "Dismissals", key: "dismissals" },
-  { label: "Match Types", key: "matchtype" },
-  { label: "Head-to-Head", key: "h2h" },
-  { label: "Recent", key: "recent" },
-];
-
 function ShortcutPills({
   colors,
   onPress,
@@ -525,6 +528,16 @@ function ShortcutPills({
   colors: ReturnType<typeof useColors>;
   onPress: (key: string) => void;
 }) {
+  const t = useT();
+  const shortcuts = [
+    { key: "stats",      label: t("home.stats") },
+    { key: "goals",      label: t("home.targets") },
+    { key: "form",       label: t("home.form") },
+    { key: "dismissals", label: t("home.dismissals") },
+    { key: "matchtype",  label: t("home.matchTypes") },
+    { key: "h2h",        label: t("home.headToHead") },
+    { key: "recent",     label: t("home.recent") },
+  ];
   return (
     <ScrollView
       horizontal
@@ -532,7 +545,7 @@ function ShortcutPills({
       contentContainerStyle={styles.pillsRow}
       style={{ flexShrink: 0 }}
     >
-      {SHORTCUTS.map((s) => (
+      {shortcuts.map((s) => (
         <TouchableOpacity
           key={s.key}
           onPress={() => onPress(s.key)}
@@ -586,6 +599,7 @@ function ShortcutPills({
 
 export default function DashboardScreen() {
   const colors = useColors();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const { playerName } = usePlayerName();
   const router = useRouter();
@@ -998,7 +1012,7 @@ export default function DashboardScreen() {
                     borderColor="rgba(255,255,255,0.22)"
                   />
                   <View style={{ flex: 1, paddingTop: 4 }}>
-                    <Text style={[styles.runsLabel, { color: "#FFFDF8", marginBottom: 6 }]}>Career Runs</Text>
+                    <Text style={[styles.runsLabel, { color: "#FFFDF8", marginBottom: 6 }]}>{t("home.careerRuns")}</Text>
                     <View style={{
                       flexShrink: 0,
                       alignSelf: "flex-start",
@@ -1018,9 +1032,9 @@ export default function DashboardScreen() {
                 {/* ── Micro-stat chips — full-width row below the flip display ── */}
                 <View style={{ flexDirection: "row", marginTop: 14, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 12 }}>
                   {[
-                    { label: "Avg",  value: battingAvg,                               color: "#6ee7b7" },
-                    { label: "100s", value: String(centuries),                        color: "#fbbf24" },
-                    { label: "Wkts", value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
+                    { label: t("home.avg"),     value: battingAvg,                               color: "#6ee7b7" },
+                    { label: t("home.hundreds"),value: String(centuries),                        color: "#fbbf24" },
+                    { label: t("home.wkts"),    value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
                   ].map(({ label, value, color }, i) => (
                     <View key={label} style={{ flex: 1, alignItems: "center", borderLeftWidth: i > 0 ? 1 : 0, borderLeftColor: "rgba(255,255,255,0.10)" }}>
                       <Text style={{ fontFamily: "Inter_700Bold", fontSize: 20, color, lineHeight: 24 }}>{value}</Text>
@@ -1036,7 +1050,7 @@ export default function DashboardScreen() {
                       {careerRuns} runs
                     </Text>
                     <Text style={{ fontFamily: "Inter_500Medium", fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
-                      {nextRunTarget} milestone
+                      {nextRunTarget} {t("home.milestone")}
                     </Text>
                   </View>
                   <View style={{ height: 4, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.10)", overflow: "hidden" }}>
@@ -1119,88 +1133,88 @@ export default function DashboardScreen() {
             style={[styles.shareBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
           >
             <Feather name="share-2" size={13} color={colors.mutedForeground} />
-            <Text style={[styles.shareBtnText, { color: colors.mutedForeground }]}>Share {activeSeasonLabel} stats</Text>
+            <Text style={[styles.shareBtnText, { color: colors.mutedForeground }]}>{t("home.shareStats", { season: activeSeasonLabel })}</Text>
           </TouchableOpacity>
 
           {/* ── Current Season ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — Batting</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — {t("home.batting")}</Text>
           <View style={styles.statsGrid}>
-            <StatCard label="Runs" value={seasonRuns} colors={colors} />
-            <StatCard label="Innings" value={seasonInnings} colors={colors} />
-            <StatCard label="Average" value={seasonBattingAvg} colors={colors} />
-            <StatCard label="High Score" value={seasonHS} colors={colors} />
-            <StatCard label="Strike Rate" value={seasonSR} colors={colors} />
-            <StatCard label="50s" value={seasonFifties} colors={colors} />
-            <StatCard label="100s" value={seasonCenturies} colors={colors} />
-            <StatCard label="Not Outs" value={seasonNotOuts} colors={colors} />
-            <StatCard label="Matches" value={seasonMatches} colors={colors} />
+            <StatCard label={t("home.runsStat")} value={seasonRuns} colors={colors} />
+            <StatCard label={t("home.innings")} value={seasonInnings} colors={colors} />
+            <StatCard label={t("home.avg")} value={seasonBattingAvg} colors={colors} />
+            <StatCard label={t("home.highScore")} value={seasonHS} colors={colors} />
+            <StatCard label={t("home.strikeRate")} value={seasonSR} colors={colors} />
+            <StatCard label={t("home.fifties")} value={seasonFifties} colors={colors} />
+            <StatCard label={t("home.hundreds")} value={seasonCenturies} colors={colors} />
+            <StatCard label={t("home.notOuts")} value={seasonNotOuts} colors={colors} />
+            <StatCard label={t("home.matchesLabel")} value={seasonMatches} colors={colors} />
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — Bowling</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{activeSeasonLabel} — {t("home.bowling")}</Text>
           <View style={styles.statsGrid}>
-            <StatCard label="Wickets" value={seasonWickets} colors={colors} />
-            <StatCard label="Best" value={seasonBest} colors={colors} />
-            <StatCard label="Average" value={seasonBowlingAvg} colors={colors} />
-            <StatCard label="Economy" value={seasonEconomy} colors={colors} />
-            <StatCard label="Overs" value={seasonOvers > 0 ? seasonOvers.toFixed(1) : "—"} colors={colors} />
+            <StatCard label={t("home.wkts")} value={seasonWickets} colors={colors} />
+            <StatCard label={t("home.best")} value={seasonBest} colors={colors} />
+            <StatCard label={t("home.avg")} value={seasonBowlingAvg} colors={colors} />
+            <StatCard label={t("home.economy")} value={seasonEconomy} colors={colors} />
+            <StatCard label={t("home.overs")} value={seasonOvers > 0 ? seasonOvers.toFixed(1) : "—"} colors={colors} />
           </View>
 
           {/* ── Season Projection ── */}
           {projectedRuns !== null && (
             <View style={[styles.projectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.projectionTitle, { color: colors.foreground }]}>📈 Season Projection</Text>
+              <Text style={[styles.projectionTitle, { color: colors.foreground }]}>{t("home.seasonProjection")}</Text>
               <Text style={[styles.projectionSub, { color: colors.mutedForeground }]}>
-                At your current rate — ~{projectedRuns} runs and ~{projectedWickets} wickets by season end
+                {t("home.projectionHint", { runs: projectedRuns, wkts: projectedWickets })}
               </Text>
             </View>
           )}
 
           {/* ── Career Totals ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Batting</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.careerBatting")}</Text>
           <View style={styles.statsGrid}>
-            <StatCard label="Total Runs" value={summary.batting.totalRuns} colors={colors} />
-            <StatCard label="High Score" value={summary.batting.highScore} colors={colors} />
-            <StatCard label="Average" value={battingAvg} colors={colors} />
+            <StatCard label={t("home.totalRuns")} value={summary.batting.totalRuns} colors={colors} />
+            <StatCard label={t("home.highScore")} value={summary.batting.highScore} colors={colors} />
+            <StatCard label={t("home.avg")} value={battingAvg} colors={colors} />
             <StatCard
-              label="Strike Rate"
+              label={t("home.strikeRate")}
               value={summary.batting.averageStrikeRate.toFixed(1)}
               colors={colors}
             />
-            <StatCard label="100s" value={centuries} colors={colors} />
-            <StatCard label="50s" value={fifties} colors={colors} />
-            <StatCard label="Fours" value={summary.batting.totalFours} colors={colors} />
-            <StatCard label="Sixes" value={summary.batting.totalSixes} colors={colors} />
-            <StatCard label="Not Outs" value={notOuts} colors={colors} />
-            <StatCard label="Ducks" value={ducks} colors={colors} />
-            <StatCard label="POTM" value={potmCount} colors={colors} />
-            <StatCard label="Innings" value={summary.batting.innings} colors={colors} />
+            <StatCard label={t("home.hundreds")} value={centuries} colors={colors} />
+            <StatCard label={t("home.fifties")} value={fifties} colors={colors} />
+            <StatCard label={t("home.fours")} value={summary.batting.totalFours} colors={colors} />
+            <StatCard label={t("home.sixes")} value={summary.batting.totalSixes} colors={colors} />
+            <StatCard label={t("home.notOuts")} value={notOuts} colors={colors} />
+            <StatCard label={t("home.ducks")} value={ducks} colors={colors} />
+            <StatCard label={t("home.potm")} value={potmCount} colors={colors} />
+            <StatCard label={t("home.innings")} value={summary.batting.innings} colors={colors} />
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Bowling</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.careerBowling")}</Text>
           <View style={styles.statsGrid}>
-            <StatCard label="Wickets" value={summary.bowling.totalWickets} colors={colors} />
-            <StatCard label="Best" value={summary.bowling.bestFigures} colors={colors} />
+            <StatCard label={t("home.wkts")} value={summary.bowling.totalWickets} colors={colors} />
+            <StatCard label={t("home.best")} value={summary.bowling.bestFigures} colors={colors} />
             <StatCard
-              label="Average"
+              label={t("home.avg")}
               value={bowlingAverage > 0 ? Number(bowlingAverage).toFixed(1) : "—"}
               colors={colors}
             />
             <StatCard
-              label="Economy"
+              label={t("home.economy")}
               value={summary.bowling.averageEconomyRate.toFixed(2)}
               colors={colors}
             />
-            <StatCard label="Overs" value={summary.bowling.totalOvers.toFixed(1)} colors={colors} />
-            <StatCard label="Maidens" value={totalMaidens} colors={colors} />
-            <StatCard label="5-Wkt Hauls" value={fiveWicketHauls} colors={colors} />
-            <StatCard label="No Balls" value={totalNoBalls} colors={colors} />
-            <StatCard label="Wides" value={totalWides} colors={colors} />
+            <StatCard label={t("home.overs")} value={summary.bowling.totalOvers.toFixed(1)} colors={colors} />
+            <StatCard label={t("home.maidens")} value={totalMaidens} colors={colors} />
+            <StatCard label={t("home.fiveWktHauls")} value={fiveWicketHauls} colors={colors} />
+            <StatCard label={t("home.noBalls")} value={totalNoBalls} colors={colors} />
+            <StatCard label={t("home.wides")} value={totalWides} colors={colors} />
           </View>
 
           {/* ── Batting Position Breakdown ── */}
           {positionRows.length > 0 && (
             <>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>By Batting Position</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.byBattingPosition")}</Text>
               <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 {positionRows.map((row) => (
                   <View key={row.pos} style={styles.posRow}>
@@ -1208,9 +1222,9 @@ export default function DashboardScreen() {
                       <Text style={[styles.posNum, { color: colors.primary }]}>#{row.pos}</Text>
                       <Text style={[styles.posName, { color: colors.mutedForeground }]}> {row.label}</Text>
                     </View>
-                    <Text style={[styles.posStat, { color: colors.mutedForeground }]}>{row.innings} inn</Text>
-                    <Text style={[styles.posStat, { color: colors.foreground }]}>{row.runs} runs</Text>
-                    <Text style={[styles.posAvg, { color: colors.primary }]}>avg {row.avg}</Text>
+                    <Text style={[styles.posStat, { color: colors.mutedForeground }]}>{row.innings} {t("home.inn")}</Text>
+                    <Text style={[styles.posStat, { color: colors.foreground }]}>{row.runs} {t("home.runs")}</Text>
+                    <Text style={[styles.posAvg, { color: colors.primary }]}>{t("home.avg")} {row.avg}</Text>
                   </View>
                 ))}
               </View>
@@ -1218,35 +1232,35 @@ export default function DashboardScreen() {
           )}
 
           {/* ── Milestone Progress ── */}
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Milestones</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.milestones")}</Text>
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.milestoneLabel, { color: colors.foreground }]}>
-              Runs — {summary.batting.totalRuns} / {nextRunTarget}
+              {t("home.runsProgress", { current: summary.batting.totalRuns, target: nextRunTarget })}
             </Text>
             <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
               <View style={[styles.progressFill, { width: `${runsPct}%` as any, backgroundColor: colors.primary }]} />
             </View>
             <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
-              {nextRunTarget - summary.batting.totalRuns} runs to next milestone
+              {t("home.runsToMilestone", { n: nextRunTarget - summary.batting.totalRuns })}
             </Text>
             <View style={styles.milestoneSpacer} />
             <Text style={[styles.milestoneLabel, { color: colors.foreground }]}>
-              Wickets — {summary.bowling.totalWickets} / {nextWicketTarget}
+              {t("home.wicketsProgress", { current: summary.bowling.totalWickets, target: nextWicketTarget })}
             </Text>
             <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
               <View style={[styles.progressFill, { width: `${wicketsPct}%` as any, backgroundColor: colors.accent }]} />
             </View>
             <Text style={[styles.milestoneSub, { color: colors.mutedForeground }]}>
-              {nextWicketTarget - summary.bowling.totalWickets} wickets to next milestone
+              {t("home.wicketsToMilestone", { n: nextWicketTarget - summary.bowling.totalWickets })}
             </Text>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Career — Fielding</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.careerFielding")}</Text>
           <View style={styles.statsGrid}>
-            <StatCard label="Catches" value={summary.fielding.totalCatches} colors={colors} />
-            <StatCard label="Run Outs" value={summary.fielding.totalRunOuts} colors={colors} />
-            <StatCard label="Stumpings" value={summary.fielding.totalStumpings} colors={colors} />
-            <StatCard label="Dropped" value={summary.fielding.totalDroppedCatches} colors={colors} />
+            <StatCard label={t("log.catches")} value={summary.fielding.totalCatches} colors={colors} />
+            <StatCard label={t("log.runOuts")} value={summary.fielding.totalRunOuts} colors={colors} />
+            <StatCard label={t("log.stumpings")} value={summary.fielding.totalStumpings} colors={colors} />
+            <StatCard label={t("log.dropped")} value={summary.fielding.totalDroppedCatches} colors={colors} />
           </View>
 
           {/* ── Season Targets ── */}
@@ -1264,7 +1278,7 @@ export default function DashboardScreen() {
           {runStreak >= 4 && (
             <View style={[styles.streakBanner, { backgroundColor: colors.accent + "22", borderColor: colors.accent + "55" }]}>
               <Text style={[styles.streakBannerText, { color: colors.accent }]}>
-                🔥 On a roll — {runStreak} innings in a row with 30+
+                {t("home.streakBanner", { n: runStreak })}
               </Text>
             </View>
           )}
@@ -1285,14 +1299,14 @@ export default function DashboardScreen() {
           {hasChartData && (
             <>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Runs Scored
+                {t("home.runsScored")}
               </Text>
               <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <BarChart data={runsData} barColor={colors.primary} colors={colors} />
               </View>
 
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Wickets Taken
+                {t("home.wicketsTaken")}
               </Text>
               <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <BarChart data={wicketsData} barColor={colors.primary} colors={colors} />
@@ -1323,7 +1337,7 @@ export default function DashboardScreen() {
       <View onLayout={measureSection("recent")} />
       {recentMatches.length > 0 ? (
         <>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Matches</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("home.recentMatches")}</Text>
           {recentMatches.map((match) => (
             <TouchableOpacity
               key={match.id}
@@ -1347,9 +1361,9 @@ export default function DashboardScreen() {
         </>
       ) : !isLoading ? (
         <View style={styles.emptyState}>
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No matches yet</Text>
+          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("home.noMatchesYet")}</Text>
           <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-            Tap "Log Match" to record your first match
+            {t("home.emptyLogPrompt")}
           </Text>
         </View>
       ) : null}

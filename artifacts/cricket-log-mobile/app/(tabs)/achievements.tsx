@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { computeBadges, type PerMatchStat, type Badge } from "@/utils/computeBadges";
 
 const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
@@ -99,6 +100,7 @@ function BadgeModal({
   onClose: () => void;
   colors: ReturnType<typeof useColors>;
 }) {
+  const t = useT();
   if (!badge) return null;
 
   const isLocked    = !badge.earned;
@@ -113,7 +115,6 @@ function BadgeModal({
           style={[styles.modalCard, { backgroundColor: bgColor, borderColor: accentColor + "60" }]}
           onPress={() => {}}
         >
-          {/* Badge image / icon */}
           <View style={styles.modalIconWrap}>
             {isLocked ? (
               <Text style={styles.modalIconLocked}>🔒</Text>
@@ -124,11 +125,10 @@ function BadgeModal({
             )}
           </View>
 
-          {/* Earned ribbon */}
           {badge.earned && (
             <View style={[styles.earnedPill, { backgroundColor: accentColor + "22", borderColor: accentColor + "55" }]}>
               <Text style={[styles.earnedPillText, { color: accentColor }]}>
-                {badge.isNegative ? "Unlocked 😬" : "Earned ✓"}
+                {badge.isNegative ? t("achievements.unlocked") : t("achievements.earnedMark")}
               </Text>
             </View>
           )}
@@ -143,7 +143,7 @@ function BadgeModal({
             <Text style={[styles.modalDetail, { color: accentColor }]}>{badge.detail}</Text>
           ) : null}
           {!badge.earned && (
-            <Text style={[styles.modalLocked, { color: "#71717a" }]}>Keep playing to unlock this badge</Text>
+            <Text style={[styles.modalLocked, { color: "#71717a" }]}>{t("achievements.keepPlaying")}</Text>
           )}
 
           {badge.earned && badge.shareText ? (
@@ -153,12 +153,12 @@ function BadgeModal({
               }}
               style={[styles.shareBtn, { backgroundColor: accentColor + "22", borderColor: accentColor + "55" }]}
             >
-              <Text style={[styles.shareBtnText, { color: accentColor }]}>Share Badge ↗</Text>
+              <Text style={[styles.shareBtnText, { color: accentColor }]}>{t("achievements.shareBadge")}</Text>
             </TouchableOpacity>
           ) : null}
 
           <Pressable onPress={onClose} style={[styles.closeBtn, { borderColor: colors.border }]}>
-            <Text style={[styles.closeBtnText, { color: colors.mutedForeground }]}>Close</Text>
+            <Text style={[styles.closeBtnText, { color: colors.mutedForeground }]}>{t("common.close")}</Text>
           </Pressable>
         </Pressable>
       </Pressable>
@@ -169,6 +169,7 @@ function BadgeModal({
 export default function AchievementsScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
+  const t = useT();
   const [selected, setSelected] = useState<Badge | null>(null);
 
   const { data: perMatch, isLoading, isRefetching, refetch } = useGetPerMatchStats();
@@ -195,12 +196,11 @@ export default function AchievementsScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />
         }
       >
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Achievements</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t("achievements.title")}</Text>
           {badges.length > 0 && (
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-              {earnedCount} / {badges.length} earned
+              {earnedCount} / {badges.length} {t("achievements.earnedCount")}
             </Text>
           )}
         </View>
@@ -210,29 +210,27 @@ export default function AchievementsScreen() {
         ) : badges.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>🏏</Text>
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No matches yet</Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("achievements.noMatchesYet")}</Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
-              Log your first match to start earning badges.
+              {t("achievements.logFirstMatch")}
             </Text>
           </View>
         ) : (
           <>
-            {/* Batting milestones bar */}
             {innings.length > 0 && (
               <View style={[styles.milestonesBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <MilestonePip color="#4A9E61" count={innings.filter((d) => (d.runs ?? 0) >= 25).length} label="25+" />
                 <MilestonePip color={colors.primary} count={fifties} label="50+" />
                 <MilestonePip color="#C0392B" count={hundreds} label="100+" />
                 <Text style={[styles.inningsTotal, { color: colors.mutedForeground }]}>
-                  {innings.length} innings
+                  {innings.length} {t("home.innings")}
                 </Text>
               </View>
             )}
 
-            {/* Earned positive badges */}
             {positive.some((b) => b.earned) && (
               <>
-                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Earned</Text>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("achievements.earned")}</Text>
                 <View style={styles.grid}>
                   {positive.filter((b) => b.earned).map((badge) => (
                     <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
@@ -241,10 +239,9 @@ export default function AchievementsScreen() {
               </>
             )}
 
-            {/* Locked positive badges */}
             {positive.some((b) => !b.earned) && (
               <>
-                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Locked</Text>
+                <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>{t("achievements.locked")}</Text>
                 <View style={styles.grid}>
                   {positive.filter((b) => !b.earned).map((badge) => (
                     <BadgeTile key={badge.id} badge={badge} colors={colors} onPress={() => setSelected(badge)} />
@@ -256,7 +253,7 @@ export default function AchievementsScreen() {
             {negative.some((b) => b.earned) && (
               <>
                 <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-                  Unlucky badges
+                  {t("achievements.unlucky")}
                 </Text>
                 <View style={styles.grid}>
                   {negative.filter((b) => b.earned).map((badge) => (
@@ -265,7 +262,6 @@ export default function AchievementsScreen() {
                 </View>
               </>
             )}
-
           </>
         )}
       </ScrollView>
@@ -366,53 +362,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  modalIconWrap: {
-    marginBottom: 4,
-  },
-  modalImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-  },
-  modalIconEmoji: {
-    fontSize: 80,
-    textAlign: "center",
-  },
-  modalIconLocked: {
-    fontSize: 72,
-    textAlign: "center",
-  },
+  modalIconWrap: { marginBottom: 4 },
+  modalImage: { width: 140, height: 140, borderRadius: 70 },
+  modalIconEmoji: { fontSize: 80, textAlign: "center" },
+  modalIconLocked: { fontSize: 72, textAlign: "center" },
   earnedPill: {
     paddingHorizontal: 14,
     paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
   },
-  earnedPillText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  modalLabel: {
-    fontSize: 22,
-    fontWeight: "800",
-    textAlign: "center",
-    lineHeight: 28,
-  },
-  modalDesc: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  modalDetail: {
-    fontSize: 15,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  modalLocked: {
-    fontSize: 13,
-    textAlign: "center",
-    fontStyle: "italic",
-  },
+  earnedPillText: { fontSize: 12, fontWeight: "700" },
+  modalLabel: { fontSize: 22, fontWeight: "800", textAlign: "center", lineHeight: 28 },
+  modalDesc: { fontSize: 14, textAlign: "center", lineHeight: 20 },
+  modalDetail: { fontSize: 15, fontWeight: "700", textAlign: "center" },
+  modalLocked: { fontSize: 13, textAlign: "center", fontStyle: "italic" },
   shareBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -422,11 +386,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  shareBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    textAlign: "center",
-  },
+  shareBtnText: { fontSize: 14, fontWeight: "600", textAlign: "center" },
   closeBtn: {
     marginTop: 4,
     paddingHorizontal: 32,
@@ -434,8 +394,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  closeBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  closeBtnText: { fontSize: 14, fontWeight: "600" },
 });

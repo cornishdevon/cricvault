@@ -26,6 +26,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 
 type Match = {
   id: number;
@@ -72,6 +73,7 @@ function MatchItem({
   onPress: () => void;
   onDelete: () => void;
 }) {
+  const t = useT();
   return (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -101,7 +103,7 @@ function MatchItem({
         <Text style={[styles.meta, { color: colors.mutedForeground }]}>{match.matchType}</Text>
         {match.playerOfTheMatch ? (
           <View style={[styles.potmBadge, { backgroundColor: "#EDE8DC" }]}>
-            <Text style={[styles.potmText, { color: "#C0392B" }]}>⭐ POTM</Text>
+            <Text style={[styles.potmText, { color: "#C0392B" }]}>{t("matches.potm")}</Text>
           </View>
         ) : null}
       </View>
@@ -111,18 +113,11 @@ function MatchItem({
 
 type ResultFilter = "all" | "win" | "loss" | "draw" | "pending";
 
-const FILTER_OPTIONS: { key: ResultFilter; label: string }[] = [
-  { key: "all",     label: "All" },
-  { key: "win",     label: "Won" },
-  { key: "loss",    label: "Lost" },
-  { key: "draw",    label: "Draw" },
-  { key: "pending", label: "Pending" },
-];
-
 export default function MatchesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const t = useT();
 
   const queryClient = useQueryClient();
   const { data: matches, isLoading, refetch, isRefetching } = useListMatches();
@@ -133,16 +128,24 @@ export default function MatchesScreen() {
   const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
   const [exporting, setExporting] = useState(false);
 
+  const FILTER_OPTIONS: { key: ResultFilter; label: string }[] = [
+    { key: "all",     label: t("matches.all") },
+    { key: "win",     label: t("matches.won") },
+    { key: "loss",    label: t("matches.lost") },
+    { key: "draw",    label: t("matches.draw") },
+    { key: "pending", label: t("matches.pending") },
+  ];
+
   const handleExport = async () => {
     if (!perMatchData || perMatchData.length === 0) {
-      Alert.alert("No Data", "Log some matches first before exporting.");
+      Alert.alert(t("matches.noData"), t("matches.logFirst"));
       return;
     }
     setExporting(true);
     try {
       await exportStatsCsv(perMatchData as any);
     } catch (e: any) {
-      Alert.alert("Export Failed", e?.message ?? "Could not export stats.");
+      Alert.alert(t("matches.exportFailed"), e?.message ?? t("common.error"));
     } finally {
       setExporting(false);
     }
@@ -180,24 +183,28 @@ export default function MatchesScreen() {
   const draws  = matches?.filter((m) => isDraw(m.result)).length ?? 0;
 
   const handleDelete = (id: number, opponent: string) => {
-    Alert.alert("Delete Match", `Remove match vs ${opponent}?\n\nThis cannot be undone.`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () =>
-          deleteMatch(
-            { matchId: id },
-            {
-              onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
-                queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
-                queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+    Alert.alert(
+      t("matches.deleteMatch"),
+      `${t("matches.deleteConfirm")} ${opponent}?\n\n${t("matches.cannotUndo")}`,
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: () =>
+            deleteMatch(
+              { matchId: id },
+              {
+                onSuccess: () => {
+                  queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
+                  queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
+                  queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+                },
               },
-            },
-          ),
-      },
-    ]);
+            ),
+        },
+      ],
+    );
   };
 
   if (isLoading) {
@@ -210,32 +217,30 @@ export default function MatchesScreen() {
 
   const Header = (
     <View style={{ backgroundColor: colors.background }}>
-      {/* Win/Loss/Draw strip */}
       {matches && matches.length > 0 && (
         <View style={[styles.statsStrip, { borderBottomColor: colors.border }]}>
           <View style={styles.statPill}>
             <Text style={[styles.statNum, { color: colors.primary }]}>{wins}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>Wins</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{t("matches.wins")}</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statPill}>
             <Text style={[styles.statNum, { color: "#ef4444" }]}>{losses}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>Losses</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{t("matches.losses")}</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statPill}>
             <Text style={[styles.statNum, { color: colors.foreground }]}>{draws}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>Draws</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{t("matches.draws")}</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statPill}>
             <Text style={[styles.statNum, { color: colors.foreground }]}>{matches.length}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>Total</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>{t("matches.total")}</Text>
           </View>
         </View>
       )}
 
-      {/* Export button */}
       {matches && matches.length > 0 && (
         <TouchableOpacity
           onPress={handleExport}
@@ -244,17 +249,16 @@ export default function MatchesScreen() {
         >
           <Feather name="download" size={13} color={colors.mutedForeground} />
           <Text style={[styles.exportBtnText, { color: colors.mutedForeground }]}>
-            {exporting ? "Exporting…" : "Export CSV"}
+            {exporting ? t("common.exporting") : t("matches.exportCsv")}
           </Text>
         </TouchableOpacity>
       )}
 
-      {/* Search */}
       <View style={[styles.searchWrap, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Feather name="search" size={16} color={colors.mutedForeground} />
         <TextInput
           style={[styles.searchInput, { color: colors.foreground, fontFamily: "Inter_400Regular" }]}
-          placeholder="Search opponent, venue, type…"
+          placeholder={t("matches.searchPlaceholder")}
           placeholderTextColor={colors.mutedForeground}
           value={search}
           onChangeText={setSearch}
@@ -262,7 +266,6 @@ export default function MatchesScreen() {
         />
       </View>
 
-      {/* Result filter chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -292,9 +295,9 @@ export default function MatchesScreen() {
 
       {filtered.length === 0 && matches && matches.length > 0 && (
         <View style={styles.noResults}>
-          <Text style={[styles.noResultsText, { color: colors.mutedForeground }]}>No matches match your filters.</Text>
+          <Text style={[styles.noResultsText, { color: colors.mutedForeground }]}>{t("matches.noMatchesFilter")}</Text>
           <TouchableOpacity onPress={() => { setSearch(""); setResultFilter("all"); }}>
-            <Text style={[styles.clearLink, { color: colors.primary }]}>Clear filters</Text>
+            <Text style={[styles.clearLink, { color: colors.primary }]}>{t("matches.clearFilters")}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -319,9 +322,9 @@ export default function MatchesScreen() {
         !search && resultFilter === "all" ? (
           <View style={styles.empty}>
             <Feather name="calendar" size={48} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No matches yet</Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("matches.noMatchesYet")}</Text>
             <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-              Go to Log Match to add your first match
+              {t("matches.goToLog")}
             </Text>
           </View>
         ) : null

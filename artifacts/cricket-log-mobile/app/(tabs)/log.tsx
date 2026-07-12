@@ -39,6 +39,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { computeBadges, type PerMatchStat } from "@/utils/computeBadges";
 import { WagonWheel, type WheelShot } from "@/components/WagonWheel";
 import { DatePickerCalendar } from "@/components/DatePickerCalendar";
@@ -387,6 +388,7 @@ function MediaStep({
   onDone: () => void;
 }) {
   const colors = useColors();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
 
@@ -412,7 +414,7 @@ function MediaStep({
   const handlePickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to upload match photos.");
+      Alert.alert(t("log.permissionNeeded"), t("log.allowPhotoAccess"));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -430,11 +432,11 @@ function MediaStep({
         { matchId, data: { url: `/api/storage${objectPath}` } },
         {
           onSuccess: () => qc.invalidateQueries({ queryKey: getListMatchPhotosQueryKey(matchId) }),
-          onError: () => Alert.alert("Error", "Failed to save photo."),
+          onError: () => Alert.alert(t("common.error"), t("log.failedPhoto")),
         }
       );
     } catch {
-      Alert.alert("Error", "Photo upload failed.");
+      Alert.alert(t("common.error"), t("log.photoUploadFailed"));
     } finally {
       setUploadingPhoto(false);
     }
@@ -443,7 +445,7 @@ function MediaStep({
   const handlePickVideo = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow media access to upload match videos.");
+      Alert.alert(t("log.permissionNeeded"), t("log.allowVideoAccess"));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -461,11 +463,11 @@ function MediaStep({
         { matchId, data: { objectPath: `/api/storage${objectPath}` } },
         {
           onSuccess: () => qc.invalidateQueries({ queryKey: getListMatchVideosQueryKey(matchId) }),
-          onError: () => Alert.alert("Error", "Failed to save video."),
+          onError: () => Alert.alert(t("common.error"), t("log.failedVideo")),
         }
       );
     } catch {
-      Alert.alert("Error", "Video upload failed.");
+      Alert.alert(t("common.error"), t("log.videoUploadFailed"));
     } finally {
       setUploadingVideo(false);
     }
@@ -478,7 +480,7 @@ function MediaStep({
       { matchId, data: { highlightsUrl: highlights.trim() } as any },
       {
         onSuccess: () => { setSavingHighlights(false); setHighlightsSaved(true); },
-        onError: () => { setSavingHighlights(false); Alert.alert("Error", "Failed to save link."); },
+        onError: () => { setSavingHighlights(false); Alert.alert(t("common.error"), t("log.failedLink")); },
       }
     );
   };
@@ -499,7 +501,7 @@ function MediaStep({
           <View style={[mediaStyles.dotLine, { backgroundColor: colors.border }]} />
           <View style={[mediaStyles.dot, { backgroundColor: colors.primary }]} />
         </View>
-        <Text style={[mediaStyles.stepTitle, { color: colors.foreground }]}>Step 2 — Add Media</Text>
+        <Text style={[mediaStyles.stepTitle, { color: colors.foreground }]}>{t("log.step2Title")}</Text>
         <Text style={[mediaStyles.stepSub, { color: colors.mutedForeground }]}>vs {opponent}</Text>
       </View>
 
@@ -509,14 +511,14 @@ function MediaStep({
       <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={mediaStyles.cardRow}>
           <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
-            📷 Photos{photoCount > 0 ? ` (${photoCount})` : ""}
+            📷 {t("log.photos")}{photoCount > 0 ? ` (${photoCount})` : ""}
           </Text>
           <TouchableOpacity
             style={[mediaStyles.addBtn, { backgroundColor: colors.primary }]}
             onPress={handlePickPhoto}
             disabled={uploadingPhoto}
           >
-            <Text style={mediaStyles.addBtnText}>{uploadingPhoto ? "Uploading…" : "+ Add"}</Text>
+            <Text style={mediaStyles.addBtnText}>{uploadingPhoto ? t("common.uploading") : t("log.addBtn")}</Text>
           </TouchableOpacity>
         </View>
         {photoCount > 0 ? (
@@ -537,7 +539,7 @@ function MediaStep({
           >
             <Text style={{ fontSize: 28 }}>📷</Text>
             <Text style={[mediaStyles.dropText, { color: colors.mutedForeground }]}>
-              {uploadingPhoto ? "Uploading…" : "Tap to add match photos"}
+              {uploadingPhoto ? t("common.uploading") : t("log.tapAddPhotos")}
             </Text>
           </TouchableOpacity>
         )}
@@ -549,14 +551,14 @@ function MediaStep({
       <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={mediaStyles.cardRow}>
           <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
-            🎬 Videos{videoCount > 0 ? ` (${videoCount})` : ""}
+            🎬 {t("log.videos")}{videoCount > 0 ? ` (${videoCount})` : ""}
           </Text>
           <TouchableOpacity
             style={[mediaStyles.addBtn, { backgroundColor: colors.primary }]}
             onPress={handlePickVideo}
             disabled={uploadingVideo}
           >
-            <Text style={mediaStyles.addBtnText}>{uploadingVideo ? "Uploading…" : "+ Add"}</Text>
+            <Text style={mediaStyles.addBtnText}>{uploadingVideo ? t("common.uploading") : t("log.addBtn")}</Text>
           </TouchableOpacity>
         </View>
         {videoCount > 0 ? (
@@ -576,7 +578,7 @@ function MediaStep({
           >
             <Text style={{ fontSize: 28 }}>🎬</Text>
             <Text style={[mediaStyles.dropText, { color: colors.mutedForeground }]}>
-              {uploadingVideo ? "Uploading…" : "Tap to add match videos"}
+              {uploadingVideo ? t("common.uploading") : t("log.tapAddVideos")}
             </Text>
           </TouchableOpacity>
         )}
@@ -587,10 +589,10 @@ function MediaStep({
       {/* Highlights URL */}
       <View style={[mediaStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[mediaStyles.cardTitle, { color: colors.foreground }]}>
-          🔗 Highlights Link{highlightsSaved ? " ✓" : ""}
+          🔗 {t("log.highlightsLink")}{highlightsSaved ? " ✓" : ""}
         </Text>
         {highlightsSaved ? (
-          <Text style={[mediaStyles.savedText, { color: colors.primary }]}>Link saved!</Text>
+          <Text style={[mediaStyles.savedText, { color: colors.primary }]}>{t("log.linkSaved")}</Text>
         ) : (
           <View style={{ gap: 8, marginTop: 10 }}>
             <TextInput
@@ -607,7 +609,7 @@ function MediaStep({
               onPress={handleSaveHighlights}
               disabled={!highlights.trim() || savingHighlights}
             >
-              <Text style={mediaStyles.saveHlBtnText}>{savingHighlights ? "Saving…" : "Save Link"}</Text>
+              <Text style={mediaStyles.saveHlBtnText}>{savingHighlights ? t("common.saving") : t("log.saveLink")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -620,10 +622,10 @@ function MediaStep({
         style={[mediaStyles.doneBtn, { backgroundColor: colors.primary }]}
         onPress={onDone}
       >
-        <Text style={mediaStyles.doneBtnText}>Done — View Match</Text>
+        <Text style={mediaStyles.doneBtnText}>{t("log.donePreviews")}</Text>
       </TouchableOpacity>
       <Text style={[mediaStyles.skipText, { color: colors.mutedForeground }]}>
-        Media can also be added from the match detail page later.
+        {t("log.mediaLaterHint")}
       </Text>
     </ScrollView>
   );
@@ -682,6 +684,7 @@ const mediaStyles = StyleSheet.create({
 
 export default function LogMatchScreen() {
   const colors = useColors();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -753,7 +756,7 @@ export default function LogMatchScreen() {
 
   const handleSave = () => {
     if (!matchForm.opponent.trim()) {
-      Alert.alert("Required", "Please enter an opponent name.");
+      Alert.alert(t("log.required"), t("log.enterOpponent"));
       return;
     }
 
@@ -767,11 +770,11 @@ export default function LogMatchScreen() {
 
     if (duplicate) {
       Alert.alert(
-        "Already Saved?",
-        `You already have a match vs ${duplicate.opponent} on ${duplicate.date}.\n\nSave another anyway?`,
+        t("log.alreadySavedTitle"),
+        t("log.alreadySavedMsg", { opponent: duplicate.opponent, date: duplicate.date }),
         [
-          { text: "Cancel", style: "cancel" },
-          { text: "Save Anyway", style: "default", onPress: () => void doSave() },
+          { text: t("common.cancel"), style: "cancel" },
+          { text: t("log.saveAnywayBtn"), style: "default", onPress: () => void doSave() },
         ],
       );
       return;
@@ -948,7 +951,7 @@ export default function LogMatchScreen() {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      Alert.alert("Error", `Failed to save: ${msg}`);
+      Alert.alert(t("common.error"), t("log.failedToSave", { msg }));
     }
   };
 
@@ -979,16 +982,14 @@ export default function LogMatchScreen() {
             {...panResponder.panHandlers}
           >
             <View style={styles.popupHandle} />
-            <Text style={styles.popupTitle}>
-              🎉 Badge{popupBadges.length > 1 ? "s" : ""} Unlocked!
-            </Text>
+            <Text style={styles.popupTitle}>{t("log.badgesUnlocked")}</Text>
             {popupBadges.map((b) => (
               <View key={b.id} style={styles.popupRow}>
                 <Text style={styles.popupIcon}>{b.icon}</Text>
                 <Text style={styles.popupLabel}>{b.label}</Text>
               </View>
             ))}
-            <Text style={styles.popupHint}>Swipe up to dismiss</Text>
+            <Text style={styles.popupHint}>{t("log.swipeUpDismiss")}</Text>
           </Animated.View>
         )}
       </View>
@@ -1013,16 +1014,14 @@ export default function LogMatchScreen() {
           {...panResponder.panHandlers}
         >
           <View style={styles.popupHandle} />
-          <Text style={styles.popupTitle}>
-            🎉 Badge{popupBadges.length > 1 ? "s" : ""} Unlocked!
-          </Text>
+          <Text style={styles.popupTitle}>{t("log.badgesUnlocked")}</Text>
           {popupBadges.map((b) => (
             <View key={b.id} style={styles.popupRow}>
               <Text style={styles.popupIcon}>{b.icon}</Text>
               <Text style={styles.popupLabel}>{b.label}</Text>
             </View>
           ))}
-          <Text style={styles.popupHint}>Swipe up to dismiss</Text>
+          <Text style={styles.popupHint}>{t("log.swipeUpDismiss")}</Text>
         </Animated.View>
       )}
       <ScrollView
@@ -1037,13 +1036,13 @@ export default function LogMatchScreen() {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Feather name="chevron-left" size={20} color={colors.foreground} />
-            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 15, color: colors.foreground }}>Back</Text>
+            <Text style={{ fontFamily: "Inter_500Medium", fontSize: 15, color: colors.foreground }}>{t("common.back")}</Text>
           </TouchableOpacity>
         )}
 
         {/* ── Match Info ── */}
-        <SectionCard icon="🏏" title="Match Info" enabled alwaysOpen>
-          <Field label="Date">
+        <SectionCard icon="🏏" title={t("log.matchInfo")} enabled alwaysOpen>
+          <Field label={t("log.date")}>
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
               style={[
@@ -1059,7 +1058,7 @@ export default function LogMatchScreen() {
             </TouchableOpacity>
           </Field>
 
-          <Field label="Opponent *">
+          <Field label={t("log.opponent")}>
             <Input
               value={matchForm.opponent}
               onChangeText={(v) => updateMatch("opponent", v)}
@@ -1067,7 +1066,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Playing For">
+          <Field label={t("log.playingFor")}>
             <Input
               value={matchForm.playingFor}
               onChangeText={(v) => updateMatch("playingFor", v)}
@@ -1076,7 +1075,7 @@ export default function LogMatchScreen() {
           </Field>
 
           <Row>
-            <Field label="Venue" half>
+            <Field label={t("log.venue")} half>
               <Input
                 value={matchForm.venue}
                 onChangeText={(v) => updateMatch("venue", v)}
@@ -1084,7 +1083,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Match Type" half>
+            <Field label={t("log.matchType")} half>
               <Input
                 value={matchForm.matchType}
                 onChangeText={(v) => updateMatch("matchType", v)}
@@ -1093,7 +1092,7 @@ export default function LogMatchScreen() {
             </Field>
           </Row>
 
-          <Field label="Result">
+          <Field label={t("log.result")}>
             <Input
               value={matchForm.result}
               onChangeText={(v) => updateMatch("result", v)}
@@ -1102,18 +1101,18 @@ export default function LogMatchScreen() {
           </Field>
 
           <ToggleRow
-            label="Player of the Match"
+            label={t("log.playerOfMatch")}
             value={matchForm.playerOfTheMatch}
             onValueChange={(v) => updateMatch("playerOfTheMatch", v)}
           />
 
           <ToggleRow
-            label="Practice Match"
+            label={t("log.practiceMatch")}
             value={matchForm.isPractice}
             onValueChange={(v) => updateMatch("isPractice", v)}
           />
 
-          <Field label="Series / Tournament">
+          <Field label={t("log.seriesTournament")}>
             <Input
               value={matchForm.series}
               onChangeText={(v) => updateMatch("series", v)}
@@ -1121,7 +1120,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Pitch Type">
+          <Field label={t("log.pitchType")}>
             <ChipGroup
               options={PITCH_TYPES}
               selected={matchForm.pitchType}
@@ -1129,7 +1128,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Weather">
+          <Field label={t("log.weather")}>
             <ChipGroup
               options={WEATHER_OPTIONS}
               selected={matchForm.weatherConditions}
@@ -1137,7 +1136,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Match Notes">
+          <Field label={t("log.matchNotes")}>
             <TextInput
               style={[
                 styles.notesInput,
@@ -1156,12 +1155,12 @@ export default function LogMatchScreen() {
         {/* ── Batting ── */}
         <SectionCard
           icon="🏏"
-          title="Batting"
+          title={t("log.batting")}
           enabled={hasBatting}
           onToggle={setHasBatting}
         >
           <Row>
-            <Field label="Runs Scored" half>
+            <Field label={t("log.runsScored")} half>
               <Input
                 value={battingForm.runs}
                 onChangeText={(v) => updateBatting("runs", v)}
@@ -1170,7 +1169,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Balls Faced" half>
+            <Field label={t("log.ballsFaced")} half>
               <Input
                 value={battingForm.ballsFaced}
                 onChangeText={(v) => updateBatting("ballsFaced", v)}
@@ -1181,7 +1180,7 @@ export default function LogMatchScreen() {
           </Row>
 
           <Row>
-            <Field label="Fours" half>
+            <Field label={t("log.foursLabel")} half>
               <Input
                 value={battingForm.fours}
                 onChangeText={(v) => updateBatting("fours", v)}
@@ -1190,7 +1189,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Sixes" half>
+            <Field label={t("log.sixesLabel")} half>
               <Input
                 value={battingForm.sixes}
                 onChangeText={(v) => updateBatting("sixes", v)}
@@ -1200,7 +1199,7 @@ export default function LogMatchScreen() {
             </Field>
           </Row>
 
-          <Field label="Batting Position">
+          <Field label={t("log.battingPosition")}>
             <Input
               value={battingForm.battingPosition}
               onChangeText={(v) => updateBatting("battingPosition", v)}
@@ -1209,7 +1208,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="How Out">
+          <Field label={t("log.howOut")}>
             <ChipGroup
               options={[...HOW_OUT_OPTIONS, ...customDismissals]}
               selected={battingForm.howOut}
@@ -1222,7 +1221,7 @@ export default function LogMatchScreen() {
                     styles.customDismissalInput,
                     { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.border },
                   ]}
-                  placeholder="Add custom dismissal…"
+                  placeholder={t("log.addCustomDismissal")}
                   placeholderTextColor={colors.mutedForeground}
                   value={customHowOutInput}
                   onChangeText={setCustomHowOutInput}
@@ -1249,13 +1248,13 @@ export default function LogMatchScreen() {
                     setCustomHowOutInput("");
                   }}
                 >
-                  <Text style={[styles.customDismissalBtnText, { color: colors.primaryForeground }]}>Add</Text>
+                  <Text style={[styles.customDismissalBtnText, { color: colors.primaryForeground }]}>{t("log.addBtn")}</Text>
                 </TouchableOpacity>
               </View>
             )}
           </Field>
 
-          <Field label="Opposition Bowler">
+          <Field label={t("log.oppositionBowler")}>
             <Input
               value={battingForm.oppositionBowler}
               onChangeText={(v) => updateBatting("oppositionBowler", v)}
@@ -1264,7 +1263,7 @@ export default function LogMatchScreen() {
           </Field>
 
           {battingForm.howOut === "Caught" && (
-            <Field label="Caught At">
+            <Field label={t("log.caughtAt")}>
               <ChipGroup
                 options={CAUGHT_POSITIONS}
                 selected={battingForm.caughtPosition}
@@ -1274,13 +1273,13 @@ export default function LogMatchScreen() {
           )}
 
           <ToggleRow
-            label="Bad Umpire Decision?"
-            sublabel="Were you given out incorrectly?"
+            label={t("log.badUmpire")}
+            sublabel={t("log.badUmpireSub")}
             value={battingForm.badUmpireDecision}
             onValueChange={(v) => updateBatting("badUmpireDecision", v)}
           />
 
-          <Field label="Balls to Reach 50">
+          <Field label={t("log.ballsToFifty")}>
             <Input
               value={battingForm.ballsToFifty}
               onChangeText={(v) => updateBatting("ballsToFifty", v)}
@@ -1289,7 +1288,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Balls to Reach 100">
+          <Field label={t("log.ballsToHundred")}>
             <Input
               value={battingForm.ballsToHundred}
               onChangeText={(v) => updateBatting("ballsToHundred", v)}
@@ -1298,7 +1297,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Balls to Reach 150">
+          <Field label={t("log.ballsToHundredFifty")}>
             <Input
               value={battingForm.ballsToHundredFifty}
               onChangeText={(v) => updateBatting("ballsToHundredFifty", v)}
@@ -1307,7 +1306,7 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Field label="Wagon Wheel">
+          <Field label={t("log.wagonWheel")}>
             <WagonWheel shots={wheelShots} onShotsChange={setWheelShots} />
           </Field>
         </SectionCard>
@@ -1315,12 +1314,12 @@ export default function LogMatchScreen() {
         {/* ── Bowling ── */}
         <SectionCard
           icon={<CricketBallSvg size={22} />}
-          title="Bowling"
+          title={t("log.bowling")}
           enabled={hasBowling}
           onToggle={setHasBowling}
         >
           <Row>
-            <Field label="Wickets" half>
+            <Field label={t("log.wickets")} half>
               <Input
                 value={bowlingForm.wickets}
                 onChangeText={(v) => updateBowling("wickets", v)}
@@ -1329,7 +1328,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Overs" half>
+            <Field label={t("log.overs")} half>
               <Input
                 value={bowlingForm.overs}
                 onChangeText={(v) => updateBowling("overs", v)}
@@ -1340,7 +1339,7 @@ export default function LogMatchScreen() {
           </Row>
 
           <Row>
-            <Field label="Runs Conceded" half>
+            <Field label={t("log.runsConceded")} half>
               <Input
                 value={bowlingForm.runsConceded}
                 onChangeText={(v) => updateBowling("runsConceded", v)}
@@ -1349,7 +1348,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Maidens" half>
+            <Field label={t("log.maidens")} half>
               <Input
                 value={bowlingForm.maidens}
                 onChangeText={(v) => updateBowling("maidens", v)}
@@ -1360,7 +1359,7 @@ export default function LogMatchScreen() {
           </Row>
 
           <Row>
-            <Field label="No Balls" half>
+            <Field label={t("log.noBalls")} half>
               <Input
                 value={bowlingForm.noBalls}
                 onChangeText={(v) => updateBowling("noBalls", v)}
@@ -1369,7 +1368,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Wides" half>
+            <Field label={t("log.wides")} half>
               <Input
                 value={bowlingForm.wides}
                 onChangeText={(v) => updateBowling("wides", v)}
@@ -1380,7 +1379,7 @@ export default function LogMatchScreen() {
           </Row>
 
           <Row>
-            <Field label="Bowled Wkts" half>
+            <Field label={t("log.bowledWkts")} half>
               <Input
                 value={bowlingForm.bowledWickets}
                 onChangeText={(v) => updateBowling("bowledWickets", v)}
@@ -1389,7 +1388,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="LBW Wkts" half>
+            <Field label={t("log.lbwWkts")} half>
               <Input
                 value={bowlingForm.lbwWickets}
                 onChangeText={(v) => updateBowling("lbwWickets", v)}
@@ -1400,13 +1399,13 @@ export default function LogMatchScreen() {
           </Row>
 
           <ToggleRow
-            label="Hat Trick!"
+            label={t("log.hatTrick")}
             value={bowlingForm.hatTrick}
             onValueChange={(v) => updateBowling("hatTrick", v)}
           />
           <ToggleRow
-            label="Would Have Referred?"
-            sublabel="Not-out that should have been given"
+            label={t("log.wouldRefer")}
+            sublabel={t("log.wouldReferSub")}
             value={bowlingForm.wouldHaveReferred}
             onValueChange={(v) => updateBowling("wouldHaveReferred", v)}
           />
@@ -1415,12 +1414,12 @@ export default function LogMatchScreen() {
         {/* ── Fielding ── */}
         <SectionCard
           icon={<CatchingHandsSvg size={22} />}
-          title="Fielding"
+          title={t("log.fielding")}
           enabled={hasFielding}
           onToggle={setHasFielding}
         >
           <Row>
-            <Field label="Catches" half>
+            <Field label={t("log.catches")} half>
               <Input
                 value={fieldingForm.catches}
                 onChangeText={(v) => updateFielding("catches", v)}
@@ -1429,7 +1428,7 @@ export default function LogMatchScreen() {
               />
             </Field>
             <View style={{ width: 10 }} />
-            <Field label="Dropped" half>
+            <Field label={t("log.droppedCatches")} half>
               <Input
                 value={fieldingForm.droppedCatches}
                 onChangeText={(v) => updateFielding("droppedCatches", v)}
@@ -1439,7 +1438,7 @@ export default function LogMatchScreen() {
             </Field>
           </Row>
 
-          <Field label="Run Outs">
+          <Field label={t("log.runOuts")}>
             <Input
               value={fieldingForm.runOuts}
               onChangeText={(v) => updateFielding("runOuts", v)}
@@ -1449,15 +1448,15 @@ export default function LogMatchScreen() {
           </Field>
 
           <ToggleRow
-            label="Wicket Keeper?"
-            sublabel="Add stumpings for this match"
+            label={t("log.wicketKeeperLabel")}
+            sublabel={t("log.wicketKeeperSub")}
             value={isWicketKeeper}
             onValueChange={setIsWicketKeeper}
           />
 
           {isWicketKeeper && (
             <Row>
-              <Field label="Stumpings" half>
+              <Field label={t("log.stumpings")} half>
                 <Input
                   value={fieldingForm.stumpings}
                   onChangeText={(v) => updateFielding("stumpings", v)}
@@ -1466,7 +1465,7 @@ export default function LogMatchScreen() {
                 />
               </Field>
               <View style={{ width: 10 }} />
-              <Field label="Missed Stumpings" half>
+              <Field label={t("log.missedStumpings")} half>
                 <Input
                   value={fieldingForm.missedStumpings}
                   onChangeText={(v) => updateFielding("missedStumpings", v)}
@@ -1497,7 +1496,7 @@ export default function LogMatchScreen() {
           disabled={isPending}
         >
           <Feather name="check-circle" size={20} color="#fff" />
-          <Text style={styles.saveBtnText}>{isPending ? "Saving…" : "Save Match"}</Text>
+          <Text style={styles.saveBtnText}>{isPending ? t("common.saving") : t("log.saveMatch")}</Text>
         </TouchableOpacity>
       </View>
 

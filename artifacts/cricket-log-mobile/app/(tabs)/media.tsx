@@ -21,12 +21,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useListMatches } from "@workspace/api-client-react";
 
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import {
   useAllPhotos,
   useAllVideos,
   filterPhotosByCategory,
   stripPrefix,
-  videoUrl,
   SCORECARD_PREFIX,
   CUTTING_PREFIX,
   type PhotoCategory,
@@ -43,11 +43,11 @@ const CELL_SIZE = (SCREEN_W - GRID_GAP * (GRID_COLS + 1)) / GRID_COLS;
 
 type Tab = "photos" | "scorecards" | "cuttings" | "videos";
 
-const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: "photos",     label: "Photos",     icon: "image" },
-  { key: "scorecards", label: "Scorecards", icon: "file-text" },
-  { key: "cuttings",   label: "Cuttings",   icon: "scissors" },
-  { key: "videos",     label: "Videos",     icon: "film" },
+const TABS: { key: Tab; icon: string }[] = [
+  { key: "photos",     icon: "image" },
+  { key: "scorecards", icon: "file-text" },
+  { key: "cuttings",   icon: "scissors" },
+  { key: "videos",     icon: "film" },
 ];
 
 // ── Upload modal ──────────────────────────────────────────────────────────────
@@ -74,6 +74,7 @@ function UploadModal({
   colors,
   matches,
 }: UploadModalProps) {
+  const t = useT();
   const [category, setCategory] = useState<Tab>(defaultCategory);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [caption, setCaption] = useState("");
@@ -113,7 +114,7 @@ function UploadModal({
 
   const handleUpload = async () => {
     if (!imageUri) {
-      Alert.alert("Missing media", "Please pick a photo or video first.");
+      Alert.alert(t("log.missingMedia"), t("log.pickFirst"));
       return;
     }
     setUploading(true);
@@ -178,7 +179,7 @@ function UploadModal({
       reset();
       onSuccess();
     } catch (e: any) {
-      Alert.alert("Upload failed", e.message ?? "Something went wrong");
+      Alert.alert(t("log.uploadFailed"), e.message ?? t("log.somethingWrong"));
     } finally {
       setUploading(false);
     }
@@ -188,7 +189,7 @@ function UploadModal({
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
         <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.modalTitle, { color: colors.foreground }]}>Upload Media</Text>
+          <Text style={[styles.modalTitle, { color: colors.foreground }]}>{t("media.uploadMedia")}</Text>
           <TouchableOpacity onPress={handleClose}>
             <Feather name="x" size={22} color={colors.foreground} />
           </TouchableOpacity>
@@ -196,17 +197,17 @@ function UploadModal({
 
         <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
           {/* Category selector */}
-          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Type</Text>
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>{t("media.type")}</Text>
           <View style={styles.categoryRow}>
-            {TABS.map((t) => (
+            {TABS.map((tab) => (
               <TouchableOpacity
-                key={t.key}
-                onPress={() => setCategory(t.key)}
+                key={tab.key}
+                onPress={() => setCategory(tab.key)}
                 style={[
                   styles.categoryChip,
                   {
                     backgroundColor:
-                      category === t.key ? colors.primary : colors.card,
+                      category === tab.key ? colors.primary : colors.card,
                     borderColor: colors.border,
                   },
                 ]}
@@ -214,19 +215,18 @@ function UploadModal({
                 <Text
                   style={[
                     styles.categoryChipText,
-                    { color: category === t.key ? "#fff" : colors.foreground },
+                    { color: category === tab.key ? "#fff" : colors.foreground },
                   ]}
                 >
-                  {t.label}
+                  {t(`media.${tab.key}` as any)}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Match picker */}
-          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Match (optional)</Text>
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>{t("media.matchOptional")}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.matchPicker}>
-            {/* No match option */}
             <TouchableOpacity
               onPress={() => setSelectedMatchId(null)}
               style={[
@@ -238,10 +238,10 @@ function UploadModal({
               ]}
             >
               <Text style={[styles.matchChipText, { color: selectedMatchId === null ? "#fff" : colors.foreground }]}>
-                No match
+                {t("media.noMatch")}
               </Text>
               <Text style={[styles.matchChipDate, { color: selectedMatchId === null ? "rgba(255,255,255,0.75)" : colors.mutedForeground }]}>
-                General upload
+                {t("media.generalUpload")}
               </Text>
             </TouchableOpacity>
             {matches.map((m) => (
@@ -288,14 +288,14 @@ function UploadModal({
               <View style={styles.imagePickerPlaceholder}>
                 <Feather name={category === "videos" ? "film" : "image"} size={32} color={colors.mutedForeground} />
                 <Text style={[styles.imagePickerText, { color: colors.mutedForeground }]}>
-                  Tap to {category === "videos" ? "pick video" : "pick image"}
+                  {category === "videos" ? t("media.tapPickVideo") : t("media.tapPickImage")}
                 </Text>
               </View>
             )}
           </TouchableOpacity>
 
           {/* Caption */}
-          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Caption (optional)</Text>
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>{t("log.optionalCaption")}</Text>
           <TextInput
             style={[
               styles.captionInput,
@@ -303,7 +303,7 @@ function UploadModal({
             ]}
             value={caption}
             onChangeText={setCaption}
-            placeholder="Add a caption…"
+            placeholder={t("media.addCaptionPlaceholder")}
             placeholderTextColor={colors.mutedForeground}
             multiline
           />
@@ -316,7 +316,7 @@ function UploadModal({
             {uploading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.uploadBtnText}>Upload</Text>
+              <Text style={styles.uploadBtnText}>{t("media.upload")}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -328,6 +328,7 @@ function UploadModal({
 // ── Photo grid cell ───────────────────────────────────────────────────────────
 
 function PhotoCell({ photo, colors }: { photo: MediaPhoto; colors: ReturnType<typeof useColors> }) {
+  const t = useT();
   const [lightbox, setLightbox] = useState(false);
   const cap = stripPrefix(photo.caption);
 
@@ -347,7 +348,7 @@ function PhotoCell({ photo, colors }: { photo: MediaPhoto; colors: ReturnType<ty
             {photo.opponent ? (
               <Text style={styles.lightboxOpponent}>vs {photo.opponent}</Text>
             ) : (
-              <Text style={styles.lightboxOpponent}>General</Text>
+              <Text style={styles.lightboxOpponent}>{t("common.general")}</Text>
             )}
             {cap ? <Text style={styles.lightboxCaption}>{cap}</Text> : null}
             {(photo.date || photo.matchType) ? (
@@ -365,6 +366,7 @@ function PhotoCell({ photo, colors }: { photo: MediaPhoto; colors: ReturnType<ty
 // ── Video card ────────────────────────────────────────────────────────────────
 
 function VideoCard({ video, colors }: { video: MediaVideo; colors: ReturnType<typeof useColors> }) {
+  const t = useT();
   const cap = stripPrefix(video.caption);
   return (
     <View style={[styles.videoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -373,7 +375,7 @@ function VideoCard({ video, colors }: { video: MediaVideo; colors: ReturnType<ty
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[styles.videoOpponent, { color: colors.foreground }]} numberOfLines={1}>
-          {video.opponent ? `vs ${video.opponent}` : "General"}
+          {video.opponent ? `vs ${video.opponent}` : t("common.general")}
         </Text>
         {cap ? (
           <Text style={[styles.videoCaption, { color: colors.mutedForeground }]} numberOfLines={1}>
@@ -394,6 +396,7 @@ function VideoCard({ video, colors }: { video: MediaVideo; colors: ReturnType<ty
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function MediaScreen() {
+  const t = useT();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
@@ -427,10 +430,10 @@ export default function MediaScreen() {
     activeTab === "videos" ? filteredVideos.length === 0 : filteredPhotos.length === 0;
 
   const emptyLabel: Record<Tab, string> = {
-    photos:     "No photos yet — upload one to get started",
-    scorecards: "No scorecards yet — upload your first scorecard",
-    cuttings:   "No newspaper cuttings yet — add your first one",
-    videos:     "No videos yet — upload a highlight",
+    photos:     t("media.noPhotos"),
+    scorecards: t("media.noScorecards"),
+    cuttings:   t("media.noCuttings"),
+    videos:     t("media.noVideos"),
   };
 
   return (
@@ -438,28 +441,28 @@ export default function MediaScreen() {
       {/* Category tabs */}
       <View style={[styles.tabStrip, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabStripInner}>
-          {TABS.map((t) => (
+          {TABS.map((tab) => (
             <TouchableOpacity
-              key={t.key}
-              onPress={() => setActiveTab(t.key)}
+              key={tab.key}
+              onPress={() => setActiveTab(tab.key)}
               style={[
                 styles.tabBtn,
-                activeTab === t.key && { borderBottomColor: colors.primary, borderBottomWidth: 2 },
+                activeTab === tab.key && { borderBottomColor: colors.primary, borderBottomWidth: 2 },
               ]}
             >
               <Feather
-                name={t.icon as any}
+                name={tab.icon as any}
                 size={14}
-                color={activeTab === t.key ? colors.primary : colors.mutedForeground}
+                color={activeTab === tab.key ? colors.primary : colors.mutedForeground}
                 style={{ marginRight: 5 }}
               />
               <Text
                 style={[
                   styles.tabBtnText,
-                  { color: activeTab === t.key ? colors.primary : colors.mutedForeground },
+                  { color: activeTab === tab.key ? colors.primary : colors.mutedForeground },
                 ]}
               >
-                {t.label}
+                {t(`media.${tab.key}` as any)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -474,13 +477,13 @@ export default function MediaScreen() {
           refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
           contentContainerStyle={styles.emptyState}
         >
-          <Feather name={TABS.find((t) => t.key === activeTab)!.icon as any} size={48} color={colors.border} />
+          <Feather name={TABS.find((tab) => tab.key === activeTab)!.icon as any} size={48} color={colors.border} />
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{emptyLabel[activeTab]}</Text>
           <TouchableOpacity
             style={[styles.emptyUploadBtn, { backgroundColor: colors.primary }]}
             onPress={() => setUploadVisible(true)}
           >
-            <Text style={styles.emptyUploadBtnText}>Upload</Text>
+            <Text style={styles.emptyUploadBtnText}>{t("media.upload")}</Text>
           </TouchableOpacity>
         </ScrollView>
       ) : activeTab === "videos" ? (
@@ -614,28 +617,40 @@ const styles = StyleSheet.create({
   categoryChipText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   matchPicker: { marginBottom: 4 },
   matchChip: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginRight: 8,
-    minWidth: 120,
+    minWidth: 100,
   },
   matchChipText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   matchChipDate: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  imagePicker: { borderRadius: 12, borderWidth: 1, borderStyle: "dashed", height: 180, overflow: "hidden", marginBottom: 4 },
+  imagePicker: {
+    height: 180,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    overflow: "hidden",
+    marginVertical: 4,
+  },
+  imagePreview: { width: "100%", height: "100%" },
   imagePickerPlaceholder: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
   imagePickerText: { fontSize: 14, fontFamily: "Inter_400Regular" },
-  imagePreview: { width: "100%", height: "100%" },
   captionInput: {
     borderWidth: 1,
     borderRadius: 10,
-    padding: 12,
-    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
     fontFamily: "Inter_400Regular",
     minHeight: 60,
-    marginBottom: 4,
   },
-  uploadBtn: { borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 8 },
-  uploadBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
+  uploadBtn: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  uploadBtnText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
 });
