@@ -19,6 +19,7 @@ import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
 import { SeasonProvider } from "@/contexts/SeasonContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -72,6 +73,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <AppearanceProvider>
+        <LanguageProvider>
         <SeasonProvider>
         <PlayerNameProvider>
         <TabLabelsProvider>
@@ -85,6 +87,7 @@ export default function RootLayout() {
         </TabLabelsProvider>
         </PlayerNameProvider>
         </SeasonProvider>
+        </LanguageProvider>
         </AppearanceProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

@@ -20,6 +20,8 @@ import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry, type CricketR
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { SUPPORTED_LOCALES, type LocaleCode } from "@/i18n";
 
 const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
   { key: "index",        icon: "bar-chart-2", hint: "Main stats overview" },
@@ -39,6 +41,7 @@ export default function SettingsModal() {
   const router = useRouter();
   const { labels, updateLabel, resetLabels } = useTabLabels();
   const { playerName, saveName } = usePlayerName();
+  const { locale, setLocale } = useLanguage();
 
   const [draftName, setDraftName] = useState(playerName);
   const [draft, setDraft] = useState({ ...labels });
@@ -265,6 +268,35 @@ export default function SettingsModal() {
             />
           </View>
         </Modal>
+
+        <Text style={[styles.heading, { color: colors.foreground }]}>
+          Language
+        </Text>
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border, flexWrap: "wrap" }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="globe" size={18} color={colors.primary} />
+          </View>
+          <View style={[styles.rowBody, { flexDirection: "row", flexWrap: "wrap", gap: 8 }]}>
+            {SUPPORTED_LOCALES.map((loc) => (
+              <TouchableOpacity
+                key={loc.code}
+                style={[
+                  styles.schemeBtn,
+                  {
+                    backgroundColor: locale === loc.code ? colors.primary : colors.muted,
+                    borderColor: locale === loc.code ? colors.primary : colors.border,
+                    paddingHorizontal: 10,
+                  },
+                ]}
+                onPress={() => setLocale(loc.code as LocaleCode)}
+              >
+                <Text style={[styles.schemeBtnText, { color: locale === loc.code ? colors.primaryForeground : colors.mutedForeground }]}>
+                  {loc.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
         <Text style={[styles.heading, { color: colors.foreground }]}>
           Profile
