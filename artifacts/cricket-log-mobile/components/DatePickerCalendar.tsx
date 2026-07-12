@@ -3,6 +3,7 @@ import {
   Dimensions,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,10 +17,13 @@ const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
+const MONTH_SHORT = [
+  "Jan","Feb","Mar","Apr","May","Jun",
+  "Jul","Aug","Sep","Oct","Nov","Dec",
+];
 
-// How many months to generate before and after today
-const MONTHS_BEFORE = 24;
-const MONTHS_AFTER  = 24;
+const MONTHS_BEFORE = 120; // 10 years back
+const MONTHS_AFTER  = 60;  // 5 years forward
 
 const CARD_WIDTH = Math.min(Dimensions.get("window").width - 32, 360);
 
@@ -82,10 +86,10 @@ export function DatePickerCalendar({
   }, []);
 
   const [visibleIndex, setVisibleIndex] = useState(initialIndex);
+  const [showYearPicker, setShowYearPicker] = useState(false);
   const flatRef = useRef<FlatList<MonthEntry>>(null);
 
   useEffect(() => {
-    // Scroll to initial month without animation so it's instant on open
     flatRef.current?.scrollToIndex({ index: initialIndex, animated: false });
   }, []);
 
@@ -100,19 +104,27 @@ export function DatePickerCalendar({
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 });
 
+  const jumpToYear = useCallback(
+    (year: number) => {
+      const idx = months.findIndex((e) => e.year === year && e.month === 0);
+      if (idx >= 0) {
+        flatRef.current?.scrollToIndex({ index: idx, animated: false });
+      }
+      setShowYearPicker(false);
+    },
+    [months],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: MonthEntry }) => {
       const grid = buildGrid(item.year, item.month);
       return (
         <View style={{ width: CARD_WIDTH, paddingHorizontal: 16 }}>
-          {/* Day-of-week headers */}
           <View style={styles.row}>
             {DAY_LABELS.map((l) => (
               <Text key={l} style={[styles.dayHeader, { color: colors.mutedForeground }]}>{l}</Text>
             ))}
           </View>
-
-          {/* Day grid */}
           <View style={styles.grid}>
             {grid.map((d, i) => {
               if (!d) return <View key={i} style={styles.cell} />;
@@ -160,6 +172,16 @@ export function DatePickerCalendar({
 
   const { year: visY, month: visM } = months[visibleIndex] ?? months[initialIndex];
 
+  // Build list of unique years in the months array
+  const years = useMemo(() => {
+    const seen = new Set<number>();
+    const out: number[] = [];
+    for (const m of months) {
+      if (!seen.has(m.year)) { seen.add(m.year); out.push(m.year); }
+    }
+    return out;
+  }, [months]);
+
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
       <Pressable style={styles.backdrop} onPress={onClose}>
@@ -167,39 +189,103 @@ export function DatePickerCalendar({
           style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => {}}
         >
-          {/* Month label */}
+          {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.monthLabel, { color: colors.foreground }]}>
-              {MONTH_NAMES[visM]} {visY}
-            </Text>
-            <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>
-              swipe to change month
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.monthLabel, { color: colors.foreground }]}>
+                {MONTH_NAMES[visM]}
+              </Text>
+              <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>
+                swipe to change month
+              </Text>
+            </View>
+            {/* Year pill — tap to open year picker */}
+            <TouchableOpacity
+              onPress={() => setShowYearPicker((v) => !v)}
+              style={[
+                styles.yearPill,
+                {
+                  backgroundColor: showYearPicker ? colors.primary : colors.muted,
+                  borderColor: showYearPicker ? colors.primary : colors.border,
+                },
+              ]}
+              hitSlop={8}
+            >
+              <Text style={[styles.yearPillText, { color: showYearPicker ? "#fff" : colors.foreground }]}>
+                {visY} ▾
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Swipeable month pages */}
-          <FlatList
-            ref={flatRef}
-            data={months}
-            keyExtractor={(item) => item.key}
-            renderItem={renderItem}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            initialScrollIndex={initialIndex}
-            getItemLayout={(_, index) => ({
-              length: CARD_WIDTH,
-              offset: CARD_WIDTH * index,
-              index,
-            })}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig.current}
-            style={{ width: CARD_WIDTH }}
-            decelerationRate="fast"
-          />
+          {/* Year picker grid */}
+          {showYearPicker ? (
+            <ScrollView
+              style={{ maxHeight: 240 }}
+              contentContainerStyle={styles.yearGrid}
+              showsVerticalScrollIndicator={false}
+            >
+              {years.map((yr) => {
+                const isCurrentYear = yr === visY;
+                const isTodayYear = yr === today.getFullYear();
+                return (
+                  <TouchableOpacity
+                    key={yr}
+                    onPress={() => jumpToYear(yr)}
+                    style={[
+                      styles.yearCell,
+                      isCurrentYear && { backgroundColor: colors.primary, borderRadius: 8 },
+                      !isCurrentYear && isTodayYear && {
+                        borderRadius: 8, borderWidth: 1, borderColor: colors.primary,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.yearCellText,
+                        {
+                          color: isCurrentYear
+                            ? "#fff"
+                            : isTodayYear
+                            ? colors.primary
+                            : colors.foreground,
+                          fontWeight: isCurrentYear ? "700" : "400",
+                        },
+                      ]}
+                    >
+                      {yr}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          ) : (
+            /* Swipeable month pages */
+            <FlatList
+              ref={flatRef}
+              data={months}
+              keyExtractor={(item) => item.key}
+              renderItem={renderItem}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              initialScrollIndex={initialIndex}
+              getItemLayout={(_, index) => ({
+                length: CARD_WIDTH,
+                offset: CARD_WIDTH * index,
+                index,
+              })}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig.current}
+              style={{ width: CARD_WIDTH }}
+              decelerationRate="fast"
+            />
+          )}
 
           {/* Cancel */}
-          <TouchableOpacity onPress={onClose} style={[styles.cancelBtn, { borderColor: colors.border }]}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={[styles.cancelBtn, { borderColor: colors.border }]}
+          >
             <Text style={[styles.cancelText, { color: colors.mutedForeground }]}>Cancel</Text>
           </TouchableOpacity>
         </Pressable>
@@ -228,16 +314,49 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
   },
   monthLabel: { fontSize: 17, fontWeight: "700" },
   swipeHint: { fontSize: 11, marginTop: 2 },
+  yearPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginLeft: 10,
+  },
+  yearPillText: { fontSize: 15, fontWeight: "600" },
+  yearGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    gap: 4,
+  },
+  yearCell: {
+    width: (CARD_WIDTH - 48) / 4,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  yearCellText: { fontSize: 15 },
   row: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 4,
   },
-  dayHeader: { width: CELL_SIZE, textAlign: "center", fontSize: 12, fontWeight: "600" },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-around" },
+  dayHeader: {
+    width: CELL_SIZE,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+  },
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
@@ -247,12 +366,12 @@ const styles = StyleSheet.create({
   },
   dayNum: { fontSize: 15 },
   cancelBtn: {
-    marginTop: 14,
     marginHorizontal: 16,
     borderTopWidth: 1,
     paddingTop: 12,
     paddingBottom: 14,
     alignItems: "center",
+    marginTop: 8,
   },
   cancelText: { fontSize: 15 },
 });
