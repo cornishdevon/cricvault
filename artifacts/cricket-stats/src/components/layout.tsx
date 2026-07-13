@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun, ArrowUp } from "lucide-react";
+import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun, ArrowUp, Sparkles } from "lucide-react";
 
 const DASHBOARD_SHORTCUTS = [
   { label: "📊 Stats", anchor: "stats" },
@@ -121,6 +121,7 @@ export function Layout({ children }: { children: ReactNode }) {
     { href: "/achievements", label: "Badges", icon: Medal, exact: false },
     { href: "/coaching", label: "Coaching", icon: BookOpen, exact: false },
     { href: "/matches/new", label: "Log Match", icon: PlusCircle, exact: true },
+    { href: "/upgrade", label: "Pro", icon: Sparkles, exact: false },
   ];
 
   return (
@@ -138,12 +139,17 @@ export function Layout({ children }: { children: ReactNode }) {
                 ? location === item.href
                 : location === item.href || location.startsWith(item.href + "/");
               const isLog = item.href === "/matches/new";
+              const isPro = item.href === "/upgrade";
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors whitespace-nowrap ${
-                    isLog
+                    isPro
+                      ? isActive
+                        ? "bg-amber-500 text-white"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                      : isLog
                       ? isActive
                         ? "bg-primary text-primary-foreground"
                         : "bg-primary/10 text-primary hover:bg-primary/20"
@@ -175,6 +181,13 @@ export function Layout({ children }: { children: ReactNode }) {
             className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
           >
             Privacy Policy
+          </Link>
+          <span className="mx-2 text-muted-foreground/40">·</span>
+          <Link
+            href="/upgrade"
+            className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline-offset-4 hover:underline"
+          >
+            Upgrade to Pro
           </Link>
         </div>
       </footer>
