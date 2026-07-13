@@ -32,6 +32,7 @@ import {
   getListMatchVideosQueryKey,
   getListMatchesQueryKey,
   getGetStatsSummaryQueryKey,
+  getGetPerMatchStatsQueryKey,
 } from "@workspace/api-client-react";
 import { useUpload } from "@workspace/object-storage-web";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -147,6 +148,7 @@ function BattingTab({ matchId }: { matchId: number }) {
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
       qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+      qc.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
     };
     if (hasStats) {
       updateBatting.mutate(
@@ -348,6 +350,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
       qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+      qc.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
     };
     if (hasStats) {
       updateBowling.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Bowling stats updated" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
@@ -508,6 +511,7 @@ function FieldingTab({ matchId }: { matchId: number }) {
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetFieldingStatsQueryKey(matchId) });
       qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+      qc.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
     };
     if (hasStats) {
       updateFielding.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Fielding stats updated" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
@@ -1201,6 +1205,7 @@ export default function MatchDetail() {
           qc.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
           qc.invalidateQueries({ queryKey: getListMatchesQueryKey() });
           qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+          qc.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
           setEditingHeader(false);
           toast({ title: "Match details updated" });
         },
