@@ -854,6 +854,11 @@ export default function DashboardScreen() {
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
       triggerCountUp(careerRuns);
       triggerSeasonFlaps(seasonRuns, seasonWickets, seasonCatches, seasonMatches);
       animateProgress(runsPct);
