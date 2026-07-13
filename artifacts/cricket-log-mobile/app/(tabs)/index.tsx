@@ -1366,10 +1366,19 @@ export default function DashboardScreen() {
         </>
       ) : !isLoading ? (
         <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>🏏</Text>
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("home.noMatchesYet")}</Text>
           <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
             {t("home.emptyLogPrompt")}
           </Text>
+          <TouchableOpacity
+            style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
+            onPress={() => router.push("/log")}
+          >
+            <Text style={[styles.emptyBtnText, { color: colors.primaryForeground }]}>
+              {t("home.logFirstMatchBtn")}
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : null}
     </ScrollView>
@@ -1648,8 +1657,11 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginLeft: 8 },
   badgeText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   emptyState: { alignItems: "center", marginTop: 60, paddingHorizontal: 40 },
+  emptyIcon: { fontSize: 48, marginBottom: 16 },
   emptyTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", marginBottom: 6 },
-  emptySub: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
+  emptySub: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20, marginBottom: 24 },
+  emptyBtn: { paddingHorizontal: 28, paddingVertical: 12, borderRadius: 12 },
+  emptyBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
 
   // Shortcut pills
   pillsRow: {

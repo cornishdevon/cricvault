@@ -95,6 +95,7 @@ export default {
     streakBanner: "🔥 Op 'n rol — %{n} beurtjies op 'n ry met 30+",
     shareStats: "Deel %{season} statistieke",
     inn: "beurt",
+    logFirstMatchBtn: "Meld Jou Eerste Wedstryd Aan",
     emptyLogPrompt: "Tik Meld Wedstryd aan om jou eerste wedstryd te rekord",
     careerRuns: "Loopbaanlopies",
     runsProgress: "Lopies — %{current} / %{target}",

@@ -95,6 +95,7 @@ export default {
     streakBanner: "🔥 شاندار فارم میں — %{n} اننگز میں مسلسل 30+",
     shareStats: "%{season} کے اعداد و شمار شیئر کریں",
     inn: "اننگ",
+    logFirstMatchBtn: "اپنا پہلا میچ لاگ کریں",
     emptyLogPrompt: "پہلا میچ ریکارڈ کرنے کے لیے 'میچ لاگ' ٹیپ کریں",
     careerRuns: "کیرئیر رنز",
     runsProgress: "رنز — %{current} / %{target}",

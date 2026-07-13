@@ -96,6 +96,7 @@ export default {
     shareStats: "Share %{season} stats",
     inn: "inn",
     emptyLogPrompt: "Tap Log Match to record your first match",
+    logFirstMatchBtn: "Log Your First Match",
     careerRuns: "Career Runs",
     runsProgress: "Runs — %{current} / %{target}",
     wicketsProgress: "Wickets — %{current} / %{target}",

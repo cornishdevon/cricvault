@@ -95,6 +95,7 @@ export default {
     streakBanner: "🔥 দুর্দান্ত ফর্মে — %{n} ইনিংসে ধারাবাহিকভাবে ৩০+",
     shareStats: "%{season}-এর পরিসংখ্যান শেয়ার করুন",
     inn: "ইনি.",
+    logFirstMatchBtn: "প্রথম ম্যাচ লগ করুন",
     emptyLogPrompt: "প্রথম ম্যাচ রেকর্ড করতে 'ম্যাচ লগ' ট্যাপ করুন",
     careerRuns: "ক্যারিয়ার রান",
     runsProgress: "রান — %{current} / %{target}",

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck } from "lucide-react";
 
-const LAST_UPDATED = "July 8, 2026";
+const LAST_UPDATED = "July 13, 2026";
 
 export default function PrivacyPolicy() {
   return (

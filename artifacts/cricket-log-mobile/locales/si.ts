@@ -95,6 +95,7 @@ export default {
     streakBanner: "🔥 හොඳ ස්වරූපයේ — %{n} ඉනිම් වල 30+",
     shareStats: "%{season} සංඛ්‍යාලේඛන බෙදාහදා ගන්න",
     inn: "ඉනිම",
+    logFirstMatchBtn: "ඔබේ පළමු තරගය ලොග් කරන්න",
     emptyLogPrompt: "පළමු තරගය ලොග් කිරීමට 'Match Log' 누르න්න",
     careerRuns: "වෘත්තීය ලකුණු",
     runsProgress: "ලකුණු — %{current} / %{target}",

@@ -96,6 +96,7 @@ export default {
     shareStats: "%{season} के आँकड़े शेयर करें",
     inn: "पारी",
     emptyLogPrompt: "पहला मैच दर्ज करने के लिए 'मैच लॉग' टैप करें",
+    logFirstMatchBtn: "पहला मैच लॉग करें",
     careerRuns: "करियर रन",
     runsProgress: "रन — %{current} / %{target}",
     wicketsProgress: "विकेट — %{current} / %{target}",
