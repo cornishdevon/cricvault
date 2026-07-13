@@ -19,7 +19,9 @@ const MONTH_NAMES = [
 ];
 
 const START_YEAR = 1990;
-const CARD_WIDTH = Math.min(Dimensions.get("window").width - 32, 360);
+const CARD_WIDTH  = Math.min(Dimensions.get("window").width - 32, 360);
+const INNER_WIDTH = CARD_WIDTH - 32;          // 16px padding each side
+const CELL_SIZE   = Math.floor(INNER_WIDTH / 7); // exactly 1/7th, whole px
 
 function isoToDate(iso: string): Date | null {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -293,8 +295,6 @@ export function DatePickerCalendar({
   );
 }
 
-const CELL_SIZE = 40;
-
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
@@ -337,9 +337,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   yearCellText: { fontSize: 15 },
+  // Header row: exactly 7 equal columns, no flex trickery
   row: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    width: CELL_SIZE * 7,
+    alignSelf: "center",
     marginBottom: 4,
   },
   dayHeader: {
@@ -348,10 +350,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  // Grid: fixed to 7 columns, wrap is guaranteed at the right boundary
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-around",
+    width: CELL_SIZE * 7,
+    alignSelf: "center",
   },
   cell: {
     width: CELL_SIZE,
