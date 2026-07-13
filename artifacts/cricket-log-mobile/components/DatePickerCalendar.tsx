@@ -17,14 +17,8 @@ const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
-const MONTH_SHORT = [
-  "Jan","Feb","Mar","Apr","May","Jun",
-  "Jul","Aug","Sep","Oct","Nov","Dec",
-];
 
-const MONTHS_BEFORE = 120; // 10 years back
-const MONTHS_AFTER  = 60;  // 5 years forward
-
+const START_YEAR = 1990;
 const CARD_WIDTH = Math.min(Dimensions.get("window").width - 32, 360);
 
 function isoToDate(iso: string): Date | null {
@@ -53,12 +47,12 @@ type MonthEntry = { year: number; month: number; key: string };
 function generateMonths(): MonthEntry[] {
   const today = new Date();
   const entries: MonthEntry[] = [];
-  for (let i = -MONTHS_BEFORE; i <= MONTHS_AFTER; i++) {
-    let m = today.getMonth() + i;
-    let y = today.getFullYear();
-    y += Math.floor(m / 12);
-    m = ((m % 12) + 12) % 12;
-    entries.push({ year: y, month: m, key: `${y}-${m}` });
+  // From January START_YEAR up to and including current month
+  for (let y = START_YEAR; y <= today.getFullYear(); y++) {
+    const maxM = y === today.getFullYear() ? today.getMonth() : 11;
+    for (let m = 0; m <= maxM; m++) {
+      entries.push({ year: y, month: m, key: `${y}-${m}` });
+    }
   }
   return entries;
 }
@@ -82,7 +76,7 @@ export function DatePickerCalendar({
     const sy = selected?.getFullYear() ?? today.getFullYear();
     const sm = selected?.getMonth() ?? today.getMonth();
     const idx = months.findIndex((e) => e.year === sy && e.month === sm);
-    return idx >= 0 ? idx : MONTHS_BEFORE;
+    return idx >= 0 ? idx : months.length - 1;
   }, []);
 
   const [visibleIndex, setVisibleIndex] = useState(initialIndex);
@@ -106,9 +100,11 @@ export function DatePickerCalendar({
 
   const jumpToYear = useCallback(
     (year: number) => {
-      const idx = months.findIndex((e) => e.year === year && e.month === 0);
+      // Jump to January of that year (or first available month)
+      const idx = months.findIndex((e) => e.year === year);
       if (idx >= 0) {
         flatRef.current?.scrollToIndex({ index: idx, animated: false });
+        setVisibleIndex(idx);
       }
       setShowYearPicker(false);
     },
@@ -170,9 +166,9 @@ export function DatePickerCalendar({
     [colors, selected],
   );
 
-  const { year: visY, month: visM } = months[visibleIndex] ?? months[initialIndex];
+  const { year: visY, month: visM } = months[visibleIndex] ?? months[months.length - 1];
 
-  // Build list of unique years in the months array
+  // All available years
   const years = useMemo(() => {
     const seen = new Set<number>();
     const out: number[] = [];
@@ -181,6 +177,10 @@ export function DatePickerCalendar({
     }
     return out;
   }, [months]);
+
+  // 4 columns for year grid
+  const YEAR_COLS = 4;
+  const yearCellWidth = Math.floor((CARD_WIDTH - 32) / YEAR_COLS);
 
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
@@ -195,11 +195,13 @@ export function DatePickerCalendar({
               <Text style={[styles.monthLabel, { color: colors.foreground }]}>
                 {MONTH_NAMES[visM]}
               </Text>
-              <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>
-                swipe to change month
-              </Text>
+              {!showYearPicker && (
+                <Text style={[styles.swipeHint, { color: colors.mutedForeground }]}>
+                  swipe to change month
+                </Text>
+              )}
             </View>
-            {/* Year pill — tap to open year picker */}
+            {/* Year pill */}
             <TouchableOpacity
               onPress={() => setShowYearPicker((v) => !v)}
               style={[
@@ -212,7 +214,7 @@ export function DatePickerCalendar({
               hitSlop={8}
             >
               <Text style={[styles.yearPillText, { color: showYearPicker ? "#fff" : colors.foreground }]}>
-                {visY} ▾
+                {visY} {showYearPicker ? "▴" : "▾"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -220,12 +222,13 @@ export function DatePickerCalendar({
           {/* Year picker grid */}
           {showYearPicker ? (
             <ScrollView
-              style={{ maxHeight: 240 }}
-              contentContainerStyle={styles.yearGrid}
+              style={{ maxHeight: 244 }}
+              contentContainerStyle={[styles.yearGrid, { paddingHorizontal: 16 }]}
               showsVerticalScrollIndicator={false}
+              nestedScrollEnabled
             >
-              {years.map((yr) => {
-                const isCurrentYear = yr === visY;
+              {years.map((yr, i) => {
+                const isSelected = yr === visY;
                 const isTodayYear = yr === today.getFullYear();
                 return (
                   <TouchableOpacity
@@ -233,8 +236,9 @@ export function DatePickerCalendar({
                     onPress={() => jumpToYear(yr)}
                     style={[
                       styles.yearCell,
-                      isCurrentYear && { backgroundColor: colors.primary, borderRadius: 8 },
-                      !isCurrentYear && isTodayYear && {
+                      { width: yearCellWidth, marginBottom: 4 },
+                      isSelected && { backgroundColor: colors.primary, borderRadius: 8 },
+                      !isSelected && isTodayYear && {
                         borderRadius: 8, borderWidth: 1, borderColor: colors.primary,
                       },
                     ]}
@@ -243,12 +247,8 @@ export function DatePickerCalendar({
                       style={[
                         styles.yearCellText,
                         {
-                          color: isCurrentYear
-                            ? "#fff"
-                            : isTodayYear
-                            ? colors.primary
-                            : colors.foreground,
-                          fontWeight: isCurrentYear ? "700" : "400",
+                          color: isSelected ? "#fff" : isTodayYear ? colors.primary : colors.foreground,
+                          fontWeight: isSelected ? "700" : "400",
                         },
                       ]}
                     >
@@ -259,7 +259,6 @@ export function DatePickerCalendar({
               })}
             </ScrollView>
           ) : (
-            /* Swipeable month pages */
             <FlatList
               ref={flatRef}
               data={months}
@@ -330,12 +329,9 @@ const styles = StyleSheet.create({
   yearGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 12,
     paddingBottom: 8,
-    gap: 4,
   },
   yearCell: {
-    width: (CARD_WIDTH - 48) / 4,
     height: 44,
     alignItems: "center",
     justifyContent: "center",
