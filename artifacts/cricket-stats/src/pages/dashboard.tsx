@@ -583,8 +583,9 @@ export default function Dashboard() {
 
   const filteredData = useMemo(() => {
     if (!perMatch) return [];
-    if (selectedSeason === "all") return perMatch;
-    return perMatch.filter((d) => d.date.startsWith(selectedSeason));
+    const base = perMatch.filter((d) => d.matchType !== "Back Garden");
+    if (selectedSeason === "all") return base;
+    return base.filter((d) => d.date.startsWith(selectedSeason));
   }, [perMatch, selectedSeason]);
 
   const hasMatchData = filteredData.length > 0;

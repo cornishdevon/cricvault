@@ -10,7 +10,7 @@ import {
   videosTable,
   coachingTipsTable,
 } from "@workspace/db";
-import { eq, desc, sum, max, count } from "drizzle-orm";
+import { eq, ne, desc, sum, max, count } from "drizzle-orm";
 
 const router = Router();
 
@@ -474,13 +474,19 @@ router.get("/stats/per-match", async (req, res) => {
 // ── Stats Summary ─────────────────────────────────────────────────────────────
 
 router.get("/stats/summary", async (req, res) => {
+  // Exclude "Back Garden" matches from all career stats
+  const bgIds = new Set(
+    (await db.select({ id: matchesTable.id }).from(matchesTable).where(eq(matchesTable.matchType, "Back Garden"))).map((m) => m.id)
+  );
+
   const [matchCount] = await db
     .select({ total: count() })
-    .from(matchesTable);
+    .from(matchesTable)
+    .where(ne(matchesTable.matchType, "Back Garden"));
 
-  const battingRows = await db.select().from(battingStatsTable);
-  const bowlingRows = await db.select().from(bowlingStatsTable);
-  const fieldingRows = await db.select().from(fieldingStatsTable);
+  const battingRows = (await db.select().from(battingStatsTable)).filter((r) => !bgIds.has(r.matchId));
+  const bowlingRows = (await db.select().from(bowlingStatsTable)).filter((r) => !bgIds.has(r.matchId));
+  const fieldingRows = (await db.select().from(fieldingStatsTable)).filter((r) => !bgIds.has(r.matchId));
 
   const totalMatches = matchCount.total;
 
@@ -558,7 +564,7 @@ router.get("/stats/summary", async (req, res) => {
   const totalRunOuts = fieldingRows.reduce((s, r) => s + r.runOuts, 0);
   const totalStumpings = fieldingRows.reduce((s, r) => s + r.stumpings, 0);
 
-  const allMatches = await db.select().from(matchesTable);
+  const allMatches = await db.select().from(matchesTable).where(ne(matchesTable.matchType, "Back Garden"));
   const potmCount = allMatches.filter((m) => m.playerOfTheMatch).length;
 
   res.json({

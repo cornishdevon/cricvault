@@ -108,7 +108,7 @@ const CAUGHT_POSITIONS = [
 const MATCH_TYPES = [
   "League", "Cup", "Friendly", "County", "Country",
   "T20", "ODI", "Test", "The Hundred", "Tournament",
-  "Practice", "School", "Social", "Other",
+  "Practice", "School", "Social", "Back Garden", "Other",
 ];
 const PITCH_TYPES = ["Flat", "Good", "Uneven", "Slow", "Fast", "Wet", "Dusty"];
 const WEATHER_OPTIONS = ["Sunny", "Overcast", "Humid", "Windy", "Hot", "Cold", "Drizzle"];

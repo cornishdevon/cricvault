@@ -654,7 +654,7 @@ function RecentPerformanceChart({ data }: { data: PerMatchStat[] }) {
 
 export default function AnalysisPage() {
   const { data: perMatch, isLoading } = useGetPerMatchStats();
-  const data = (perMatch ?? []) as PerMatchStat[];
+  const data = ((perMatch ?? []) as PerMatchStat[]).filter((d) => d.matchType !== "Back Garden");
   const [selectedOpponent, setSelectedOpponent] = useState<string>("all");
 
   const opponents = useMemo(() => {

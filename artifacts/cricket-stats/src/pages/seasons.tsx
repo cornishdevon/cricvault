@@ -104,7 +104,7 @@ function buildSeasons(data: PerMatchStat[]): SeasonRow[] {
 export default function SeasonsPage() {
   const { data: perMatch, isLoading } = useGetPerMatchStats();
 
-  const seasons = useMemo(() => buildSeasons(perMatch ?? []), [perMatch]);
+  const seasons = useMemo(() => buildSeasons((perMatch ?? []).filter((d) => d.matchType !== "Back Garden")), [perMatch]);
 
   const chartData = [...seasons].reverse().map((s) => ({
     season: s.season,

@@ -26,7 +26,7 @@ import { useUpload } from "@workspace/object-storage-web";
 const MATCH_TYPES = [
   "League", "Cup", "Friendly", "County", "Country",
   "T20", "ODI", "Test", "The Hundred", "Tournament",
-  "Practice", "School", "Social", "Other",
+  "Practice", "School", "Social", "Back Garden", "Other",
 ];
 
 // ── Step 2: Media upload ───────────────────────────────────────────────────────

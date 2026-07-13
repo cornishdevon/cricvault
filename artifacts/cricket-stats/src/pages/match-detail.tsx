@@ -46,7 +46,7 @@ const RESULT_OPTIONS = ["Win", "Loss", "Draw", "Tie", "No Result", "Abandoned"];
 const MATCH_TYPES = [
   "League", "Cup", "Friendly", "County", "Country",
   "T20", "ODI", "Test", "The Hundred", "Tournament",
-  "Practice", "School", "Social", "Other",
+  "Practice", "School", "Social", "Back Garden", "Other",
 ];
 
 const HOW_OUT_SUGGESTIONS = [

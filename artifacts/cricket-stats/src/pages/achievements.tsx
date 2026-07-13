@@ -38,7 +38,7 @@ export default function AchievementsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Achievements data={perMatch} />
+        <Achievements data={(perMatch ?? []).filter((d) => (d as any).matchType !== "Back Garden")} />
       )}
     </div>
   );
