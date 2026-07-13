@@ -90,6 +90,9 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
 
   const notOuts = sorted.filter((d) => d.howOut === "Not Out");
 
+  const rainStoppedPlayMatch = sorted.find((d) => d.result?.toLowerCase().includes("abandon"));
+  const rainStoppedPlayEarned = !!rainStoppedPlayMatch;
+
   const bucketHandsEarned = sorted.some((d) => (d.catches ?? 0) >= 3);
   const magicianEarned    = sorted.some((d) => d.hatTrick === true);
   const bigHitterEarned   = sorted.some((d) => (d.sixes ?? 0) >= 5);
@@ -282,6 +285,7 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "safegloves",  label: "Safe Gloves",  description: "5 career stumpings as keeper", icon: "🥅", earned: careerStumpings >= 5, detail: careerStumpings >= 5 ? `${careerStumpings} stumpings` : undefined },
 
     { id: "potm",        label: "Player of the Match", description: "Awarded POTM",                          icon: "⭐", imageKey: "playerOfTheMatch", earned: potmEarned, detail: potmMatches.length > 1 ? `${potmMatches.length}× POTM` : undefined },
+    { id: "rainStoppedPlay", label: "Rain Stopped Play", description: "Played in an abandoned match",      icon: "🌧️", imageKey: "rainStoppedPlay", earned: rainStoppedPlayEarned, detail: rainStoppedPlayMatch ? `vs ${rainStoppedPlayMatch.opponent}` : undefined },
     { id: "allRounder",  label: "All Rounder",         description: "30 runs & 3 wkts in one game",         icon: "🌟", earned: allRounderEarned },
     { id: "matchWinner", label: "Match Winner",         description: "8 wins in any 10-match window",        icon: "🥇", earned: matchWinnerEarned, detail: matchWinnerDetail || undefined },
 

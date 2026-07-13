@@ -1096,7 +1096,7 @@ export default function LogMatchScreen() {
             <Input
               value={matchForm.result}
               onChangeText={(v) => updateMatch("result", v)}
-              placeholder="e.g. Won by 5 wickets"
+              placeholder="e.g. Won by 5 wickets, Abandoned"
             />
           </Field>
 

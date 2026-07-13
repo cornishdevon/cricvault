@@ -38,6 +38,7 @@ const BADGE_IMAGES: Record<string, ReturnType<typeof require>> = {
   "doubleCentury":      require("@/assets/badges/doubleCentury.png"),
   "tripleCentury":      require("@/assets/badges/tripleCentury.png"),
   "quadrupleCentury":   require("@/assets/badges/quadrupleCentury.png"),
+  "rainStoppedPlay":    require("@/assets/badges/rainStoppedPlay.png"),
 };
 
 function BadgeTile({
