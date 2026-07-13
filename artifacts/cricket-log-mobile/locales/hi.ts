@@ -105,6 +105,9 @@ export default {
     won: "W",
     lost: "L",
     milestone: "मील",
+    batting: "बल्लेबाज़ी",
+    bowling: "गेंदबाज़ी",
+    fifties: "अर्धशतक",
   },
   log: {
     title: "मैच लॉग करें",

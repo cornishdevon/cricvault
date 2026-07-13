@@ -105,6 +105,9 @@ export default {
     won: "W",
     lost: "L",
     milestone: "සන්ධිස්ථාන",
+    batting: "පිතිකාරීත්වය",
+    bowling: "බෝල් ක්‍රීඩාව",
+    fifties: "පනස්",
   },
   log: {
     title: "තරගය ලොග් කරන්න",

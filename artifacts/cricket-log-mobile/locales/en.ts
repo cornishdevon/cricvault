@@ -105,6 +105,9 @@ export default {
     won: "W",
     lost: "L",
     milestone: "milestone",
+    batting: "Batting",
+    bowling: "Bowling",
+    fifties: "Fifties",
   },
   log: {
     title: "Log Match",

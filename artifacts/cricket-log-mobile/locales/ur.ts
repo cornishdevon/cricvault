@@ -105,6 +105,9 @@ export default {
     won: "W",
     lost: "L",
     milestone: "سنگ میل",
+    batting: "بیٹنگ",
+    bowling: "باؤلنگ",
+    fifties: "فٖفٹیاں",
   },
   log: {
     title: "میچ لاگ کریں",

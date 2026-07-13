@@ -105,6 +105,9 @@ export default {
     won: "W",
     lost: "L",
     milestone: "মাইলফলক",
+    batting: "ব্যাটিং",
+    bowling: "বোলিং",
+    fifties: "ফিফটি",
   },
   log: {
     title: "ম্যাচ লগ করুন",
