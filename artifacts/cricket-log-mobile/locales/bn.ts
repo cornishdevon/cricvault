@@ -107,7 +107,7 @@ export default {
     milestone: "মাইলফলক",
     batting: "ব্যাটিং",
     bowling: "বোলিং",
-    fifties: "ফিফটি",
+    fifties: "50's",
   },
   log: {
     title: "ম্যাচ লগ করুন",

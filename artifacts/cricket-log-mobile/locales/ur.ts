@@ -107,7 +107,7 @@ export default {
     milestone: "سنگ میل",
     batting: "بیٹنگ",
     bowling: "باؤلنگ",
-    fifties: "فٖفٹیاں",
+    fifties: "50's",
   },
   log: {
     title: "میچ لاگ کریں",

@@ -107,7 +107,7 @@ export default {
     milestone: "mylpaal",
     batting: "Kolwer",
     bowling: "Boulwerk",
-    fifties: "Halfeeue",
+    fifties: "50's",
   },
   log: {
     title: "Meld Wedstryd Aan",
