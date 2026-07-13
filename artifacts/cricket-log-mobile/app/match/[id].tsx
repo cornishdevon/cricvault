@@ -442,6 +442,8 @@ export default function MatchDetailScreen() {
 
   // Match fields
   const [editOpponent, setEditOpponent] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editMatchType, setEditMatchType] = useState("");
   const [editVenue, setEditVenue] = useState("");
   const [editResult, setEditResult] = useState("");
   const [editNotes, setEditNotes] = useState("");
@@ -469,6 +471,8 @@ export default function MatchDetailScreen() {
   const enterEditMode = () => {
     const m = match as any;
     setEditOpponent(m?.opponent ?? "");
+    setEditDate(m?.date ?? "");
+    setEditMatchType(m?.matchType ?? "");
     setEditVenue(m?.venue ?? "");
     setEditResult(m?.result ?? "");
     setEditNotes(m?.notes ?? "");
@@ -515,6 +519,8 @@ export default function MatchDetailScreen() {
               matchId,
               data: {
                 opponent: editOpponent || undefined,
+                date: editDate || undefined,
+                matchType: editMatchType || undefined,
                 venue: editVenue || undefined,
                 result: editResult || undefined,
                 notes: editNotes || undefined,
@@ -761,6 +767,17 @@ export default function MatchDetailScreen() {
           <Text style={styles.potm}>⭐ Player of the Match</Text>
         ) : null}
       </View>
+
+      {/* Match Details (editable in edit mode) */}
+      {editMode ? (
+        <Card title="Match Details" icon="edit-2" colors={colors}>
+          <EditableRow label="Opponent" value={(match as any).opponent} editValue={editOpponent} onChangeText={setEditOpponent} editing={editMode} colors={colors} />
+          <EditableRow label="Date (YYYY-MM-DD)" value={(match as any).date} editValue={editDate} onChangeText={setEditDate} editing={editMode} colors={colors} />
+          <EditableRow label="Match Type" value={(match as any).matchType} editValue={editMatchType} onChangeText={setEditMatchType} editing={editMode} colors={colors} />
+          <EditableRow label="Result" value={(match as any).result} editValue={editResult} onChangeText={setEditResult} editing={editMode} colors={colors} />
+          <EditableRow label="Venue" value={(match as any).venue} editValue={editVenue} onChangeText={setEditVenue} editing={editMode} colors={colors} />
+        </Card>
+      ) : null}
 
       {/* Batting */}
       {batting ? (

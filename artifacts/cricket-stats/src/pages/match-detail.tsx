@@ -43,6 +43,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FreeTextSelect } from "@/components/ui/free-text-select";
 
+const RESULT_OPTIONS = ["Win", "Loss", "Draw", "Tie", "No Result", "Abandoned"];
+const MATCH_TYPE_SUGGESTIONS = [
+  "Club", "League", "Cup", "T20", "ODI", "Test", "Friendly", "Social",
+  "Tournament", "Charity", "Practice", "School", "Indoor", "Beach",
+  "Backyard", "Street", "Garden", "Tape ball", "Tennis ball",
+  "The Hundred", "Twenty20", "Ten10",
+];
+
 const HOW_OUT_SUGGESTIONS = [
   // Standard
   "Bowled", "Caught", "Caught Behind", "LBW", "Run Out", "Stumped",
@@ -57,7 +65,7 @@ const HOW_OUT_SUGGESTIONS = [
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Trash2, Save, X, Share2 } from "lucide-react";
+import { ArrowLeft, Trash2, Save, X, Share2, Pencil } from "lucide-react";
 import { Link } from "wouter";
 import { safeFormatDate } from "@/lib/utils";
 
@@ -1155,6 +1163,54 @@ export default function MatchDetail() {
   const deleteMatch = useDeleteMatch();
   const updateMatch = useUpdateMatch();
 
+  const [editingHeader, setEditingHeader] = useState(false);
+  const [hOpponent, setHOpponent] = useState("");
+  const [hDate, setHDate] = useState("");
+  const [hMatchType, setHMatchType] = useState("");
+  const [hResult, setHResult] = useState("");
+  const [hVenue, setHVenue] = useState("");
+  const [hPlayingFor, setHPlayingFor] = useState("");
+  const [hSeries, setHSeries] = useState("");
+
+  const handleEditHeader = () => {
+    const m = match as any;
+    setHOpponent(m.opponent ?? "");
+    setHDate(m.date ?? "");
+    setHMatchType(m.matchType ?? "");
+    setHResult(m.result ?? "");
+    setHVenue(m.venue ?? "");
+    setHPlayingFor(m.playingFor ?? "");
+    setHSeries(m.series ?? "");
+    setEditingHeader(true);
+  };
+
+  const handleSaveHeader = () => {
+    updateMatch.mutate(
+      {
+        matchId,
+        data: {
+          opponent: hOpponent || undefined,
+          date: hDate || undefined,
+          matchType: hMatchType || undefined,
+          result: hResult || undefined,
+          venue: hVenue || undefined,
+          playingFor: hPlayingFor || undefined,
+          series: hSeries || undefined,
+        } as any,
+      },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
+          qc.invalidateQueries({ queryKey: getListMatchesQueryKey() });
+          qc.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+          setEditingHeader(false);
+          toast({ title: "Match details updated" });
+        },
+        onError: () => toast({ title: "Failed to save", variant: "destructive" }),
+      }
+    );
+  };
+
   const handleShare = async () => {
     if (!match) return;
     const m = match as any;
@@ -1269,6 +1325,14 @@ export default function MatchDetail() {
           </p>
         </div>
         <div className="flex items-center gap-2 mt-1">
+          {/* Edit match details */}
+          <button
+            title="Edit match details"
+            onClick={handleEditHeader}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
           {/* Player of the Match toggle */}
           <button
             title={(match as any).playerOfTheMatch ? "Remove Player of the Match" : "Mark as Player of the Match"}
@@ -1306,6 +1370,69 @@ export default function MatchDetail() {
           </button>
         </div>
       </div>
+
+      {editingHeader && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Edit Match Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Opponent</Label>
+                <Input placeholder="e.g. Riverside CC" value={hOpponent} onChange={(e) => setHOpponent(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Date</Label>
+                <Input type="date" value={hDate} onChange={(e) => setHDate(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Match Type</Label>
+                <FreeTextSelect
+                  value={hMatchType}
+                  onChange={setHMatchType}
+                  suggestions={MATCH_TYPE_SUGGESTIONS}
+                  placeholder="e.g. T20, Club…"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Result</Label>
+                <Select value={hResult} onValueChange={setHResult}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select result…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Not set</SelectItem>
+                    {RESULT_OPTIONS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Venue</Label>
+                <Input placeholder="e.g. Lords, Home Ground…" value={hVenue} onChange={(e) => setHVenue(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Playing For</Label>
+                <Input placeholder="e.g. My Club XI" value={hPlayingFor} onChange={(e) => setHPlayingFor(e.target.value)} />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Series / Competition</Label>
+                <Input placeholder="e.g. County League 2025" value={hSeries} onChange={(e) => setHSeries(e.target.value)} />
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button onClick={handleSaveHeader} disabled={updateMatch.isPending}>
+                <Save className="h-4 w-4 mr-2" /> Save
+              </Button>
+              <Button variant="outline" onClick={() => setEditingHeader(false)}>
+                <X className="h-4 w-4 mr-2" /> Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="batting" className="w-full">
         <TabsList className="w-full sm:w-auto flex-wrap h-auto gap-1">
