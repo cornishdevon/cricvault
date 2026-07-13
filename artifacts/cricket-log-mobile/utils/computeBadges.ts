@@ -84,7 +84,8 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const first100 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 100 && r < 150; });
   const first150 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 150 && r < 200; });
   const first200 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 200 && r < 300; });
-  const first300 = battingInnings.find((d) => (d.runs ?? 0) >= 300);
+  const first300 = battingInnings.find((d) => { const r = d.runs ?? 0; return r >= 300 && r < 400; });
+  const first400 = battingInnings.find((d) => (d.runs ?? 0) >= 400);
   const first5wkt = bowlingInnings.find((d) => (d.wickets ?? 0) >= 5);
 
   const notOuts = sorted.filter((d) => d.howOut === "Not Out");
@@ -231,7 +232,8 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "first100",      label: "Century",         description: "100–149 runs in an innings",     icon: "💯", imageKey: "century", earned: !!first100, detail: first100 ? `${first100.runs} vs ${first100.opponent}` : undefined, shareText: first100 ? `💯 Century\n${first100.runs} runs vs ${first100.opponent}\n${fmtDate(first100.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "first150",      label: "150 Club",        description: "150–199 runs in an innings",      icon: "💎", imageKey: "150club",        earned: !!first150, detail: first150 ? `${first150.runs} runs` : undefined, shareText: first150 ? `💎 150 Club\n${first150.runs} runs vs ${first150.opponent}\n${fmtDate(first150.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "first200",      label: "Double Century",  description: "200–299 runs in an innings",       icon: "👑", imageKey: "doubleCentury", earned: !!first200, detail: first200 ? `${first200.runs} runs` : undefined, shareText: first200 ? `👑 Double Century\n${first200.runs} runs vs ${first200.opponent}\n${fmtDate(first200.date)}\n\nLogged on CricVault 🏏` : undefined },
-    { id: "first300",      label: "Triple Century",  description: "300+ runs in an innings",          icon: "🌟", imageKey: "tripleCentury", earned: !!first300, detail: first300 ? `${first300.runs} runs` : undefined, shareText: first300 ? `🌟 Triple Century\n${first300.runs} runs vs ${first300.opponent}\n${fmtDate(first300.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "first300",      label: "Triple Century",    description: "300–399 runs in an innings",       icon: "🌟", imageKey: "tripleCentury",    earned: !!first300, detail: first300 ? `${first300.runs} runs` : undefined, shareText: first300 ? `🌟 Triple Century\n${first300.runs} runs vs ${first300.opponent}\n${fmtDate(first300.date)}\n\nLogged on CricVault 🏏` : undefined },
+    { id: "first400",      label: "Quadruple Century", description: "400+ runs in an innings",          icon: "🔱", imageKey: "quadrupleCentury", earned: !!first400, detail: first400 ? `${first400.runs} runs` : undefined, shareText: first400 ? `🔱 Quadruple Century\n${first400.runs} runs vs ${first400.opponent}\n${fmtDate(first400.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined, shareText: pinchHitterMatch ? `⚡ Pinch Hitter\n${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b vs ${pinchHitterMatch.opponent}\n${fmtDate(pinchHitterMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
 
