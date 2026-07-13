@@ -18,17 +18,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FreeTextSelect } from "@/components/ui/free-text-select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Camera, Film, Link2, Save, Trash2, X, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import { useUpload } from "@workspace/object-storage-web";
 
-const MATCH_TYPE_SUGGESTIONS = [
-  "Club", "League", "Cup", "T20", "ODI", "Test", "Friendly", "Social",
-  "Tournament", "Charity", "Practice", "School", "Indoor", "Beach",
-  "Backyard", "Street", "Garden", "Tape ball", "Tennis ball",
-  "The Hundred", "Twenty20", "Ten10",
+const MATCH_TYPES = [
+  "League", "Cup", "Friendly", "County", "Country",
+  "T20", "ODI", "Test", "The Hundred", "Tournament",
+  "Practice", "School", "Social", "Other",
 ];
 
 // ── Step 2: Media upload ───────────────────────────────────────────────────────
@@ -283,7 +281,7 @@ export default function NewMatch() {
     date: new Date().toISOString().split("T")[0],
     opponent: "",
     venue: "",
-    matchType: "Club",
+    matchType: "League",
     playingFor: "",
     result: "",
   });
@@ -375,13 +373,16 @@ export default function NewMatch() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="matchType">Match Type</Label>
-                  <FreeTextSelect
-                    id="matchType"
-                    value={form.matchType}
-                    onChange={(v) => setForm({ ...form, matchType: v })}
-                    suggestions={MATCH_TYPE_SUGGESTIONS}
-                    placeholder="e.g. League, Backyard, Street…"
-                  />
+                  <Select value={form.matchType} onValueChange={(v) => setForm({ ...form, matchType: v })}>
+                    <SelectTrigger id="matchType">
+                      <SelectValue placeholder="Select type…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MATCH_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

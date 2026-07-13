@@ -41,14 +41,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FreeTextSelect } from "@/components/ui/free-text-select";
 
 const RESULT_OPTIONS = ["Win", "Loss", "Draw", "Tie", "No Result", "Abandoned"];
-const MATCH_TYPE_SUGGESTIONS = [
-  "Club", "League", "Cup", "T20", "ODI", "Test", "Friendly", "Social",
-  "Tournament", "Charity", "Practice", "School", "Indoor", "Beach",
-  "Backyard", "Street", "Garden", "Tape ball", "Tennis ball",
-  "The Hundred", "Twenty20", "Ten10",
+const MATCH_TYPES = [
+  "League", "Cup", "Friendly", "County", "Country",
+  "T20", "ODI", "Test", "The Hundred", "Tournament",
+  "Practice", "School", "Social", "Other",
 ];
 
 const HOW_OUT_SUGGESTIONS = [
@@ -1388,12 +1386,16 @@ export default function MatchDetail() {
               </div>
               <div className="space-y-1.5">
                 <Label>Match Type</Label>
-                <FreeTextSelect
-                  value={hMatchType}
-                  onChange={setHMatchType}
-                  suggestions={MATCH_TYPE_SUGGESTIONS}
-                  placeholder="e.g. T20, Club…"
-                />
+                <Select value={hMatchType} onValueChange={setHMatchType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MATCH_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Result</Label>

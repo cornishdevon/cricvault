@@ -105,6 +105,11 @@ const CAUGHT_POSITIONS = [
   "Long-on", "Long-off", "Deep Cover", "Wicket Keeper",
 ];
 
+const MATCH_TYPES = [
+  "League", "Cup", "Friendly", "County", "Country",
+  "T20", "ODI", "Test", "The Hundred", "Tournament",
+  "Practice", "School", "Social", "Other",
+];
 const PITCH_TYPES = ["Flat", "Good", "Uneven", "Slow", "Fast", "Wet", "Dusty"];
 const WEATHER_OPTIONS = ["Sunny", "Overcast", "Humid", "Windy", "Hot", "Cold", "Drizzle"];
 
@@ -1074,23 +1079,21 @@ export default function LogMatchScreen() {
             />
           </Field>
 
-          <Row>
-            <Field label={t("log.venue")} half>
-              <Input
-                value={matchForm.venue}
-                onChangeText={(v) => updateMatch("venue", v)}
-                placeholder="Optional"
-              />
-            </Field>
-            <View style={{ width: 10 }} />
-            <Field label={t("log.matchType")} half>
-              <Input
-                value={matchForm.matchType}
-                onChangeText={(v) => updateMatch("matchType", v)}
-                placeholder="e.g. Cup, Club…"
-              />
-            </Field>
-          </Row>
+          <Field label={t("log.venue")}>
+            <Input
+              value={matchForm.venue}
+              onChangeText={(v) => updateMatch("venue", v)}
+              placeholder="Optional"
+            />
+          </Field>
+
+          <Field label={t("log.matchType")}>
+            <ChipGroup
+              options={MATCH_TYPES}
+              selected={matchForm.matchType}
+              onSelect={(v) => updateMatch("matchType", v)}
+            />
+          </Field>
 
           <Field label={t("log.result")}>
             <Input

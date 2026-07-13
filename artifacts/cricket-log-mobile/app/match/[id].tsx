@@ -53,6 +53,12 @@ import { ShareCard } from "@/components/ShareCard";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+const MATCH_TYPES = [
+  "League", "Cup", "Friendly", "County", "Country",
+  "T20", "ODI", "Test", "The Hundred", "Tournament",
+  "Practice", "School", "Social", "Other",
+];
+
 function StatRow({
   label,
   value,
@@ -773,7 +779,34 @@ export default function MatchDetailScreen() {
         <Card title="Match Details" icon="edit-2" colors={colors}>
           <EditableRow label="Opponent" value={(match as any).opponent} editValue={editOpponent} onChangeText={setEditOpponent} editing={editMode} colors={colors} />
           <EditableRow label="Date (YYYY-MM-DD)" value={(match as any).date} editValue={editDate} onChangeText={setEditDate} editing={editMode} colors={colors} />
-          <EditableRow label="Match Type" value={(match as any).matchType} editValue={editMatchType} onChangeText={setEditMatchType} editing={editMode} colors={colors} />
+          {editMode ? (
+            <View style={[styles.statRow, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Match Type</Text>
+              <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
+                {MATCH_TYPES.map((t) => {
+                  const active = editMatchType === t;
+                  return (
+                    <TouchableOpacity
+                      key={t}
+                      onPress={() => setEditMatchType(active ? "" : t)}
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: active ? colors.primary : colors.border,
+                        backgroundColor: active ? colors.primary : colors.card,
+                      }}
+                    >
+                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: active ? "#fff" : colors.foreground }}>{t}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ) : (
+            <StatRow label="Match Type" value={(match as any).matchType} colors={colors} />
+          )}
           <EditableRow label="Result" value={(match as any).result} editValue={editResult} onChangeText={setEditResult} editing={editMode} colors={colors} />
           <EditableRow label="Venue" value={(match as any).venue} editValue={editVenue} onChangeText={setEditVenue} editing={editMode} colors={colors} />
         </Card>
