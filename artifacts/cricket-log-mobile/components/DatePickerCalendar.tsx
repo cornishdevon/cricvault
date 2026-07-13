@@ -267,7 +267,7 @@ export function DatePickerCalendar({
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              initialScrollIndex={initialIndex}
+              initialScrollIndex={visibleIndex}
               getItemLayout={(_, index) => ({
                 length: CARD_WIDTH,
                 offset: CARD_WIDTH * index,
