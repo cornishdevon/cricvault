@@ -56,14 +56,13 @@ function formatPrice(amount: number, currency: string) {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: currency.toUpperCase(),
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount / 100);
 }
 
 export default function UpgradePage() {
   const [email, setEmail] = useState("");
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
 
   const { data: plans = [], isLoading, error } = useQuery({
     queryKey: ["stripe-plans"],
@@ -79,24 +78,15 @@ export default function UpgradePage() {
   });
 
   const proPlan = plans.find((p) => p.name === "CricVault Pro") ?? plans[0];
-  const selectedPrice = proPlan?.prices.find(
-    (p) => p.recurring?.interval === billingInterval
-  ) ?? proPlan?.prices[0];
-
-  const monthlyPrice = proPlan?.prices.find((p) => p.recurring?.interval === "month");
-  const yearlyPrice = proPlan?.prices.find((p) => p.recurring?.interval === "year");
-
-  const yearlySaving = monthlyPrice && yearlyPrice
-    ? Math.round(100 - (yearlyPrice.unit_amount / (monthlyPrice.unit_amount * 12)) * 100)
-    : null;
+  const price = proPlan?.prices[0];
 
   const handleUpgrade = () => {
-    if (!selectedPrice) return;
+    if (!price) return;
     if (!email.trim() || !email.includes("@")) {
       alert("Please enter a valid email address.");
       return;
     }
-    checkoutMutation.mutate({ priceId: selectedPrice.id, email: email.trim() });
+    checkoutMutation.mutate({ priceId: price.id, email: email.trim() });
   };
 
   return (
@@ -125,39 +115,6 @@ export default function UpgradePage() {
 
       {!isLoading && !error && proPlan && (
         <>
-          {/* Billing toggle */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <button
-              onClick={() => setBillingInterval("month")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                billingInterval === "month"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingInterval("year")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                billingInterval === "year"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Yearly
-              {yearlySaving && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
-                  billingInterval === "year"
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                }`}>
-                  Save {yearlySaving}%
-                </span>
-              )}
-            </button>
-          </div>
-
           {/* Pricing card */}
           <div className="rounded-2xl border-2 border-primary/40 bg-card shadow-lg p-8 mb-8">
             <div className="flex items-start justify-between mb-6">
@@ -166,19 +123,12 @@ export default function UpgradePage() {
                 <p className="text-muted-foreground text-sm mt-1">{proPlan.description}</p>
               </div>
               <div className="text-right">
-                {selectedPrice ? (
+                {price ? (
                   <>
-                    <div className="text-3xl font-bold">
-                      {formatPrice(selectedPrice.unit_amount, selectedPrice.currency)}
+                    <div className="text-4xl font-bold">
+                      {formatPrice(price.unit_amount, price.currency)}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      per {billingInterval === "month" ? "month" : "year"}
-                    </div>
-                    {billingInterval === "year" && monthlyPrice && (
-                      <div className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-                        ({formatPrice(Math.round(selectedPrice.unit_amount / 12), selectedPrice.currency)}/mo)
-                      </div>
-                    )}
+                    <div className="text-sm text-muted-foreground mt-0.5">per year</div>
                   </>
                 ) : (
                   <div className="text-muted-foreground text-sm">Price unavailable</div>
@@ -210,7 +160,7 @@ export default function UpgradePage() {
               />
               <button
                 onClick={handleUpgrade}
-                disabled={checkoutMutation.isPending || !selectedPrice}
+                disabled={checkoutMutation.isPending || !price}
                 className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {checkoutMutation.isPending ? (
@@ -219,7 +169,7 @@ export default function UpgradePage() {
                     Redirecting to checkout…
                   </>
                 ) : (
-                  `Subscribe ${billingInterval === "year" ? "Yearly" : "Monthly"} →`
+                  `Get CricVault Pro →`
                 )}
               </button>
               {checkoutMutation.isError && (
@@ -231,7 +181,7 @@ export default function UpgradePage() {
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            Secure payment via Stripe · Cancel anytime · No Apple or Google fees
+            Secure payment via Stripe · Cancel anytime · Renews annually
           </p>
 
           <div className="mt-8 text-center">
