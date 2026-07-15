@@ -1179,7 +1179,7 @@ export default function MatchDetail() {
     setHOpponent(m.opponent ?? "");
     setHDate(m.date ?? "");
     setHMatchType(m.matchType ?? "");
-    setHResult(m.result ?? "");
+    setHResult(m.result ?? "__none__");
     setHVenue(m.venue ?? "");
     setHPlayingFor(m.playingFor ?? "");
     setHSeries(m.series ?? "");
@@ -1194,7 +1194,7 @@ export default function MatchDetail() {
           opponent: hOpponent || undefined,
           date: hDate || undefined,
           matchType: hMatchType || undefined,
-          result: hResult || undefined,
+          result: hResult === "__none__" ? null : hResult || null,
           venue: hVenue || undefined,
           playingFor: hPlayingFor || undefined,
           series: hSeries || undefined,
@@ -1409,7 +1409,7 @@ export default function MatchDetail() {
                     <SelectValue placeholder="Select result…" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Not set</SelectItem>
+                    <SelectItem value="__none__">Not set</SelectItem>
                     {RESULT_OPTIONS.map((r) => (
                       <SelectItem key={r} value={r}>{r}</SelectItem>
                     ))}

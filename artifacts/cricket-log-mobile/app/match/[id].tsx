@@ -59,6 +59,8 @@ const MATCH_TYPES = [
   "Practice", "School", "Social", "Back Garden", "Other",
 ];
 
+const RESULT_OPTIONS = ["Win", "Loss", "Draw", "Tie", "No Result", "Abandoned"];
+
 function StatRow({
   label,
   value,
@@ -528,7 +530,7 @@ export default function MatchDetailScreen() {
                 date: editDate || undefined,
                 matchType: editMatchType || undefined,
                 venue: editVenue || undefined,
-                result: editResult || undefined,
+                result: editResult !== "" ? editResult : null,
                 notes: editNotes || undefined,
                 pitchType: editPitchType || undefined,
                 weatherConditions: editWeather || undefined,
@@ -807,7 +809,34 @@ export default function MatchDetailScreen() {
           ) : (
             <StatRow label="Match Type" value={(match as any).matchType} colors={colors} />
           )}
-          <EditableRow label="Result" value={(match as any).result} editValue={editResult} onChangeText={setEditResult} editing={editMode} colors={colors} />
+          {editMode ? (
+            <View style={[styles.statRow, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Result</Text>
+              <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
+                {RESULT_OPTIONS.map((r) => {
+                  const active = editResult === r;
+                  return (
+                    <TouchableOpacity
+                      key={r}
+                      onPress={() => setEditResult(active ? "" : r)}
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: active ? colors.primary : colors.border,
+                        backgroundColor: active ? colors.primary : colors.card,
+                      }}
+                    >
+                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: active ? "#fff" : colors.foreground }}>{r}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ) : (
+            <StatRow label="Result" value={(match as any).result} colors={colors} />
+          )}
           <EditableRow label="Venue" value={(match as any).venue} editValue={editVenue} onChangeText={setEditVenue} editing={editMode} colors={colors} />
         </Card>
       ) : null}
