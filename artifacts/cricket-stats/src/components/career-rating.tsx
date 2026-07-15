@@ -39,9 +39,13 @@ const LEVELS: Level[] = [
   { name: "Village Cricketer",emoji: "🌾", minXp: 500,   color: "#92400e", bg: "#fef3c7", ring: "#fcd34d" },
   { name: "Club",             emoji: "🏏", minXp: 1000,  color: "#16a34a", bg: "#f0fdf4", ring: "#86efac" },
   { name: "Amateur",          emoji: "⚡", minXp: 1500,  color: "#2563eb", bg: "#eff6ff", ring: "#93c5fd" },
+  { name: "First XI",         emoji: "🎯", minXp: 2500,  color: "#0891b2", bg: "#ecfeff", ring: "#67e8f9" },
   { name: "Semi-Pro",         emoji: "🌟", minXp: 4000,  color: "#7c3aed", bg: "#f5f3ff", ring: "#c4b5fd" },
+  { name: "County",           emoji: "🏅", minXp: 6500,  color: "#be185d", bg: "#fdf2f8", ring: "#f9a8d4" },
   { name: "Elite",            emoji: "🔥", minXp: 10000, color: "#d97706", bg: "#fffbeb", ring: "#fcd34d" },
+  { name: "International",    emoji: "🌍", minXp: 17500, color: "#059669", bg: "#ecfdf5", ring: "#6ee7b7" },
   { name: "Legend",           emoji: "👑", minXp: 25000, color: "#dc2626", bg: "#fff1f2", ring: "#fca5a5" },
+  { name: "Hall of Fame",     emoji: "🏆", minXp: 50000, color: "#b45309", bg: "#fffbeb", ring: "#fbbf24" },
 ];
 
 function computeXp(summary: Summary, potmCount: number): number {

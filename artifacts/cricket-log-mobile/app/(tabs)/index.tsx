@@ -905,13 +905,17 @@ export default function DashboardScreen() {
       + (summary?.bowling.totalWickets ?? 0) * 15
       + centuries * 300 + fifties * 100
       + potmCount * 75;
-    if (xp >= 25000) return { label: "Legend",           color: "#FFB300", next: null };
-    if (xp >= 10000) return { label: "Elite",            color: "#A78BFA", next: 25000 - xp };
-    if (xp >= 4000)  return { label: "Semi-Pro",         color: "#60A5FA", next: 10000 - xp };
-    if (xp >= 1500)  return { label: "Amateur",          color: "#34D399", next: 4000  - xp };
-    if (xp >= 1000)  return { label: "Club",             color: "#FBBF24", next: 1500  - xp };
-    if (xp >= 500)   return { label: "Village Cricketer",color: "#A3855A", next: 1000  - xp };
-    return              { label: "Novice",            color: "#9CA3AF", next: 500   - xp };
+    if (xp >= 50000) return { label: "Hall of Fame",    color: "#F59E0B", next: null };
+    if (xp >= 25000) return { label: "Legend",          color: "#FFB300", next: 50000 - xp };
+    if (xp >= 17500) return { label: "International",   color: "#34D399", next: 25000 - xp };
+    if (xp >= 10000) return { label: "Elite",           color: "#A78BFA", next: 17500 - xp };
+    if (xp >= 6500)  return { label: "County",          color: "#F472B6", next: 10000 - xp };
+    if (xp >= 4000)  return { label: "Semi-Pro",        color: "#60A5FA", next: 6500  - xp };
+    if (xp >= 2500)  return { label: "First XI",        color: "#22D3EE", next: 4000  - xp };
+    if (xp >= 1500)  return { label: "Amateur",         color: "#818CF8", next: 2500  - xp };
+    if (xp >= 1000)  return { label: "Club",            color: "#FBBF24", next: 1500  - xp };
+    if (xp >= 500)   return { label: "Village Cricketer",color: "#A3855A",next: 1000  - xp };
+    return              { label: "Novice",           color: "#9CA3AF", next: 500   - xp };
   })();
 
   const chartMatches = (perMatch ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(-12);
@@ -1072,8 +1076,12 @@ export default function DashboardScreen() {
                         careerLevel.label === "Novice"            ? "Village Cricketer" :
                         careerLevel.label === "Village Cricketer" ? "Club" :
                         careerLevel.label === "Club"              ? "Amateur" :
-                        careerLevel.label === "Amateur"           ? "Semi-Pro" :
-                        careerLevel.label === "Semi-Pro"          ? "Elite" : "Legend"
+                        careerLevel.label === "Amateur"           ? "First XI" :
+                        careerLevel.label === "First XI"          ? "Semi-Pro" :
+                        careerLevel.label === "Semi-Pro"          ? "County" :
+                        careerLevel.label === "County"            ? "Elite" :
+                        careerLevel.label === "Elite"             ? "International" :
+                        careerLevel.label === "International"     ? "Legend" : "Hall of Fame"
                       }
                     </Text>
                   )}
