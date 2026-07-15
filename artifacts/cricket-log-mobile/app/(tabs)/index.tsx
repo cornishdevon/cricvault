@@ -918,6 +918,21 @@ export default function DashboardScreen() {
     return              { label: "Novice",           color: "#9CA3AF", next: 500   - xp };
   })();
 
+  const bowlingLevel = (() => {
+    const w = summary?.bowling.totalWickets ?? 0;
+    if (w >= 2000) return { label: "Hall of Fame",  color: "#F59E0B", emoji: "🏆", next: null };
+    if (w >= 1000) return { label: "Legend",        color: "#FFB300", emoji: "👑", next: 2000 - w };
+    if (w >= 750)  return { label: "International", color: "#34D399", emoji: "🌍", next: 1000 - w };
+    if (w >= 500)  return { label: "Elite",         color: "#A78BFA", emoji: "🔥", next: 750  - w };
+    if (w >= 350)  return { label: "County",        color: "#FBBF24", emoji: "🏅", next: 500  - w };
+    if (w >= 200)  return { label: "First XI",      color: "#F472B6", emoji: "🏏", next: 350  - w };
+    if (w >= 100)  return { label: "Strike Bowler", color: "#C084FC", emoji: "🌟", next: 200  - w };
+    if (w >= 50)   return { label: "Wicket Taker",  color: "#22D3EE", emoji: "💫", next: 100  - w };
+    if (w >= 25)   return { label: "Occasional",    color: "#60A5FA", emoji: "🎯", next: 50   - w };
+    if (w >= 10)   return { label: "Club Bowler",   color: "#4ADE80", emoji: "⚡", next: 25   - w };
+    return              { label: "Trundler",       color: "#9CA3AF", emoji: "🎳", next: 10   - w };
+  })();
+
   const chartMatches = (perMatch ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(-12);
 
   const runsData = chartMatches.map((m) => ({
@@ -1041,13 +1056,18 @@ export default function DashboardScreen() {
                 {/* ── Micro-stat chips — full-width row below the flip display ── */}
                 <View style={{ flexDirection: "row", marginTop: 14, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 12 }}>
                   {[
-                    { label: t("home.avg"),     value: battingAvg,                               color: "#6ee7b7" },
-                    { label: t("home.hundreds"),value: String(centuries),                        color: "#fbbf24" },
-                    { label: t("home.wkts"),    value: String(summary.bowling.totalWickets ?? 0), color: "#f87171" },
-                  ].map(({ label, value, color }, i) => (
+                    { label: t("home.avg"),     value: battingAvg,                                color: "#6ee7b7",  badge: undefined,              badgeColor: undefined },
+                    { label: t("home.hundreds"),value: String(centuries),                         color: "#fbbf24",  badge: undefined,              badgeColor: undefined },
+                    { label: t("home.wkts"),    value: String(summary.bowling.totalWickets ?? 0), color: "#f87171",  badge: bowlingLevel.label,     badgeColor: bowlingLevel.color },
+                  ].map(({ label, value, color, badge, badgeColor }, i) => (
                     <View key={label} style={{ flex: 1, alignItems: "center", borderLeftWidth: i > 0 ? 1 : 0, borderLeftColor: "rgba(255,255,255,0.10)" }}>
                       <Text style={{ fontFamily: "Inter_700Bold", fontSize: 20, color, lineHeight: 24 }}>{value}</Text>
                       <Text style={{ fontFamily: "Inter_400Regular", fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: 0.8, textTransform: "uppercase", marginTop: 2 }}>{label}</Text>
+                      {badge && badgeColor && (
+                        <View style={{ marginTop: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, backgroundColor: badgeColor + "28", borderWidth: 1, borderColor: badgeColor + "66" }}>
+                          <Text style={{ fontFamily: "Inter_600SemiBold", fontSize: 8, color: badgeColor, letterSpacing: 0.6, textTransform: "uppercase" }}>{badge}</Text>
+                        </View>
+                      )}
                     </View>
                   ))}
                 </View>

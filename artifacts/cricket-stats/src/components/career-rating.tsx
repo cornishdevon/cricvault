@@ -48,6 +48,29 @@ const LEVELS: Level[] = [
   { name: "Hall of Fame",     emoji: "🏆", minXp: 50000, color: "#b45309", bg: "#fffbeb", ring: "#fbbf24" },
 ];
 
+type BowlingLevel = {
+  name: string;
+  emoji: string;
+  minWickets: number;
+  color: string;
+  bg: string;
+  ring: string;
+};
+
+const BOWLING_LEVELS: BowlingLevel[] = [
+  { name: "Trundler",       emoji: "🎳", minWickets: 0,    color: "#64748b", bg: "#f1f5f9", ring: "#cbd5e1" },
+  { name: "Club Bowler",    emoji: "⚡", minWickets: 10,   color: "#16a34a", bg: "#f0fdf4", ring: "#86efac" },
+  { name: "Occasional",     emoji: "🎯", minWickets: 25,   color: "#2563eb", bg: "#eff6ff", ring: "#93c5fd" },
+  { name: "Wicket Taker",   emoji: "💫", minWickets: 50,   color: "#0891b2", bg: "#ecfeff", ring: "#67e8f9" },
+  { name: "Strike Bowler",  emoji: "🌟", minWickets: 100,  color: "#7c3aed", bg: "#f5f3ff", ring: "#c4b5fd" },
+  { name: "First XI",       emoji: "🏏", minWickets: 200,  color: "#be185d", bg: "#fdf2f8", ring: "#f9a8d4" },
+  { name: "County",         emoji: "🏅", minWickets: 350,  color: "#92400e", bg: "#fef3c7", ring: "#fcd34d" },
+  { name: "Elite",          emoji: "🔥", minWickets: 500,  color: "#d97706", bg: "#fffbeb", ring: "#fcd34d" },
+  { name: "International",  emoji: "🌍", minWickets: 750,  color: "#059669", bg: "#ecfdf5", ring: "#6ee7b7" },
+  { name: "Legend",         emoji: "👑", minWickets: 1000, color: "#dc2626", bg: "#fff1f2", ring: "#fca5a5" },
+  { name: "Hall of Fame",   emoji: "🏆", minWickets: 2000, color: "#b45309", bg: "#fffbeb", ring: "#fbbf24" },
+];
+
 function computeXp(summary: Summary, potmCount: number): number {
   let xp = 0;
   xp += summary.batting.totalRuns;
@@ -64,6 +87,58 @@ function computeXp(summary: Summary, potmCount: number): number {
   xp += potmCount * 75;
   xp += summary.totalMatches * 10;
   return Math.round(xp);
+}
+
+export function BowlingRating({ summary }: { summary: Summary }) {
+  const { level, nextLevel, progress } = useMemo(() => {
+    const w = summary.bowling.totalWickets;
+    let level = BOWLING_LEVELS[0];
+    let nextLevel: BowlingLevel | null = null;
+    for (let i = BOWLING_LEVELS.length - 1; i >= 0; i--) {
+      if (w >= BOWLING_LEVELS[i].minWickets) { level = BOWLING_LEVELS[i]; nextLevel = BOWLING_LEVELS[i + 1] ?? null; break; }
+    }
+    const progress = nextLevel
+      ? Math.min(((w - level.minWickets) / (nextLevel.minWickets - level.minWickets)) * 100, 100)
+      : 100;
+    return { level, nextLevel, progress };
+  }, [summary]);
+
+  return (
+    <Card style={{ borderColor: level.ring, backgroundColor: level.bg }}>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+            style={{ backgroundColor: level.ring + "55", border: `3px solid ${level.ring}` }}
+          >
+            {level.emoji}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-lg font-bold" style={{ color: level.color }}>{level.name}</span>
+              <span className="text-xs text-muted-foreground font-medium">{summary.bowling.totalWickets.toLocaleString()} wickets</span>
+            </div>
+            {nextLevel ? (
+              <>
+                <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden mb-1">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${progress}%`, backgroundColor: level.color }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {(nextLevel.minWickets - summary.bowling.totalWickets).toLocaleString()} wickets to {nextLevel.name} {nextLevel.emoji}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs font-medium" style={{ color: level.color }}>Maximum bowling level achieved! 🎉</p>
+            )}
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-2 ml-1">Bowling rating</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function CareerRating({ summary, potmCount }: { summary: Summary; potmCount: number }) {

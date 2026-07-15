@@ -13,7 +13,7 @@ import { RecentFormGuide } from "@/components/recent-form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
 import { MilestonesTimeline } from "@/components/milestones-timeline";
-import { CareerRating } from "@/components/career-rating";
+import { CareerRating, BowlingRating } from "@/components/career-rating";
 import { SeasonTargets } from "@/components/season-targets";
 import { ShareCard } from "@/components/share-card";
 import { MilestoneTracker } from "@/components/milestone-tracker";
@@ -756,6 +756,9 @@ export default function Dashboard() {
       {/* Career rating */}
       {!summaryLoading && summary && (
         <CareerRating summary={summary} potmCount={potmCount} />
+      )}
+      {!summaryLoading && summary && (
+        <BowlingRating summary={summary} />
       )}
 
       {/* Season targets */}
