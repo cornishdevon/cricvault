@@ -1,9 +1,9 @@
 ---
 name: Career XP system
-description: XP formula and level thresholds for the player rating badge shown on web dashboard.
+description: XP formula and level thresholds for the player rating badge shown on web dashboard and mobile.
 ---
 
-XP is computed purely client-side in `artifacts/cricket-stats/src/components/career-rating.tsx` from the summary object (no API change needed).
+XP is computed client-side in `artifacts/cricket-stats/src/components/career-rating.tsx` (web) and inline in `artifacts/cricket-log-mobile/app/(tabs)/index.tsx` (mobile). Both must stay in sync.
 
 **Formula:**
 - 1 XP per career run
@@ -15,7 +15,14 @@ XP is computed purely client-side in `artifacts/cricket-stats/src/components/car
 - 75 XP per POTM award
 - 10 XP per match played
 
-**Levels:** Novice (0), Club (500), Amateur (1500), Semi-Pro (4000), Elite (10000), Legend (25000)
+**Levels (7 tiers):**
+- 🌱 Novice: 0 XP
+- 🌾 Village Cricketer: 500 XP
+- 🏏 Club: 1,000 XP
+- ⚡ Amateur: 1,500 XP
+- 🌟 Semi-Pro: 4,000 XP
+- 🔥 Elite: 10,000 XP
+- 👑 Legend: 25,000 XP
 
 **Why:** Gamification to keep users logging matches; no server state required, recomputes instantly.
-**How to apply:** If adding new stat types, add their XP contribution to `computeXp()` in career-rating.tsx.
+**How to apply:** Any level threshold change must be updated in BOTH career-rating.tsx (LEVELS array) AND index.tsx (careerLevel IIFE + the "next level" label chain). Village Cricketer was inserted between Novice and Club.
