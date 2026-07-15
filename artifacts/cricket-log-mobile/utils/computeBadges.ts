@@ -39,6 +39,15 @@ export type Badge = {
   isNegative?: boolean;
 };
 
+/** Returns only the highest-earned tier + the next locked tier (or just the first locked tier if none earned). */
+function tiered(milestones: number[], count: number, make: (m: number, earned: boolean) => Badge): Badge[] {
+  const idx = milestones.reduce((best: number, m: number, i: number) => (count >= m ? i : best), -1);
+  if (idx === -1) return [make(milestones[0], false)];
+  const result: Badge[] = [make(milestones[idx], true)];
+  if (idx + 1 < milestones.length) result.push(make(milestones[idx + 1], false));
+  return result;
+}
+
 export function computeBadges(data: PerMatchStat[]): Badge[] {
   const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
 
@@ -240,20 +249,16 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "pinchHitter",   label: "Pinch Hitter",    description: "50 runs off <20 balls",         icon: "⚡", imageKey: "pinch-hitter", earned: !!pinchHitterMatch, detail: pinchHitterMatch ? `${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b` : undefined, shareText: pinchHitterMatch ? `⚡ Pinch Hitter\n${pinchHitterMatch.runs} off ${pinchHitterMatch.ballsFaced}b vs ${pinchHitterMatch.opponent}\n${fmtDate(pinchHitterMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
     { id: "nervousNineties", label: "Nervous 90s",   description: "Out between 90 and 99",         icon: "😰", earned: nervousEarned, detail: nervousEarned ? `${nervousRuns} runs` : undefined },
 
-    // One Short milestones — 49, 99, 149… out on the last before a milestone
-    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
-      id: `oneShort_${milestone}`,
-      label: milestone === 1 ? "One Short" : `One Short ×${milestone}`,
-      description: milestone === 1
+    // One Short milestones — highest earned tier + next locked
+    ...tiered([1, 5, 10, 15, 20, 25, 30], oneShortCount, (m, earned) => ({
+      id: `oneShort_${m}`,
+      label: m === 1 ? "One Short" : `One Short ×${m}`,
+      description: m === 1
         ? "Out one run short of a milestone (49, 99, 149…)"
-        : `One short of a milestone ${milestone} times`,
+        : `One short of a milestone ${m} times`,
       icon: "1️⃣",
-      earned: oneShortCount >= milestone,
-      detail: oneShortCount >= milestone
-        ? milestone === 1
-          ? `${oneShortFirst?.runs} runs`
-          : `${oneShortCount} times`
-        : undefined,
+      earned,
+      detail: earned ? (m === 1 ? `${oneShortFirst?.runs} runs` : `${oneShortCount} times`) : undefined,
     })),
 
     { id: "consistent",    label: "Consistent",      description: "5 consecutive innings of 25+",  icon: "📈", earned: consistentEarned },
@@ -289,65 +294,59 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "allRounder",  label: "All Rounder",         description: "30 runs & 3 wkts in one game",         icon: "🌟", earned: allRounderEarned },
     { id: "matchWinner", label: "Match Winner",         description: "8 wins in any 10-match window",        icon: "🥇", earned: matchWinnerEarned, detail: matchWinnerDetail || undefined },
 
-    // Triggered milestones — bad umpire decisions (LBW / caught behind)
-    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
-      id: `triggered_${milestone}`,
-      label: milestone === 1 ? "Triggered" : `Triggered ×${milestone}`,
-      description: milestone === 1
+    // Triggered milestones — highest earned tier + next locked
+    ...tiered([1, 5, 10, 15, 20, 25, 30], triggeredCount, (m, earned) => ({
+      id: `triggered_${m}`,
+      label: m === 1 ? "Triggered" : `Triggered ×${m}`,
+      description: m === 1
         ? "Given out on a bad umpire decision (LBW or caught behind)"
-        : `Robbed by the umpire ${milestone} times`,
+        : `Robbed by the umpire ${m} times`,
       icon: "😤",
-      earned: triggeredCount >= milestone,
-      detail: triggeredCount >= milestone && triggeredCount > milestone
-        ? `${triggeredCount} times total`
-        : undefined,
+      earned,
+      detail: earned && triggeredCount > m ? `${triggeredCount} times total` : undefined,
       isNegative: true as const,
     })),
 
-    // DRS milestones — would have referred a not-out while bowling
-    ...[1, 5, 10, 15, 20, 25, 30].map((milestone) => ({
-      id: `drs_${milestone}`,
-      label: milestone === 1 ? "DRS" : `DRS ×${milestone}`,
-      description: milestone === 1
+    // DRS milestones — highest earned tier + next locked
+    ...tiered([1, 5, 10, 15, 20, 25, 30], drsCount, (m, earned) => ({
+      id: `drs_${m}`,
+      label: m === 1 ? "DRS" : `DRS ×${m}`,
+      description: m === 1
         ? "Would have referred a not-out decision while bowling"
-        : `Would have referred ${milestone} not-out decisions`,
+        : `Would have referred ${m} not-out decisions`,
       icon: "📺",
       imageKey: "drs",
-      earned: drsCount >= milestone,
-      detail: drsCount >= milestone && drsCount > milestone
-        ? `${drsCount} times total`
-        : undefined,
+      earned,
+      detail: earned && drsCount > m ? `${drsCount} times total` : undefined,
       isNegative: true as const,
     })),
 
     { id: "goldenDuck",      label: "Golden Duck",      description: "Out first ball for a duck", icon: "🦆", imageKey: "goldenDuck", earned: goldenDuckEarned, isNegative: true },
 
-    // Duck Hunting milestones — every 5 ducks
-    ...[5, 10, 15, 20, 25, 30].map((milestone) => ({
-      id: `duckHunting_${milestone}`,
-      label: `Duck Hunting ×${milestone}`,
-      description: `${milestone} ducks in your career`,
+    // Duck Hunting milestones — highest earned tier + next locked
+    ...tiered([5, 10, 15, 20, 25, 30], duckCount, (m, earned) => ({
+      id: `duckHunting_${m}`,
+      label: `Duck Hunting ×${m}`,
+      description: `${m} ducks in your career`,
       icon: "🦆",
-      earned: duckCount >= milestone,
-      detail: duckCount >= milestone ? `${duckCount} ducks total` : undefined,
+      earned,
+      detail: earned ? `${duckCount} ducks total` : undefined,
       isNegative: true as const,
     })),
 
     { id: "billyBigPads",    label: "Billy Big Pads",   description: "Out LBW 5 times",           icon: "😬", imageKey: "billyBigPads", earned: lbwOuts >= 5, detail: lbwOuts >= 5 ? `${lbwOuts}× LBW` : undefined, isNegative: true },
 
-    // Garden Gate — bowled through the gate (bat & pad) — tiered
-    ...[1, 3, 5, 10, 20].map((milestone) => ({
-      id: `gardenGate_${milestone}`,
-      label: milestone === 1 ? "Garden Gate" : `Garden Gate ×${milestone}`,
-      description: milestone === 1
+    // Garden Gate — highest earned tier + next locked
+    ...tiered([1, 3, 5, 10, 20], bowledOuts, (m, earned) => ({
+      id: `gardenGate_${m}`,
+      label: m === 1 ? "Garden Gate" : `Garden Gate ×${m}`,
+      description: m === 1
         ? "Bowled through the gate — ball beats bat and pad"
-        : `Bowled through the gate ${milestone} times`,
+        : `Bowled through the gate ${m} times`,
       icon: "🚪",
       imageKey: "garden-gate",
-      earned: bowledOuts >= milestone,
-      detail: bowledOuts >= milestone
-        ? bowledOuts > milestone ? `${bowledOuts}× bowled total` : `Bowled ${bowledOuts}×`
-        : undefined,
+      earned,
+      detail: earned ? (bowledOuts > m ? `${bowledOuts}× bowled total` : `Bowled ${bowledOuts}×`) : undefined,
       isNegative: true as const,
     })),
     { id: "catchingPractice", label: "Catching Practice", description: "Out caught 10 times",    icon: "🙈", earned: caughtOuts >= 10, detail: caughtOuts >= 10 ? `${caughtOuts}× caught` : undefined, isNegative: true },
