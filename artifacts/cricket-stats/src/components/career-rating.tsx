@@ -35,12 +35,13 @@ type Level = {
 };
 
 const LEVELS: Level[] = [
-  { name: "Novice",    emoji: "🌱", minXp: 0,     color: "#64748b", bg: "#f1f5f9", ring: "#cbd5e1" },
-  { name: "Club",      emoji: "🏏", minXp: 500,   color: "#16a34a", bg: "#f0fdf4", ring: "#86efac" },
-  { name: "Amateur",   emoji: "⚡", minXp: 1500,  color: "#2563eb", bg: "#eff6ff", ring: "#93c5fd" },
-  { name: "Semi-Pro",  emoji: "🌟", minXp: 4000,  color: "#7c3aed", bg: "#f5f3ff", ring: "#c4b5fd" },
-  { name: "Elite",     emoji: "🔥", minXp: 10000, color: "#d97706", bg: "#fffbeb", ring: "#fcd34d" },
-  { name: "Legend",    emoji: "👑", minXp: 25000, color: "#dc2626", bg: "#fff1f2", ring: "#fca5a5" },
+  { name: "Novice",           emoji: "🌱", minXp: 0,     color: "#64748b", bg: "#f1f5f9", ring: "#cbd5e1" },
+  { name: "Village Cricketer",emoji: "🌾", minXp: 500,   color: "#92400e", bg: "#fef3c7", ring: "#fcd34d" },
+  { name: "Club",             emoji: "🏏", minXp: 1000,  color: "#16a34a", bg: "#f0fdf4", ring: "#86efac" },
+  { name: "Amateur",          emoji: "⚡", minXp: 1500,  color: "#2563eb", bg: "#eff6ff", ring: "#93c5fd" },
+  { name: "Semi-Pro",         emoji: "🌟", minXp: 4000,  color: "#7c3aed", bg: "#f5f3ff", ring: "#c4b5fd" },
+  { name: "Elite",            emoji: "🔥", minXp: 10000, color: "#d97706", bg: "#fffbeb", ring: "#fcd34d" },
+  { name: "Legend",           emoji: "👑", minXp: 25000, color: "#dc2626", bg: "#fff1f2", ring: "#fca5a5" },
 ];
 
 function computeXp(summary: Summary, potmCount: number): number {

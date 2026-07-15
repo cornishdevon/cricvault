@@ -905,12 +905,13 @@ export default function DashboardScreen() {
       + (summary?.bowling.totalWickets ?? 0) * 15
       + centuries * 300 + fifties * 100
       + potmCount * 75;
-    if (xp >= 25000) return { label: "Legend",   color: "#FFB300", next: null };
-    if (xp >= 10000) return { label: "Elite",    color: "#A78BFA", next: 25000 - xp };
-    if (xp >= 4000)  return { label: "Semi-Pro", color: "#60A5FA", next: 10000 - xp };
-    if (xp >= 1500)  return { label: "Amateur",  color: "#34D399", next: 4000  - xp };
-    if (xp >= 500)   return { label: "Club",     color: "#FBBF24", next: 1500  - xp };
-    return              { label: "Novice",    color: "#9CA3AF", next: 500   - xp };
+    if (xp >= 25000) return { label: "Legend",           color: "#FFB300", next: null };
+    if (xp >= 10000) return { label: "Elite",            color: "#A78BFA", next: 25000 - xp };
+    if (xp >= 4000)  return { label: "Semi-Pro",         color: "#60A5FA", next: 10000 - xp };
+    if (xp >= 1500)  return { label: "Amateur",          color: "#34D399", next: 4000  - xp };
+    if (xp >= 1000)  return { label: "Club",             color: "#FBBF24", next: 1500  - xp };
+    if (xp >= 500)   return { label: "Village Cricketer",color: "#A3855A", next: 1000  - xp };
+    return              { label: "Novice",            color: "#9CA3AF", next: 500   - xp };
   })();
 
   const chartMatches = (perMatch ?? []).filter((m) => activeIsMatchInSeason(m.date)).slice(-12);
@@ -1068,10 +1069,11 @@ export default function DashboardScreen() {
                   {careerLevel.next != null && (
                     <Text style={{ fontFamily: "Inter_400Regular", fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 4, textAlign: "right" }}>
                       {careerLevel.next} XP to {
-                        careerLevel.label === "Novice"   ? "Club" :
-                        careerLevel.label === "Club"     ? "Amateur" :
-                        careerLevel.label === "Amateur"  ? "Semi-Pro" :
-                        careerLevel.label === "Semi-Pro" ? "Elite" : "Legend"
+                        careerLevel.label === "Novice"            ? "Village Cricketer" :
+                        careerLevel.label === "Village Cricketer" ? "Club" :
+                        careerLevel.label === "Club"              ? "Amateur" :
+                        careerLevel.label === "Amateur"           ? "Semi-Pro" :
+                        careerLevel.label === "Semi-Pro"          ? "Elite" : "Legend"
                       }
                     </Text>
                   )}
