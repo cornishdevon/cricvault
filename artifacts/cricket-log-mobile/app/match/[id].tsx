@@ -448,6 +448,9 @@ export default function MatchDetailScreen() {
   const [saving, setSaving] = useState(false);
   const [showShareCard, setShowShareCard] = useState(false);
 
+  // Always-fresh ref so the header button never calls a stale closure
+  const handleSaveRef = React.useRef<() => void>(() => {});
+
   // Match fields
   const [editOpponent, setEditOpponent] = useState("");
   const [editDate, setEditDate] = useState("");
@@ -585,6 +588,9 @@ export default function MatchDetailScreen() {
     }
   };
 
+  // Keep ref current on every render so the nav header never calls a stale closure
+  handleSaveRef.current = handleSave;
+
   const handleDelete = () => {
     const label = match ? `vs ${match.opponent}` : "this match";
     Alert.alert("Delete Match", `Remove ${label}?\n\nThis cannot be undone.`, [
@@ -673,7 +679,7 @@ export default function MatchDetailScreen() {
               <TouchableOpacity onPress={cancelEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Text style={{ fontSize: 15, color: colors.mutedForeground, fontFamily: "Inter_500Medium" }}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity onPress={() => handleSaveRef.current()} disabled={saving} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 {saving ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
