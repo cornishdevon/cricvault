@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
+  Linking,
   Modal,
   PanResponder,
   ScrollView,
@@ -466,6 +467,39 @@ export default function SettingsModal() {
         <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
           <Text style={[styles.resetBtnText, { color: colors.mutedForeground }]}>Reset to defaults</Text>
         </TouchableOpacity>
+
+        {/* Legal */}
+        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>Legal</Text>
+
+        <TouchableOpacity
+          style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => Linking.openURL("https://cricvault.app/privacy")}
+          activeOpacity={0.75}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="shield" size={18} color={colors.primary} />
+          </View>
+          <View style={[styles.rowBody, { flexDirection: "row", alignItems: "center" }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.hint, { color: colors.mutedForeground }]}>Legal</Text>
+              <Text style={[styles.countryValue, { color: colors.foreground }]}>Privacy Policy</Text>
+            </View>
+            <Feather name="external-link" size={16} color={colors.mutedForeground} />
+          </View>
+        </TouchableOpacity>
+
+        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="info" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>App</Text>
+            <Text style={[styles.countryValue, { color: colors.foreground }]}>CricVault</Text>
+            <Text style={[styles.hint, { color: colors.mutedForeground, marginTop: 2 }]}>
+              Your personal cricket statistics tracker
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
