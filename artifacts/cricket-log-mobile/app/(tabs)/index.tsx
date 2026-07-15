@@ -1008,31 +1008,30 @@ export default function DashboardScreen() {
             >
               <View style={{ backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
 
-                {/* ── Top row: flap + label + level badge ── */}
-                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
+                {/* ── Top row: flap + level badge ── */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                   <SplitFlapDisplay
                     value={flapValue}
                     tileColor="rgba(255,255,255,0.08)"
                     inkColor="#FFFDF8"
                     borderColor="rgba(255,255,255,0.22)"
                   />
-                  <View style={{ flex: 1, paddingTop: 4 }}>
-                    <Text style={[styles.runsLabel, { color: "#FFFDF8", marginBottom: 6 }]}>{t("home.careerRuns")}</Text>
-                    <View style={{
-                      flexShrink: 0,
-                      alignSelf: "flex-start",
-                      paddingHorizontal: 10, paddingVertical: 3,
-                      borderRadius: 20,
-                      backgroundColor: careerLevel.color + "28",
-                      borderWidth: 1,
-                      borderColor: careerLevel.color + "66",
-                    }}>
-                      <Text style={{ fontFamily: "Inter_700Bold", fontSize: 10, color: careerLevel.color, letterSpacing: 1.0, textTransform: "uppercase" }}>
-                        {careerLevel.label}
-                      </Text>
-                    </View>
+                  <View style={{
+                    flexShrink: 0,
+                    alignSelf: "center",
+                    paddingHorizontal: 10, paddingVertical: 3,
+                    borderRadius: 20,
+                    backgroundColor: careerLevel.color + "28",
+                    borderWidth: 1,
+                    borderColor: careerLevel.color + "66",
+                  }}>
+                    <Text style={{ fontFamily: "Inter_700Bold", fontSize: 10, color: careerLevel.color, letterSpacing: 1.0, textTransform: "uppercase" }}>
+                      {careerLevel.label}
+                    </Text>
                   </View>
                 </View>
+                {/* ── Career Runs label — horizontal, below the digits ── */}
+                <Text style={[styles.runsLabel, { color: "#FFFDF8", marginTop: 8 }]}>{t("home.careerRuns")}</Text>
 
                 {/* ── Micro-stat chips — full-width row below the flip display ── */}
                 <View style={{ flexDirection: "row", marginTop: 14, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 12 }}>
