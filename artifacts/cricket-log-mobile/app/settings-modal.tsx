@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
   Modal,
+  PanResponder,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,12 +11,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, { Circle, Path } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
-import { PALETTES, type PaletteId } from "@/constants/colors";
+import { PALETTES, hslToHex, hexToHsl, type PaletteId, type PresetPaletteId } from "@/constants/colors";
 import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry, type CricketRegion } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
@@ -32,9 +34,111 @@ const TAB_DEFS: { key: TabKey; icon: string; hint: string }[] = [
   { key: "log",          icon: "plus-circle", hint: "Log a new match" },
 ];
 
+// ── Hue Wheel ────────────────────────────────────────────────────────────────
+const WHEEL_SIZE = 220;
+const OUTER_R = 100;
+const INNER_R = 70;
+const CENTER_XY = WHEEL_SIZE / 2;
+const SEGMENTS = 60;
+
+function polarToXY(angleDeg: number, radius: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: CENTER_XY + radius * Math.cos(rad),
+    y: CENTER_XY + radius * Math.sin(rad),
+  };
+}
+
+function arcPath(startDeg: number, endDeg: number): string {
+  const o0 = polarToXY(startDeg, OUTER_R);
+  const o1 = polarToXY(endDeg, OUTER_R);
+  const i0 = polarToXY(startDeg, INNER_R);
+  const i1 = polarToXY(endDeg, INNER_R);
+  return (
+    `M ${o0.x.toFixed(2)} ${o0.y.toFixed(2)} ` +
+    `A ${OUTER_R} ${OUTER_R} 0 0 1 ${o1.x.toFixed(2)} ${o1.y.toFixed(2)} ` +
+    `L ${i1.x.toFixed(2)} ${i1.y.toFixed(2)} ` +
+    `A ${INNER_R} ${INNER_R} 0 0 0 ${i0.x.toFixed(2)} ${i0.y.toFixed(2)} Z`
+  );
+}
+
+function positionToHue(x: number, y: number): number {
+  const dx = x - CENTER_XY;
+  const dy = y - CENTER_XY;
+  let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+  if (deg < 0) deg += 360;
+  if (deg >= 360) deg -= 360;
+  return Math.round(deg);
+}
+
+const WHEEL_PATHS = Array.from({ length: SEGMENTS }, (_, i) => {
+  const start = (i * 360) / SEGMENTS;
+  const end = ((i + 1) * 360) / SEGMENTS;
+  return { d: arcPath(start, end), fill: `hsl(${start}, 100%, 50%)` };
+});
+
+interface HueWheelProps {
+  hue: number;
+  onChange: (h: number) => void;
+}
+
+function HueWheel({ hue, onChange }: HueWheelProps) {
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (e) => {
+        const { locationX, locationY } = e.nativeEvent;
+        onChange(positionToHue(locationX, locationY));
+      },
+      onPanResponderMove: (e) => {
+        const { locationX, locationY } = e.nativeEvent;
+        onChange(positionToHue(locationX, locationY));
+      },
+    })
+  ).current;
+
+  const thumbR = (OUTER_R + INNER_R) / 2;
+  const thumb = polarToXY(hue, thumbR);
+  const thumbColour = hslToHex(hue, 100, 50);
+
+  return (
+    <View style={{ width: WHEEL_SIZE, height: WHEEL_SIZE, alignSelf: "center" }}>
+      <Svg
+        width={WHEEL_SIZE}
+        height={WHEEL_SIZE}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      >
+        {WHEEL_PATHS.map((seg, i) => (
+          <Path key={i} d={seg.d} fill={seg.fill} />
+        ))}
+        <Circle
+          cx={thumb.x}
+          cy={thumb.y}
+          r={13}
+          fill={thumbColour}
+          stroke="white"
+          strokeWidth={3}
+        />
+        <Circle
+          cx={CENTER_XY}
+          cy={CENTER_XY}
+          r={INNER_R - 6}
+          fill={thumbColour}
+          opacity={0.15}
+        />
+      </Svg>
+      <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
+    </View>
+  );
+}
+
+// ── Settings Modal ────────────────────────────────────────────────────────────
+
 export default function SettingsModal() {
   const colors = useColors();
-  const { override, setOverride, palette, setPalette } = useAppearance();
+  const { override, setOverride, palette, setPalette, customHue, setCustomHue } = useAppearance();
   const { country, setCountry, region, setSeasonFormat } = useSeasonContext();
   const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -46,13 +150,8 @@ export default function SettingsModal() {
   const [draftName, setDraftName] = useState(playerName);
   const [draft, setDraft] = useState({ ...labels });
 
-  useEffect(() => {
-    setDraftName(playerName);
-  }, [playerName]);
-
-  useEffect(() => {
-    setDraft({ ...labels });
-  }, [labels]);
+  useEffect(() => { setDraftName(playerName); }, [playerName]);
+  useEffect(() => { setDraft({ ...labels }); }, [labels]);
 
   const handleSave = async () => {
     await saveName(draftName);
@@ -75,6 +174,23 @@ export default function SettingsModal() {
     ]);
   };
 
+  // ── Hue wheel state ──
+  const effectiveHue =
+    palette === "custom"
+      ? customHue
+      : hexToHsl(PALETTES[palette as PresetPaletteId].swatch)[0];
+
+  const handleWheelChange = (h: number) => {
+    setCustomHue(h);
+    setPalette("custom");
+  };
+
+  const previewHex = hslToHex(effectiveHue, 55, 30);
+  const paletteName =
+    palette === "custom"
+      ? `Custom  ${previewHex.toUpperCase()}`
+      : PALETTES[palette as PresetPaletteId].label;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: colors.pavilion }]}>
@@ -86,15 +202,12 @@ export default function SettingsModal() {
         <View style={styles.backBtn} />
       </View>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: insets.bottom + 32 },
-        ]}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={[styles.heading, { color: colors.foreground }]}>
-          Appearance
-        </Text>
+        <Text style={[styles.heading, { color: colors.foreground }]}>Appearance</Text>
+
+        {/* Colour scheme */}
         <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
             <Feather name="moon" size={18} color={colors.primary} />
@@ -114,12 +227,7 @@ export default function SettingsModal() {
                   ]}
                   onPress={() => setOverride(opt)}
                 >
-                  <Text
-                    style={[
-                      styles.schemeBtnText,
-                      { color: override === opt ? colors.primaryForeground : colors.mutedForeground },
-                    ]}
-                  >
+                  <Text style={[styles.schemeBtnText, { color: override === opt ? colors.primaryForeground : colors.mutedForeground }]}>
                     {opt === "light" ? "Light" : opt === "dark" ? "Dark" : "Auto"}
                   </Text>
                 </TouchableOpacity>
@@ -128,45 +236,53 @@ export default function SettingsModal() {
           </View>
         </View>
 
-        <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
-            <Feather name="droplet" size={18} color={colors.primary} />
-          </View>
-          <View style={styles.rowBody}>
-            <Text style={[styles.hint, { color: colors.mutedForeground }]}>Colour palette</Text>
-            <View style={styles.swatchRow}>
-              {(Object.entries(PALETTES) as [PaletteId, typeof PALETTES[PaletteId]][]).map(([id, pal]) => {
-                const active = palette === id;
-                return (
-                  <TouchableOpacity
-                    key={id}
-                    onPress={() => setPalette(id)}
-                    style={[
-                      styles.swatchWrap,
-                      active && { borderColor: pal.swatch, borderWidth: 2.5 },
-                      !active && { borderColor: colors.border, borderWidth: 1.5 },
-                    ]}
-                    activeOpacity={0.75}
-                  >
-                    <View style={[styles.swatch, { backgroundColor: pal.swatch }]} />
-                    {active && (
-                      <View style={styles.swatchCheck}>
-                        <Feather name="check" size={10} color="#fff" />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
+        {/* Colour wheel */}
+        <View style={[styles.wheelCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.wheelCardHeader}>
+            <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+              <Feather name="droplet" size={18} color={colors.primary} />
             </View>
-            <Text style={[styles.paletteName, { color: colors.mutedForeground }]}>
-              {PALETTES[palette].label}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.hint, { color: colors.mutedForeground }]}>Accent colour</Text>
+              <View style={styles.colourLabelRow}>
+                <View style={[styles.colourDot, { backgroundColor: previewHex }]} />
+                <Text style={[styles.paletteName, { color: colors.foreground }]}>{paletteName}</Text>
+              </View>
+            </View>
+          </View>
+
+          <HueWheel hue={effectiveHue} onChange={handleWheelChange} />
+
+          {/* Preset quick-picks */}
+          <Text style={[styles.quickPicksLabel, { color: colors.mutedForeground }]}>Quick picks</Text>
+          <View style={styles.swatchRow}>
+            {(Object.entries(PALETTES) as [PresetPaletteId, (typeof PALETTES)[PresetPaletteId]][]).map(([id, pal]) => {
+              const active = palette === id;
+              return (
+                <TouchableOpacity
+                  key={id}
+                  onPress={() => setPalette(id)}
+                  style={[
+                    styles.swatchWrap,
+                    active && { borderColor: pal.swatch, borderWidth: 2.5 },
+                    !active && { borderColor: colors.border, borderWidth: 1.5 },
+                  ]}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.swatch, { backgroundColor: pal.swatch }]} />
+                  {active && (
+                    <View style={styles.swatchCheck}>
+                      <Feather name="check" size={10} color="#fff" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        <Text style={[styles.heading, { color: colors.foreground }]}>
-          Season
-        </Text>
+        {/* Season */}
+        <Text style={[styles.heading, { color: colors.foreground }]}>Season</Text>
         <TouchableOpacity
           style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => setCountryPickerOpen(true)}
@@ -186,7 +302,6 @@ export default function SettingsModal() {
           </View>
         </TouchableOpacity>
 
-        {/* Season format toggle */}
         <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
             <Feather name="calendar" size={18} color={colors.primary} />
@@ -269,9 +384,8 @@ export default function SettingsModal() {
           </View>
         </Modal>
 
-        <Text style={[styles.heading, { color: colors.foreground }]}>
-          Language
-        </Text>
+        {/* Language */}
+        <Text style={[styles.heading, { color: colors.foreground }]}>Language</Text>
         <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border, flexWrap: "wrap" }]}>
           <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
             <Feather name="globe" size={18} color={colors.primary} />
@@ -298,9 +412,8 @@ export default function SettingsModal() {
           </View>
         </View>
 
-        <Text style={[styles.heading, { color: colors.foreground }]}>
-          Profile
-        </Text>
+        {/* Profile */}
+        <Text style={[styles.heading, { color: colors.foreground }]}>Profile</Text>
         <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
             <Feather name="user" size={18} color={colors.primary} />
@@ -320,37 +433,21 @@ export default function SettingsModal() {
           </View>
         </View>
 
-        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>
-          Rename Tabs
-        </Text>
+        {/* Rename Tabs */}
+        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>Rename Tabs</Text>
         <Text style={[styles.sub, { color: colors.mutedForeground }]}>
           Customise the label shown under each tab icon.
         </Text>
 
         {TAB_DEFS.map(({ key, icon, hint }) => (
-          <View
-            key={key}
-            style={[
-              styles.row,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
+          <View key={key} style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
               <Feather name={icon as any} size={18} color={colors.primary} />
             </View>
             <View style={styles.rowBody}>
-              <Text style={[styles.hint, { color: colors.mutedForeground }]}>
-                {hint}
-              </Text>
+              <Text style={[styles.hint, { color: colors.mutedForeground }]}>{hint}</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: colors.foreground,
-                    borderColor: colors.border,
-                    backgroundColor: colors.background,
-                  },
-                ]}
+                style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
                 value={draft[key]}
                 onChangeText={(v) => setDraft((d) => ({ ...d, [key]: v }))}
                 placeholder={DEFAULT_LABELS[key]}
@@ -362,17 +459,12 @@ export default function SettingsModal() {
           </View>
         ))}
 
-        <TouchableOpacity
-          style={[styles.saveBtn, { backgroundColor: colors.primary }]}
-          onPress={handleSave}
-        >
+        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={handleSave}>
           <Text style={styles.saveBtnText}>Save Changes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-          <Text style={[styles.resetBtnText, { color: colors.mutedForeground }]}>
-            Reset to defaults
-          </Text>
+          <Text style={[styles.resetBtnText, { color: colors.mutedForeground }]}>Reset to defaults</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -421,23 +513,60 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
   },
 
-  saveBtn: {
-    marginTop: 8,
+  wheelCard: {
     borderRadius: 14,
-    paddingVertical: 15,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
+    alignItems: "stretch",
+  },
+  wheelCardHeader: {
+    flexDirection: "row",
     alignItems: "center",
+    gap: 12,
   },
-  saveBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
+  colourLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
   },
+  colourDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+  },
+  paletteName: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  quickPicksLabel: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 4 },
+  swatchRow: { flexDirection: "row", gap: 10 },
+  swatchWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  swatch: { width: 32, height: 32, borderRadius: 16 },
+  swatchCheck: {
+    position: "absolute",
+    bottom: 1,
+    right: 1,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  saveBtn: { marginTop: 8, borderRadius: 14, paddingVertical: 15, alignItems: "center" },
+  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
   resetBtn: { alignItems: "center", paddingVertical: 12 },
   resetBtnText: { fontSize: 14, fontFamily: "Inter_400Regular" },
 
   countryValue: { fontSize: 16, fontFamily: "Inter_600SemiBold", marginTop: 2 },
-  regionSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginBottom: 2 },
-
   pickerModal: { flex: 1 },
   pickerHeader: {
     flexDirection: "row",
@@ -469,32 +598,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   schemeBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
-
-  swatchRow: { flexDirection: "row", gap: 10, marginTop: 6 },
-  swatchWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    padding: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  swatch: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  swatchCheck: {
-    position: "absolute",
-    bottom: 1,
-    right: 1,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paletteName: { fontSize: 12, fontFamily: "Inter_500Medium", marginTop: 4 },
 });

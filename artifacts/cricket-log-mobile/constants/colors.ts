@@ -1,4 +1,5 @@
-export type PaletteId = "green" | "navy" | "maroon" | "dusk" | "tawny";
+export type PaletteId = "green" | "navy" | "maroon" | "dusk" | "tawny" | "custom";
+export type PresetPaletteId = "green" | "navy" | "maroon" | "dusk" | "tawny";
 
 export interface ColorTokens {
   text: string;
@@ -29,7 +30,103 @@ export interface ColorTokens {
 
 type SchemeTokens = { light: ColorTokens; dark: ColorTokens };
 
-export const PALETTES: Record<PaletteId, { label: string; swatch: string; schemes: SchemeTokens }> = {
+// ── Colour utilities ──────────────────────────────────────────────────────────
+
+export function hslToHex(h: number, s: number, l: number): string {
+  s /= 100;
+  l /= 100;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const r = Math.round(255 * f(0));
+  const g = Math.round(255 * f(8));
+  const b = Math.round(255 * f(4));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+export function hexToHsl(hex: string): [number, number, number] {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, Math.round(l * 100)];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  switch (max) {
+    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+    case g: h = (b - r) / d + 2; break;
+    case b: h = (r - g) / d + 4; break;
+  }
+  return [Math.round((h / 6) * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+export function generatePaletteFromHue(h: number): { label: string; swatch: string; schemes: SchemeTokens } {
+  const swatch = hslToHex(h, 55, 30);
+  return {
+    label: "Custom",
+    swatch,
+    schemes: {
+      light: {
+        text: "#1A1A2E",
+        tint: hslToHex(h, 55, 28),
+        background: hslToHex(h, 14, 97),
+        foreground: "#1A1A2E",
+        card: hslToHex(h, 8, 99),
+        cardForeground: "#1A1A2E",
+        primary: hslToHex(h, 55, 28),
+        primaryForeground: "#FFFFFF",
+        secondary: hslToHex(h, 20, 90),
+        secondaryForeground: "#1A1A2E",
+        muted: hslToHex(h, 20, 90),
+        mutedForeground: hslToHex(h, 10, 46),
+        accent: "#C0392B",
+        accentForeground: "#FFFFFF",
+        destructive: "#C0392B",
+        destructiveForeground: "#FFFFFF",
+        border: hslToHex(h, 14, 85),
+        input: hslToHex(h, 14, 85),
+        success: "#1B5E2B",
+        warning: "#B45309",
+        info: "#1E40AF",
+        pavilion: hslToHex(h, 42, 14),
+        pavilionForeground: "#FFFDF8",
+        pavilionMuted: "rgba(255,255,255,0.55)",
+      },
+      dark: {
+        text: hslToHex(h, 14, 90),
+        tint: hslToHex(h, 38, 52),
+        background: hslToHex(h, 22, 8),
+        foreground: hslToHex(h, 14, 90),
+        card: hslToHex(h, 20, 11),
+        cardForeground: hslToHex(h, 14, 90),
+        primary: hslToHex(h, 38, 52),
+        primaryForeground: hslToHex(h, 22, 8),
+        secondary: hslToHex(h, 18, 18),
+        secondaryForeground: hslToHex(h, 14, 90),
+        muted: hslToHex(h, 18, 18),
+        mutedForeground: hslToHex(h, 8, 56),
+        accent: "#C0392B",
+        accentForeground: "#FFFFFF",
+        destructive: "#E55A4A",
+        destructiveForeground: "#FFFFFF",
+        border: hslToHex(h, 15, 22),
+        input: hslToHex(h, 15, 22),
+        success: "#3D8B52",
+        warning: "#D97706",
+        info: "#3B82F6",
+        pavilion: hslToHex(h, 25, 6),
+        pavilionForeground: hslToHex(h, 8, 95),
+        pavilionMuted: "rgba(255,255,255,0.50)",
+      },
+    },
+  };
+}
+
+export const PALETTES: Record<PresetPaletteId, { label: string; swatch: string; schemes: SchemeTokens }> = {
   green: {
     label: "Cricket Green",
     swatch: "#1B5E2B",

@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun, ArrowUp, Sparkles } from "lucide-react";
+import { Trophy, BookOpen, PlusCircle, Activity, ListChecks, Medal, BarChart2, LineChart, Moon, Sun, ArrowUp, Sparkles, Palette } from "lucide-react";
 
 const DASHBOARD_SHORTCUTS = [
   { label: "📊 Stats", anchor: "stats" },
@@ -48,6 +48,113 @@ function DashboardShortcuts() {
   );
 }
 
+// ── Colour utilities ──────────────────────────────────────────────────────────
+
+function hexToHue(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  if (max === min) return 0;
+  const d = max - min;
+  let h = 0;
+  switch (max) {
+    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+    case g: h = (b - r) / d + 2; break;
+    case b: h = (r - g) / d + 4; break;
+  }
+  return Math.round((h / 6) * 360);
+}
+
+function applyAccent(hex: string) {
+  const h = hexToHue(hex);
+  const isDark = document.documentElement.classList.contains("dark");
+  const root = document.documentElement;
+
+  if (isDark) {
+    root.style.setProperty("--background",                  `${h} 20% 9%`);
+    root.style.setProperty("--border",                      `${h} 18% 20%`);
+    root.style.setProperty("--card",                        `${h} 20% 11%`);
+    root.style.setProperty("--card-border",                 `${h} 18% 20%`);
+    root.style.setProperty("--popover",                     `${h} 20% 11%`);
+    root.style.setProperty("--popover-border",              `${h} 18% 20%`);
+    root.style.setProperty("--primary",                     `${h} 45% 48%`);
+    root.style.setProperty("--primary-foreground",          `${h} 25% 8%`);
+    root.style.setProperty("--muted",                       `${h} 18% 18%`);
+    root.style.setProperty("--input",                       `${h} 18% 20%`);
+    root.style.setProperty("--ring",                        `${h} 45% 48%`);
+    root.style.setProperty("--chart-1",                     `${h} 45% 48%`);
+    root.style.setProperty("--sidebar",                     `${h} 25% 8%`);
+    root.style.setProperty("--sidebar-border",              `${h} 20% 16%`);
+    root.style.setProperty("--sidebar-primary",             `${h} 45% 48%`);
+    root.style.setProperty("--sidebar-primary-foreground",  `${h} 25% 8%`);
+    root.style.setProperty("--sidebar-accent",              `${h} 18% 18%`);
+    root.style.setProperty("--sidebar-ring",                `${h} 45% 48%`);
+  } else {
+    root.style.setProperty("--primary",                     `${h} 52% 28%`);
+    root.style.setProperty("--ring",                        `${h} 52% 28%`);
+    root.style.setProperty("--chart-1",                     `${h} 52% 28%`);
+    root.style.setProperty("--sidebar",                     `${h} 30% 20%`);
+    root.style.setProperty("--sidebar-border",              `${h} 25% 28%`);
+    root.style.setProperty("--sidebar-primary",             `${h} 55% 55%`);
+    root.style.setProperty("--sidebar-primary-foreground",  `${h} 30% 10%`);
+    root.style.setProperty("--sidebar-accent",              `${h} 25% 28%`);
+    root.style.setProperty("--sidebar-ring",                `${h} 55% 55%`);
+  }
+}
+
+const ACCENT_KEY = "cricvault-accent";
+const DEFAULT_ACCENT = "#1b5e2b";
+
+// ── Colour Picker ─────────────────────────────────────────────────────────────
+
+function ColourPicker() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hex, setHex] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_ACCENT;
+    return localStorage.getItem(ACCENT_KEY) || DEFAULT_ACCENT;
+  });
+
+  useEffect(() => {
+    applyAccent(hex);
+  }, [hex]);
+
+  const handleChange = (newHex: string) => {
+    setHex(newHex);
+    localStorage.setItem(ACCENT_KEY, newHex);
+    applyAccent(newHex);
+  };
+
+  return (
+    <div className="relative ml-1 flex-shrink-0">
+      <button
+        onClick={() => inputRef.current?.click()}
+        className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
+        title="Choose accent colour"
+        aria-label="Choose accent colour"
+      >
+        <Palette className="h-4 w-4" />
+        <span
+          className="w-3.5 h-3.5 rounded-full border border-white/30 shadow-sm flex-shrink-0"
+          style={{ backgroundColor: hex }}
+        />
+      </button>
+      <input
+        ref={inputRef}
+        type="color"
+        value={hex}
+        onChange={(e) => handleChange(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
+// ── Dark Mode Toggle ──────────────────────────────────────────────────────────
+
 function DarkModeToggle() {
   const [dark, setDark] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -63,12 +170,14 @@ function DarkModeToggle() {
       document.documentElement.classList.remove("dark");
     }
     localStorage.setItem("cricvault-dark-mode", String(dark));
+    const savedAccent = localStorage.getItem(ACCENT_KEY);
+    if (savedAccent) applyAccent(savedAccent);
   }, [dark]);
 
   return (
     <button
       onClick={() => setDark((d) => !d)}
-      className="ml-2 flex-shrink-0 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+      className="ml-1 flex-shrink-0 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
       title={dark ? "Switch to light mode" : "Switch to dark mode"}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >
@@ -164,6 +273,7 @@ export function Layout({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
+          <ColourPicker />
           <DarkModeToggle />
         </div>
       </header>
