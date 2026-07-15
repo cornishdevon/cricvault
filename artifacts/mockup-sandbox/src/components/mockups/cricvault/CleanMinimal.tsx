@@ -80,10 +80,10 @@ export function CleanMinimal() {
         ))}
       </div>
 
-      {/* Recent Form */}
+      {/* Your Form */}
       <div className="mx-4 mb-5">
         <div className="flex justify-between items-baseline mb-3">
-          <p className="text-sm font-semibold" style={{ fontFamily: "system-ui", color: "#1c1917" }}>Recent Form</p>
+          <p className="text-sm font-semibold" style={{ fontFamily: "system-ui", color: "#1c1917" }}>Your Form</p>
           <p className="text-xs" style={{ fontFamily: "system-ui", color: "#a8a29e" }}>2026 only</p>
         </div>
         <div className="flex gap-2">

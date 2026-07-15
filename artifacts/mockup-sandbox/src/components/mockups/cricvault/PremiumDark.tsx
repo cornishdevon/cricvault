@@ -124,9 +124,9 @@ export function PremiumDark() {
         </div>
       </div>
 
-      {/* Recent Form */}
+      {/* Your Form */}
       <div className="mx-4 mb-2">
-        <p className="text-xs font-semibold mb-2" style={{ color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>Recent Form</p>
+        <p className="text-xs font-semibold mb-2" style={{ color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>Your Form</p>
         <div className="flex gap-2">
           {[
             { runs: 87, wkts: 2, opp: "SMCC", win: true },

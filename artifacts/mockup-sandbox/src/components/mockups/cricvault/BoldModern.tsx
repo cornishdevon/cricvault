@@ -90,10 +90,10 @@ export function BoldModern() {
         ))}
       </div>
 
-      {/* Recent Form */}
+      {/* Your Form */}
       <div className="mx-4 mb-3">
         <div className="flex justify-between items-center mb-2">
-          <p className="text-sm font-bold" style={{ color: "#1a1a1a" }}>Recent Form</p>
+          <p className="text-sm font-bold" style={{ color: "#1a1a1a" }}>Your Form</p>
           <p className="text-xs font-medium" style={{ color: "#16a34a" }}>2026 season</p>
         </div>
         <div className="flex gap-2">

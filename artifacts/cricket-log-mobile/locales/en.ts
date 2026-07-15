@@ -33,7 +33,7 @@ export default {
   home: {
     seasonLabel: "Season",
     recentMatches: "Recent Matches",
-    recentForm: "Recent Form",
+    recentForm: "Your Form",
     bestPerformances: "Best Performances",
     dismissalBreakdown: "Dismissal Breakdown",
     byMatchType: "By Match Type",
