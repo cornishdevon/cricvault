@@ -39,7 +39,7 @@ export function RecentFormGuide({ data }: { data: MatchResult[] }) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Recent Form</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Your Form</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Last {recent.length} matches — {wins}W {losses}L{draws > 0 ? ` ${draws}D` : ""}
           </p>
