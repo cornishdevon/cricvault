@@ -1,5 +1,6 @@
 import { useListCoachingTips } from "@workspace/api-client-react";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,6 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { usePro } from "@/contexts/ProContext";
 import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
 
@@ -125,10 +127,39 @@ function PaginationDots({
   );
 }
 
+function ProPaywall({ colors }: { colors: ReturnType<typeof useColors> }) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 32, paddingBottom: insets.bottom + 32 }}>
+      <View style={{ width: 72, height: 72, borderRadius: 24, backgroundColor: colors.primary + "20", borderWidth: 1.5, borderColor: colors.primary + "50", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+        <Feather name="lock" size={32} color={colors.primary} />
+      </View>
+      <Text style={{ fontFamily: "Inter_700Bold", fontSize: 22, color: colors.foreground, textAlign: "center", marginBottom: 10 }}>
+        Pro Feature
+      </Text>
+      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 14, color: colors.mutedForeground, textAlign: "center", lineHeight: 21, marginBottom: 28 }}>
+        AI coaching tips and personalised drills are included with CricVault Pro. Upgrade to unlock them.
+      </Text>
+      <TouchableOpacity
+        style={{ backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", width: "100%" }}
+        onPress={() => router.push("/upgrade" as any)}
+        activeOpacity={0.85}
+      >
+        <Text style={{ color: "#fff", fontFamily: "Inter_700Bold", fontSize: 16 }}>Unlock CricVault Pro</Text>
+      </TouchableOpacity>
+      <Text style={{ fontFamily: "Inter_400Regular", fontSize: 12, color: colors.mutedForeground, marginTop: 12 }}>
+        £4.99 / year · Cancel anytime
+      </Text>
+    </View>
+  );
+}
+
 export default function CoachingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const t = useT();
+  const { isPro } = usePro();
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatRef = useRef<FlatList>(null);
@@ -182,6 +213,14 @@ export default function CoachingScreen() {
   };
 
   const tipCount = tips?.length ?? 0;
+
+  if (!isPro) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <ProPaywall colors={colors} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView

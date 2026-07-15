@@ -17,6 +17,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
+import { ProProvider } from "@/contexts/ProContext";
 import { SeasonProvider } from "@/contexts/SeasonContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -49,6 +50,10 @@ function RootLayoutNav() {
         name="settings-modal"
         options={{ title: "Settings", presentation: "modal", headerBackTitle: "Cancel" }}
       />
+      <Stack.Screen
+        name="upgrade"
+        options={{ title: "CricVault Pro", presentation: "modal", headerShown: false }}
+      />
     </Stack>
   );
 }
@@ -78,11 +83,13 @@ export default function RootLayout() {
         <PlayerNameProvider>
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
+            <ProProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <KeyboardProvider>
                 <RootLayoutNav />
               </KeyboardProvider>
             </GestureHandlerRootView>
+            </ProProvider>
           </QueryClientProvider>
         </TabLabelsProvider>
         </PlayerNameProvider>
