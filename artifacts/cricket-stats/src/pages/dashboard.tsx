@@ -697,6 +697,9 @@ export default function Dashboard() {
                 {selectedSeason === "all" ? (summary?.batting.totalRuns ?? 0) : seasonRuns}{" "}
                 <span className="text-base font-normal text-muted-foreground">runs</span>
               </div>
+              <p className="text-xs font-medium text-primary mt-0.5">
+                {selectedSeason === "all" ? "Career Runs" : `${selectedSeason} Runs`}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Avg: {selectedSeason === "all" ? (summary?.batting as any)?.battingAverage?.toFixed(1) ?? "—" : filteredBattingAvg} •{" "}
                 {selectedSeason === "all" ? (summary?.batting.innings ?? 0) : filteredInnings} innings
