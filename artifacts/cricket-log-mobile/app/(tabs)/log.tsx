@@ -777,10 +777,7 @@ export default function LogMatchScreen() {
       Alert.alert(
         t("log.alreadySavedTitle"),
         t("log.alreadySavedMsg", { opponent: duplicate.opponent, date: duplicate.date }),
-        [
-          { text: t("common.cancel"), style: "cancel" },
-          { text: t("log.saveAnywayBtn"), style: "default", onPress: () => void doSave() },
-        ],
+        [{ text: t("common.ok"), style: "default" }],
       );
       return;
     }
