@@ -273,9 +273,9 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
     { id: "redink",        label: "Red Ink",         description: "5+ career not outs",            icon: "🛡️", earned: notOuts.length >= 5, detail: notOuts.length >= 5 ? `${notOuts.length} not outs` : undefined },
     { id: "trophy",        label: "Personal Best",   description: "Beat your own batting high score", icon: "🏆", imageKey: "personalBest", earned: trophyEarned, shareText: trophyMatch ? `🏆 Personal Best\n${trophyMatch.runs} runs vs ${trophyMatch.opponent}\n${fmtDate(trophyMatch.date)}\n\nLogged on CricVault 🏏` : undefined },
 
-    { id: "strokemaker", label: "Stroke Maker", description: "500 runs in a season",   icon: "✨", earned: strokeMakerEarned, detail: strokeMakerSeason ? `${strokeMakerSeason} season` : undefined },
-    { id: "runmachine",  label: "Run Machine",  description: "750 runs in a season",   icon: "⚙️", earned: runMachineEarned, detail: runMachineSeason ? `${runMachineSeason} season` : undefined },
-    { id: "pro",         label: "Pro",          description: "1,000 runs in a season", icon: "🌟", earned: proEarned, detail: proSeason ? `${proSeason} season` : undefined },
+    { id: "strokemaker",  label: "Stroke Maker",  description: "500 runs in a season",   icon: "✨", earned: strokeMakerEarned, detail: strokeMakerSeason ? `${strokeMakerSeason} season` : undefined },
+    { id: "runmachine",   label: "Run Machine",   description: "750 runs in a season",   icon: "⚙️", earned: runMachineEarned, detail: runMachineSeason ? `${runMachineSeason} season` : undefined },
+    { id: "thousandUp",   label: "Thousand Up",   description: "1,000 runs in a season", icon: "🌟", imageKey: "thousandUp", earned: proEarned, detail: proSeason ? `${proSeason} season` : undefined, shareText: proEarned && proSeason ? `🌟 Thousand Up — 1,000 runs in the ${proSeason} season!\n\nLogged on CricVault 🏏` : undefined },
     { id: "career2000",  label: "2,000 Club",   description: "2,000 career runs",      icon: "🏆", earned: careerRuns >= 2000, detail: careerRuns >= 2000 ? `${careerRuns} runs` : undefined },
     { id: "career100wkt", label: "100 Wickets", description: "100 career wickets",     icon: "🎳", earned: careerWickets >= 100, detail: careerWickets >= 100 ? `${careerWickets} wickets` : undefined },
 
