@@ -596,6 +596,7 @@ export default function MatchDetailScreen() {
       queryClient.invalidateQueries({ queryKey: getGetFieldingStatsQueryKey(matchId) });
       queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
       queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getListMatchesQueryKey() });
       setEditMode(false);
     } catch {
       Alert.alert("Error", "Some changes could not be saved. Please try again.");
@@ -832,9 +833,17 @@ export default function MatchDetailScreen() {
             <StatRow label="Match Type" value={(match as any).matchType} colors={colors} />
           )}
           {editMode ? (
-            <View style={[styles.statRow, { borderBottomColor: colors.border }]}>
+            <View style={[styles.statRow, { borderBottomColor: colors.border, flexDirection: "column", alignItems: "flex-start", paddingVertical: 10, gap: 8 }]}>
               <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Result</Text>
-              <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6, justifyContent: "flex-end" }}>
+              <TextInput
+                style={[styles.editInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background, width: "100%" }]}
+                value={editResult}
+                onChangeText={setEditResult}
+                placeholder='e.g. Won by 4 wickets, Lost by 12 runs…'
+                placeholderTextColor={colors.mutedForeground}
+                returnKeyType="done"
+              />
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {RESULT_OPTIONS.map((r) => {
                   const active = editResult === r;
                   return (
