@@ -451,6 +451,16 @@ export default function MatchDetailScreen() {
   // Always-fresh ref so the header button never calls a stale closure
   const handleSaveRef = React.useRef<() => void>(() => {});
 
+  // Live ref for all edit values — updated every render so handleSave always
+  // reads the current values even when memoised by React Compiler.
+  const editValuesRef = React.useRef({
+    opponent: "", date: "", matchType: "", venue: "", result: "",
+    notes: "", pitchType: "", weather: "", tossWinner: "", tossDecision: "",
+    runs: "", balls: "", fours: "", sixes: "", howOut: "",
+    wickets: "", overs: "", runsConceded: "", maidens: "",
+    catches: "", stumpings: "", runOuts: "", dropped: "",
+  });
+
   // Match fields
   const [editOpponent, setEditOpponent] = useState("");
   const [editDate, setEditDate] = useState("");
@@ -478,6 +488,20 @@ export default function MatchDetailScreen() {
   const [editStumpings, setEditStumpings] = useState("");
   const [editRunOuts, setEditRunOuts] = useState("");
   const [editDropped, setEditDropped] = useState("");
+
+  // Sync ref with current state every render
+  editValuesRef.current = {
+    opponent: editOpponent, date: editDate, matchType: editMatchType,
+    venue: editVenue, result: editResult, notes: editNotes,
+    pitchType: editPitchType, weather: editWeather,
+    tossWinner: editTossWinner, tossDecision: editTossDecision,
+    runs: editRuns, balls: editBalls, fours: editFours,
+    sixes: editSixes, howOut: editHowOut,
+    wickets: editWickets, overs: editOvers,
+    runsConceded: editRunsConceded, maidens: editMaidens,
+    catches: editCatches, stumpings: editStumpings,
+    runOuts: editRunOuts, dropped: editDropped,
+  };
 
   const enterEditMode = () => {
     const m = match as any;
@@ -513,73 +537,65 @@ export default function MatchDetailScreen() {
   const cancelEdit = () => setEditMode(false);
 
   const handleSave = async () => {
+    // Read from ref so this works even when memoised by React Compiler
+    const v = editValuesRef.current;
     setSaving(true);
-    const invalidate = () => {
+    try {
+      await updateMatch.mutateAsync({
+        matchId,
+        data: {
+          opponent: v.opponent || undefined,
+          date: v.date || undefined,
+          matchType: v.matchType || undefined,
+          venue: v.venue || undefined,
+          result: v.result !== "" ? v.result : null,
+          notes: v.notes || undefined,
+          pitchType: v.pitchType || undefined,
+          weatherConditions: v.weather || undefined,
+          tossWinner: v.tossWinner || undefined,
+          tossDecision: v.tossDecision || undefined,
+        } as any,
+      });
+      if (batting) {
+        await updateBatting.mutateAsync({
+          matchId,
+          data: {
+            runs: v.runs !== "" ? Number(v.runs) : undefined,
+            ballsFaced: v.balls !== "" ? Number(v.balls) : undefined,
+            fours: v.fours !== "" ? Number(v.fours) : undefined,
+            sixes: v.sixes !== "" ? Number(v.sixes) : undefined,
+            howOut: v.howOut || undefined,
+          } as any,
+        });
+      }
+      if (bowling) {
+        await updateBowling.mutateAsync({
+          matchId,
+          data: {
+            wickets: v.wickets !== "" ? Number(v.wickets) : undefined,
+            overs: v.overs !== "" ? Number(v.overs) : undefined,
+            runsConceded: v.runsConceded !== "" ? Number(v.runsConceded) : undefined,
+            maidens: v.maidens !== "" ? Number(v.maidens) : undefined,
+          } as any,
+        });
+      }
+      if (fielding) {
+        await updateFielding.mutateAsync({
+          matchId,
+          data: {
+            catches: v.catches !== "" ? Number(v.catches) : undefined,
+            stumpings: v.stumpings !== "" ? Number(v.stumpings) : undefined,
+            runOuts: v.runOuts !== "" ? Number(v.runOuts) : undefined,
+            droppedCatches: v.dropped !== "" ? Number(v.dropped) : undefined,
+          } as any,
+        });
+      }
       queryClient.invalidateQueries({ queryKey: getGetMatchQueryKey(matchId) });
       queryClient.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
       queryClient.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
       queryClient.invalidateQueries({ queryKey: getGetFieldingStatsQueryKey(matchId) });
       queryClient.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
       queryClient.invalidateQueries({ queryKey: getGetStatsSummaryQueryKey() });
-    };
-    try {
-      await Promise.all([
-        new Promise<void>((resolve, reject) =>
-          updateMatch.mutate(
-            {
-              matchId,
-              data: {
-                opponent: editOpponent || undefined,
-                date: editDate || undefined,
-                matchType: editMatchType || undefined,
-                venue: editVenue || undefined,
-                result: editResult !== "" ? editResult : null,
-                notes: editNotes || undefined,
-                pitchType: editPitchType || undefined,
-                weatherConditions: editWeather || undefined,
-                tossWinner: editTossWinner || undefined,
-                tossDecision: editTossDecision || undefined,
-              } as any,
-            },
-            { onSuccess: () => resolve(), onError: reject }
-          )
-        ),
-        batting ? new Promise<void>((resolve, reject) =>
-          updateBatting.mutate(
-            { matchId, data: {
-              runs: editRuns !== "" ? Number(editRuns) : undefined,
-              ballsFaced: editBalls !== "" ? Number(editBalls) : undefined,
-              fours: editFours !== "" ? Number(editFours) : undefined,
-              sixes: editSixes !== "" ? Number(editSixes) : undefined,
-              howOut: editHowOut || undefined,
-            } as any },
-            { onSuccess: () => resolve(), onError: reject }
-          )
-        ) : Promise.resolve(),
-        bowling ? new Promise<void>((resolve, reject) =>
-          updateBowling.mutate(
-            { matchId, data: {
-              wickets: editWickets !== "" ? Number(editWickets) : undefined,
-              overs: editOvers !== "" ? Number(editOvers) : undefined,
-              runsConceded: editRunsConceded !== "" ? Number(editRunsConceded) : undefined,
-              maidens: editMaidens !== "" ? Number(editMaidens) : undefined,
-            } as any },
-            { onSuccess: () => resolve(), onError: reject }
-          )
-        ) : Promise.resolve(),
-        fielding ? new Promise<void>((resolve, reject) =>
-          updateFielding.mutate(
-            { matchId, data: {
-              catches: editCatches !== "" ? Number(editCatches) : undefined,
-              stumpings: editStumpings !== "" ? Number(editStumpings) : undefined,
-              runOuts: editRunOuts !== "" ? Number(editRunOuts) : undefined,
-              droppedCatches: editDropped !== "" ? Number(editDropped) : undefined,
-            } as any },
-            { onSuccess: () => resolve(), onError: reject }
-          )
-        ) : Promise.resolve(),
-      ]);
-      invalidate();
       setEditMode(false);
     } catch {
       Alert.alert("Error", "Some changes could not be saved. Please try again.");
