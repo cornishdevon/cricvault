@@ -21,6 +21,7 @@ import { ProProvider } from "@/contexts/ProContext";
 import { SeasonProvider } from "@/contexts/SeasonContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -84,11 +85,13 @@ export default function RootLayout() {
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
             <ProProvider>
+            <BadgeNotificationProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <KeyboardProvider>
                 <RootLayoutNav />
               </KeyboardProvider>
             </GestureHandlerRootView>
+            </BadgeNotificationProvider>
             </ProProvider>
           </QueryClientProvider>
         </TabLabelsProvider>
