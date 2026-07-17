@@ -3,6 +3,7 @@ export type PerMatchStat = {
   date: string;
   opponent: string;
   matchType: string;
+  playingFor?: string | null;
   runs?: number | null;
   ballsFaced?: number | null;
   strikeRate?: number | null;
@@ -235,8 +236,29 @@ export function computeBadges(data: PerMatchStat[]): Badge[] {
   const drsCount   = drsMatches.length;
   const drsFirst   = drsMatches[0];
 
+  // Debut — one badge per unique team (keyed by playingFor); falls back to a
+  // single generic badge for matches logged without a team name.
+  const teamGroups = new Map<string, PerMatchStat[]>();
+  for (const d of sorted) {
+    const team = d.playingFor?.trim() || "";
+    if (!teamGroups.has(team)) teamGroups.set(team, []);
+    teamGroups.get(team)!.push(d);
+  }
+  const debutBadges: Badge[] = teamGroups.size > 0
+    ? [...teamGroups.entries()].map(([team]) => ({
+        id: team ? `debut_${team}` : "debut",
+        label: "Debut",
+        description: team ? `First match for ${team}` : "First match logged",
+        icon: "🎖️",
+        imageKey: "debut" as string,
+        imageScale: 1.4,
+        earned: true as const,
+        detail: team || undefined,
+      }))
+    : [{ id: "debut", label: "Debut", description: "First match with a new team", icon: "🎖️", imageKey: "debut" as string, imageScale: 1.4, earned: false as const }];
+
   const badges: Badge[] = [
-    { id: "debut",     label: "Debut",               description: "First match logged",            icon: "🎖️", imageKey: "debut", imageScale: 1.4, earned: sorted.length >= 1 },
+    ...debutBadges,
     { id: "smellGrass", label: "Smell of Cut Grass", description: "10 matches played",             icon: "🌿", imageKey: "smellGrass", earned: sorted.length >= 10, detail: sorted.length >= 10 ? `${sorted.length} matches` : undefined },
     { id: "newSeason",  label: "New Season",          description: "Matches in 2+ seasons",         icon: "🌱", imageKey: "newSeason", earned: newSeasonEarned, detail: newSeasonYear ? `${newSeasonYear} season` : undefined },
 
