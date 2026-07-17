@@ -192,3 +192,9 @@ id = "AXryIo07KGH4jciSp1190"
 uri = "file://attached_assets/generated_images/cricket_ball_bouncing_off_2413.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "lnr602fk30RKpGZZMKlhZ"
+uri = "file://artifacts/cricket-log-mobile/assets/badges/debut.png"
+type = "image"
+title = "generated_image"
