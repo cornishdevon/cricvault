@@ -330,3 +330,9 @@ id = "74aYWGScn21B_vKM0fCZZ"
 uri = "file://artifacts/cricket-log-mobile/assets/badges/triggered.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "2heqriTeBtMMH5C9xUg_e"
+uri = "file://artifacts/cricket-log-mobile/assets/badges/butterFingers.png"
+type = "image"
+title = "generated_image"
