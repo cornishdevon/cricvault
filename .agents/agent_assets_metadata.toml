@@ -342,3 +342,9 @@ id = "RQ_K6n0OGRYrKcT5Is9T0"
 uri = "file://artifacts/cricket-log-mobile/assets/badges/nervousNineties.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "dZ4_BmNqhigibMa3IEgP4"
+uri = "file://artifacts/cricket-log-mobile/assets/badges/keepRunning.png"
+type = "image"
+title = "generated_image"
