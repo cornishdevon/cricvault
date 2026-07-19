@@ -905,17 +905,17 @@ export default function DashboardScreen() {
       + (summary?.bowling.totalWickets ?? 0) * 15
       + centuries * 300 + fifties * 100
       + potmCount * 75;
-    if (xp >= 50000) return { label: "Hall of Fame",    color: "#F59E0B", next: null };
-    if (xp >= 25000) return { label: "Legend",          color: "#FFB300", next: 50000 - xp };
-    if (xp >= 17500) return { label: "International",   color: "#34D399", next: 25000 - xp };
-    if (xp >= 10000) return { label: "Elite",           color: "#A78BFA", next: 17500 - xp };
-    if (xp >= 6500)  return { label: "County",          color: "#F472B6", next: 10000 - xp };
-    if (xp >= 4000)  return { label: "Semi-Pro",        color: "#60A5FA", next: 6500  - xp };
-    if (xp >= 2500)  return { label: "First XI",        color: "#22D3EE", next: 4000  - xp };
-    if (xp >= 1500)  return { label: "Amateur",         color: "#818CF8", next: 2500  - xp };
-    if (xp >= 1000)  return { label: "Club",            color: "#FBBF24", next: 1500  - xp };
-    if (xp >= 500)   return { label: "Village Cricketer",color: "#A3855A",next: 1000  - xp };
-    return              { label: "Novice",           color: "#9CA3AF", next: 500   - xp };
+    if (xp >= 50000) return { label: "Hall of Fame",     emoji: "🏆", color: "#F59E0B", next: null };
+    if (xp >= 25000) return { label: "Legend",           emoji: "👑", color: "#FFB300", next: 50000 - xp };
+    if (xp >= 17500) return { label: "International",    emoji: "🌍", color: "#34D399", next: 25000 - xp };
+    if (xp >= 10000) return { label: "Elite",            emoji: "🔥", color: "#A78BFA", next: 17500 - xp };
+    if (xp >= 6500)  return { label: "County",           emoji: "🏅", color: "#F472B6", next: 10000 - xp };
+    if (xp >= 4000)  return { label: "Semi-Pro",         emoji: "🌟", color: "#60A5FA", next: 6500  - xp };
+    if (xp >= 2500)  return { label: "First XI",         emoji: "🎯", color: "#22D3EE", next: 4000  - xp };
+    if (xp >= 1500)  return { label: "Amateur",          emoji: "⚡", color: "#818CF8", next: 2500  - xp };
+    if (xp >= 1000)  return { label: "Club",             emoji: "🏏", color: "#FBBF24", next: 1500  - xp };
+    if (xp >= 500)   return { label: "Village Cricketer",emoji: "🌾", color: "#A3855A", next: 1000  - xp };
+    return              { label: "Novice",            emoji: "🌱", color: "#9CA3AF", next: 500   - xp };
   })();
 
   const bowlingLevel = (() => {
@@ -1028,28 +1028,28 @@ export default function DashboardScreen() {
             >
               <View style={{ backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
 
-                {/* ── Top row: flap + level badge ── */}
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                  <SplitFlapDisplay
-                    value={flapValue}
-                    tileColor="rgba(255,255,255,0.08)"
-                    inkColor="#FFFDF8"
-                    borderColor="rgba(255,255,255,0.22)"
-                  />
-                  <View style={{
-                    flexShrink: 0,
-                    alignSelf: "center",
-                    paddingHorizontal: 10, paddingVertical: 3,
-                    borderRadius: 20,
-                    backgroundColor: careerLevel.color + "28",
-                    borderWidth: 1,
-                    borderColor: careerLevel.color + "66",
-                  }}>
-                    <Text style={{ fontFamily: "Inter_700Bold", fontSize: 10, color: careerLevel.color, letterSpacing: 1.0, textTransform: "uppercase" }}>
-                      {careerLevel.label}
-                    </Text>
-                  </View>
+                {/* ── Level badge — above the runs ── */}
+                <View style={{
+                  alignSelf: "flex-start",
+                  paddingHorizontal: 10, paddingVertical: 3,
+                  borderRadius: 20,
+                  backgroundColor: careerLevel.color + "28",
+                  borderWidth: 1,
+                  borderColor: careerLevel.color + "66",
+                  marginBottom: 8,
+                }}>
+                  <Text style={{ fontFamily: "Inter_700Bold", fontSize: 10, color: careerLevel.color, letterSpacing: 1.0, textTransform: "uppercase" }}>
+                    {careerLevel.emoji} {careerLevel.label}
+                  </Text>
                 </View>
+
+                {/* ── Flip display (runs) ── */}
+                <SplitFlapDisplay
+                  value={flapValue}
+                  tileColor="rgba(255,255,255,0.08)"
+                  inkColor="#FFFDF8"
+                  borderColor="rgba(255,255,255,0.22)"
+                />
                 {/* ── Career Runs label — horizontal, below the digits ── */}
                 <Text style={[styles.runsLabel, { color: "#FFFDF8", marginTop: 8 }]}>{t("home.careerRuns")}</Text>
 
