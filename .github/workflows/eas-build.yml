@@ -9,6 +9,8 @@ jobs:
   build:
     name: EAS Build
     runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +30,5 @@ jobs:
 
       - name: Build on EAS
         working-directory: artifacts/cricket-log-mobile
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --platform ios --profile production --non-interactive
 
