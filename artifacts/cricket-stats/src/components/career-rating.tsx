@@ -71,6 +71,15 @@ const BOWLING_LEVELS: BowlingLevel[] = [
   { name: "Hall of Fame",   emoji: "🏆", minWickets: 2000, color: "#b45309", bg: "#fffbeb", ring: "#fbbf24" },
 ];
 
+export function computeCareerLevel(summary: Summary, potmCount: number): { name: string; emoji: string; color: string } {
+  const xp = computeXp(summary, potmCount);
+  let level = LEVELS[0];
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].minXp) { level = LEVELS[i]; break; }
+  }
+  return { name: level.name, emoji: level.emoji, color: level.color };
+}
+
 function computeXp(summary: Summary, potmCount: number): number {
   let xp = 0;
   xp += summary.batting.totalRuns;

@@ -13,7 +13,7 @@ import { RecentFormGuide } from "@/components/recent-form-guide";
 import { BowlingForm } from "@/components/bowling-form";
 import { StreakTracker } from "@/components/streak-tracker";
 import { MilestonesTimeline } from "@/components/milestones-timeline";
-import { CareerRating, BowlingRating } from "@/components/career-rating";
+import { CareerRating, BowlingRating, computeCareerLevel } from "@/components/career-rating";
 import { SeasonTargets } from "@/components/season-targets";
 import { ShareCard } from "@/components/share-card";
 import { MilestoneTracker } from "@/components/milestone-tracker";
@@ -693,6 +693,14 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Batting</CardTitle>
             </CardHeader>
             <CardContent>
+              {selectedSeason === "all" && summary && (() => {
+                const lvl = computeCareerLevel(summary as any, potmCount);
+                return (
+                  <p className="text-xs font-semibold mb-1" style={{ color: lvl.color }}>
+                    {lvl.emoji} {lvl.name}
+                  </p>
+                );
+              })()}
               <div className="text-3xl font-bold text-foreground">
                 {selectedSeason === "all" ? (summary?.batting.totalRuns ?? 0) : seasonRuns}{" "}
                 <span className="text-base font-normal text-muted-foreground">runs</span>
