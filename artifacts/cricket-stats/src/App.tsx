@@ -10,6 +10,7 @@ import AchievementsPage from "./pages/achievements";
 import SeasonsPage from "./pages/seasons";
 import AnalysisPage from "./pages/analysis";
 import PrivacyPolicy from "./pages/privacy";
+import Support from "./pages/support";
 import UpgradePage from "./pages/upgrade";
 import UpgradeSuccess from "./pages/upgrade-success";
 import { Switch, Route, Router as WouterRouter } from "wouter";
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/seasons" component={SeasonsPage} />
       <Route path="/analysis" component={AnalysisPage} />
       <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/support" component={Support} />
       <Route path="/upgrade/success" component={UpgradeSuccess} />
       <Route path="/upgrade" component={UpgradePage} />
       <Route component={NotFound} />
