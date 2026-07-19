@@ -19,10 +19,10 @@ export default function Support() {
                 <p className="font-semibold mb-1">Email Support</p>
                 <p className="text-muted-foreground mb-1">For account issues, bug reports, or anything else, email us and we'll get back to you as soon as we can.</p>
                 <a
-                  href="mailto:support@cricvault.app"
+                  href="mailto:cornishsmuggler@gmail.com"
                   className="text-primary font-medium hover:underline"
                 >
-                  support@cricvault.app
+                  cornishsmuggler@gmail.com
                 </a>
               </div>
             </div>
