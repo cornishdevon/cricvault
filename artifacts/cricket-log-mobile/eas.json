@@ -21,7 +21,10 @@
   "submit": {
     "production": {
       "ios": {
-        "appleTeamId": "5GM5VG9H5Z"
+        "appleTeamId": "5GM5VG9H5Z",
+        "ascApiKeyId": { "env": "ASC_API_KEY_ID" },
+        "ascApiKeyIssuerId": { "env": "ASC_API_KEY_ISSUER_ID" },
+        "ascApiKeyPath": { "env": "ASC_API_KEY_PATH" }
       }
     }
   }
