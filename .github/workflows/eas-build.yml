@@ -30,8 +30,11 @@ jobs:
           python3 -c "
           import os
           key = os.environ['ASC_API_KEY_P8'].replace('\\\\n', '\\n')
-          open('/tmp/AuthKey.p8', 'w').write(key)
+          open('/tmp/AuthKey_raw.p8', 'w').write(key)
           "
+          chmod 600 /tmp/AuthKey_raw.p8
+          # Normalize EC curve name so Fastlane/Ruby OpenSSL can parse it
+          openssl pkey -in /tmp/AuthKey_raw.p8 -out /tmp/AuthKey.p8
           chmod 600 /tmp/AuthKey.p8
 
       - name: Build on EAS
