@@ -1,0 +1,10 @@
+# Exclude non-mobile artifacts to reduce archive size
+artifacts/api-server/
+artifacts/cricket-stats/
+artifacts/mockup-sandbox/
+.git/
+.agents/
+.local/
+attached_assets/
+screenshots/
+*.log
