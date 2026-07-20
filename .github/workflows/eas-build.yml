@@ -44,11 +44,15 @@ jobs:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
         run: |
-          eas submit \
-            --platform ios \
-            --latest \
-            --profile production \
-            --non-interactive \
-            --asc-api-key-path /tmp/AuthKey.p8 \
-            --apple-api-key-id "$ASC_API_KEY_ID" \
-            --apple-api-key-issuer-id "$ASC_API_KEY_ISSUER_ID"
+          python3 -c "
+          import json, os
+          with open('eas.json') as f:
+              cfg = json.load(f)
+          ios = cfg['submit']['production']['ios']
+          ios['ascApiKeyPath'] = '/tmp/AuthKey.p8'
+          ios['ascApiKeyId'] = os.environ['ASC_API_KEY_ID']
+          ios['ascApiKeyIssuerId'] = os.environ['ASC_API_KEY_ISSUER_ID']
+          with open('eas.json', 'w') as f:
+              json.dump(cfg, f)
+          "
+          eas submit --platform ios --latest --profile production --non-interactive
