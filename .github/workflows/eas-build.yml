@@ -27,7 +27,11 @@ jobs:
         env:
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
         run: |
-          echo "$ASC_API_KEY_P8" > /tmp/AuthKey.p8
+          python3 -c "
+          import os
+          key = os.environ['ASC_API_KEY_P8'].replace('\\\\n', '\\n')
+          open('/tmp/AuthKey.p8', 'w').write(key)
+          "
           chmod 600 /tmp/AuthKey.p8
 
       - name: Build on EAS
