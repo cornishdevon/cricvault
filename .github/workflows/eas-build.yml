@@ -44,7 +44,6 @@ jobs:
         working-directory: artifacts/cricket-log-mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
         run: |
           python3 -c "
@@ -53,7 +52,7 @@ jobs:
               cfg = json.load(f)
           ios = cfg['submit']['production']['ios']
           ios['ascApiKeyPath'] = '/tmp/AuthKey.p8'
-          ios['ascApiKeyId'] = os.environ['ASC_API_KEY_ID']
+          ios['ascApiKeyId'] = 'TK9Z8TVFLD'
           ios['ascApiKeyIssuerId'] = os.environ['ASC_API_KEY_ISSUER_ID']
           with open('eas.json', 'w') as f:
               json.dump(cfg, f)
