@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,6 +27,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build on EAS
+      - name: Write ASC API Key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          echo "$ASC_API_KEY_P8" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
+
+      - name: Build and Submit on EAS
         working-directory: artifacts/cricket-log-mobile
-        run: eas build --platform ios --profile production --non-interactive
+        env:
+          ASC_API_KEY_PATH: /tmp/AuthKey.p8
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: eas build --platform ios --profile production --non-interactive --auto-submit
