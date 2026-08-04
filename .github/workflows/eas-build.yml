@@ -1,4 +1,4 @@
-name: EAS Build iOS Production
+name: EAS Build Production
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: EAS Build
+  build-ios:
+    name: EAS Build iOS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +45,7 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
         run: |
           python3 -c "
           import json, os
@@ -52,7 +53,7 @@ jobs:
               cfg = json.load(f)
           ios = cfg['submit']['production']['ios']
           ios['ascApiKeyPath'] = '/tmp/AuthKey.p8'
-          ios['ascApiKeyId'] = 'TK9Z8TVFLD'
+          ios['ascApiKeyId'] = os.environ['ASC_API_KEY_ID']
           ios['ascApiKeyIssuerId'] = os.environ['ASC_API_KEY_ISSUER_ID']
           with open('eas.json', 'w') as f:
               json.dump(cfg, f)
