@@ -1,0 +1,119 @@
+Run python3 -c "
+🔍 [expo-iap] Config values: horizonAppId=undefined, isHorizonEnabled=false, isFireOsEnabled=false, isVegaEnabled=false, isOnsideEnabled=false
+📦 [expo-iap] Using OpenIAP from CocoaPods
+
+ASC App ID:                 6789294284
+Project ID:                 db2d8b85-bce6-40b0-81ab-123b4d24586e
+App Store Connect API Key:  
+    Key ID    :  ***
+    Key Source:  local
+    Key Path  :  /tmp/AuthKey.p8
+Build:                      
+    Build ID    :  750998aa-657e-43d2-bfd9-7cb997de3df5
+    Build Date  :  7/20/2026, 4:05:23 AM
+    App Version :  1.0.0
+    Build number:  16
+
+- Scheduling iOS submission
+✔ Scheduled iOS submission
+
+Submission details: https://expo.dev/accounts/cornishsmuggler/projects/cricket-log-mobile/submissions/58a10a21-fc87-4b3c-8114-5590007ed036
+
+Waiting for submission to complete. You can press Ctrl+C to exit.
+- Submitting
+✖ Something went wrong when submitting your app to Apple App Store Connect.
+
+Fastlane pilot failed
+We couldn't figure out what went wrong. See logs to learn more.
+
+[logs] Start phase: SPIN_UP_SUBMISSION_WORKER
+[logs] Creating new worker instance
+[logs] End phase: SPIN_UP_SUBMISSION_WORKER
+
+[logs] Start phase: SUBMIT_TO_APP_STORE
+[logs] Starting the submit process
+[logs] Downloading archive
+[logs] Preparing artifact
+[logs] Verifying archive
+[logs] Creating ascApiJsonKey.json file with ASC credentials
+[logs] Submitting iOS app to TestFlight...
+[logs] Submitting the app with fastlane pilot
+[logs] -------------------
+[logs] --- Step: pilot ---
+[logs] -------------------
+[logs] Looking for related GitHub issues on fastlane/fastlane...
+[logs] ➡️   invalid curve name after brew upgrade?
+[logs]     https://github.com/fastlane/fastlane/issues/20553 [closed] 16 💬
+[logs]     a week ago
+[logs] 
+[logs] ➡️  i am unable to publish app to AppStore
+[logs]     https://github.com/fastlane/fastlane/issues/22183 [closed] 4 💬
+[logs]     a week ago
+[logs] 
+[logs] ➡️  Trying to Deploy IOS App on Test-flight via Azure DevOps - I'm facing build error
+[logs]     https://github.com/fastlane/fastlane/issues/21531 [open] 8 💬
+[logs]     3 weeks ago
+[logs] 
+[logs] and 11 more at: https://github.com/fastlane/fastlane/search?q=invalid%20curve%20name&type=Issues&utf8=✓
+[logs] 
+[logs] 🔗  You can ⌘ + double-click on links to open them directly in your browser.
+[logs] /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `initialize': [!] invalid curve name (OpenSSL::PKey::ECError)
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `new'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `create'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:49:in `from_json_file'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:34:in `from'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/manager.rb:23:in `login'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/manager.rb:19:in `start'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/build_manager.rb:17:in `upload'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/actions/upload_to_testflight.rb:34:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:263:in `block (2 levels) in execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/actions/actions_helper.rb:69:in `execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:229:in `chdir'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:229:in `execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/one_off.rb:42:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/one_off.rb:22:in `execute'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:226:in `block (2 levels) in run'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/command.rb:187:in `call'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/command.rb:157:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:363:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/bin/fastlane:23:in `<top (required)>'
+[logs] 	from /Users/expo/.gems/arm64/bin/fastlane:25:in `load'
+[logs] 	from /Users/expo/.gems/arm64/bin/fastlane:25:in `<main>'
+[logs] /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `initialize': invalid curve name (OpenSSL::PKey::ECError)
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `new'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:71:in `create'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:49:in `from_json_file'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/spaceship/lib/spaceship/connect_api/token.rb:34:in `from'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/manager.rb:23:in `login'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/manager.rb:19:in `start'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/pilot/lib/pilot/build_manager.rb:17:in `upload'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/actions/upload_to_testflight.rb:34:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:263:in `block (2 levels) in execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/actions/actions_helper.rb:69:in `execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:229:in `chdir'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/runner.rb:229:in `execute_action'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/one_off.rb:42:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/one_off.rb:22:in `execute'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:226:in `block (2 levels) in run'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/command.rb:187:in `call'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/command.rb:157:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!'
+[logs] 	from /Users/expo/.gems/arm64/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:363:in `run'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off'
+[logs] 	from /Users/expo/.gems/arm64/gems/fastlane-2.226.0/bin/fastlane:23:in `<top (required)>'
+[logs] 	from /Users/expo/.gems/arm64/bin/fastlane:25:in `load'
+[logs] 	from /Users/expo/.gems/arm64/bin/fastlane:25:in `<main>'
+[logs] Fastlane pilot failed
+[logs] Failed to submit the app to the store
+[logs] End phase: SUBMIT_TO_APP_STORE
+Error: Process completed with exit code 1.

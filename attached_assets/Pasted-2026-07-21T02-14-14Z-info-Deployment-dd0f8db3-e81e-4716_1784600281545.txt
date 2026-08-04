@@ -1,0 +1,349 @@
+2026-07-21T02:14:14Z info: Deployment: dd0f8db3-e81e-4716-88a3-1811d5b5824b
+2026-07-21T02:14:14Z info: Build: 01cd6e5b-4367-4872-ac87-55e1a1a64f0c
+2026-07-21T02:14:15Z info: Running Security Scan
+2026-07-21T02:14:19Z info: Installing packages
+--> pnpm install
+
+ ERROR  Command was killed with SIGABRT (Aborted): pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help add
+
+ ERROR  Command failed with exit code 1: pnpm add pnpm@9.15.4 --loglevel=error --allow-build=@pnpm/exe --no-dangerously-allow-all-builds --config.node-linker=hoisted --config.bin=bin
+
+For help, run: pnpm help install
+
+exit status 1
+
+2026-07-21T02:15:03Z warn: Security scan skipped: connection lost
