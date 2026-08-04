@@ -15,7 +15,8 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "pnpm": "10.26.1"
     }
   },
   "submit": {
