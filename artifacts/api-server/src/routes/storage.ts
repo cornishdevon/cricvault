@@ -7,8 +7,14 @@ import {
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 
+import { requireAuth } from "../middlewares/requireAuth";
+
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
+
+// Uploading requires a signed-in user; serving objects stays public
+// (mobile video players can't attach auth headers to media URLs).
+router.post("/storage/uploads/request-url", requireAuth);
 
 /**
  * POST /storage/uploads/request-url

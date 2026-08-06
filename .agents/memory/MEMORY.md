@@ -5,5 +5,7 @@
 - [Mobile share & export packages](mobile-share-export.md) — expo-sharing + expo-file-system + react-native-view-shot installed for CSV export and ShareCard; ShareCard captures with ViewShot then falls back to Share.share() text if capture fails.
 - [NativeTabs breaks RN Modal on iOS](native-tabs-modal-conflict.md) — RN's <Modal> silently fails under expo-router's NativeTabs; use an absolute-fill View overlay instead.
 - [Vite config must use defineConfig callback for deployment](vite-deploy-build.md) — PORT/BASE_PATH must not throw during vite build command; use defineConfig async callback with command param.
-- [iOS App Store submission via EAS](eas-ios-submission.md) — GitHub Actions workflow builds + submits; ASC key ID hardcoded (TK9Z8TVFLD), P8 key in GitHub secret; new key needed to fix Fastlane invalid curve name error.
+- [iOS App Store submission via EAS](eas-ios-submission.md) — new ASC key 66J5C395C3 works; direct submit from Replit via eas.json edit; GitHub workflow still hardcodes old dead key ID.
+- [GitHub push workaround](github-push-workaround.md) — gitPush callback fails on this repo; push via connectors-sdk + Git Data API; token can't touch .github/workflows.
+- [Clerk auth across web/API/mobile](clerk-multiplatform-auth.md) — legacy-row claim must be advisory-lock atomic; rebuild lib/db dist types after schema edits; owner signs in first.
 - [Deployment build fixes for stable-25_05](deployment-build-fixes.md) — two changes needed: remove packageManager field from root package.json (prevents @pnpm/exe SIGABRT); exclude mobile from build script (Expo auth token not available in deployment container).

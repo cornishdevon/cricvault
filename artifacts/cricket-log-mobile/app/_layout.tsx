@@ -12,12 +12,13 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { setBaseUrl } from "@workspace/api-client-react";
+import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
+import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/expo";
+import { tokenCache } from "@clerk/expo/token-cache";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { PlayerNameProvider } from "@/contexts/PlayerNameContext";
-import { ProProvider } from "@/contexts/ProContext";
 import { SeasonProvider } from "@/contexts/SeasonContext";
 import { TabLabelsProvider } from "@/contexts/TabLabelsContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -39,9 +40,21 @@ const queryClient = new QueryClient({
   },
 });
 
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+const clerkProxyUrl = process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined;
+
+function AuthTokenBridge() {
+  const { getToken } = useAuth();
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
+  return null;
+}
+
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="match/[id]"
@@ -50,10 +63,6 @@ function RootLayoutNav() {
       <Stack.Screen
         name="settings-modal"
         options={{ title: "Settings", presentation: "modal", headerBackTitle: "Cancel" }}
-      />
-      <Stack.Screen
-        name="upgrade"
-        options={{ title: "CricVault Pro", presentation: "modal", headerShown: false }}
       />
     </Stack>
   );
@@ -76,6 +85,12 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      tokenCache={tokenCache}
+      proxyUrl={clerkProxyUrl}
+    >
+      <ClerkLoaded>
     <SafeAreaProvider>
       <ErrorBoundary>
         <AppearanceProvider>
@@ -84,15 +99,14 @@ export default function RootLayout() {
         <PlayerNameProvider>
         <TabLabelsProvider>
           <QueryClientProvider client={queryClient}>
-            <ProProvider>
             <BadgeNotificationProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <KeyboardProvider>
+                <AuthTokenBridge />
                 <RootLayoutNav />
               </KeyboardProvider>
             </GestureHandlerRootView>
             </BadgeNotificationProvider>
-            </ProProvider>
           </QueryClientProvider>
         </TabLabelsProvider>
         </PlayerNameProvider>
@@ -101,5 +115,7 @@ export default function RootLayout() {
         </AppearanceProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
+      </ClerkLoaded>
+    </ClerkProvider>
   );
 }

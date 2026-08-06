@@ -57,10 +57,6 @@ export default function Support() {
                     <p className="font-medium">Is my data backed up?</p>
                     <p className="text-muted-foreground mt-0.5">Your stats are stored securely on our servers and are available whenever you log in.</p>
                   </div>
-                  <div>
-                    <p className="font-medium">How do I cancel my subscription?</p>
-                    <p className="text-muted-foreground mt-0.5">Subscriptions are managed through the App Store. Go to Settings → Apple ID → Subscriptions on your iPhone and cancel from there.</p>
-                  </div>
                 </div>
               </div>
             </div>

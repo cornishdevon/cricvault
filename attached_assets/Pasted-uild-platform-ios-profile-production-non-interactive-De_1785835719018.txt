@@ -1,0 +1,61 @@
+uild --platform ios --profile production --non-interactive
+
+⚠️ Detected that your app uses Expo Go for development, this is not recommended when building production apps.
+Learn more: https://expo.fyi/why-not-build-expo-go-for-production
+To suppress this warning, set EAS_BUILD_NO_EXPO_GO_WARNING=true.
+
+🔍 [expo-iap] Config values: horizonAppId=undefined, isHorizonEnabled=false, isFireOsEnabled=false, isVegaEnabled=false, isOnsideEnabled=false
+📦 [expo-iap] Using OpenIAP from CocoaPods
+Resolved "production" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "production" environment on EAS.
+
+- Incrementing buildNumber from 20 to 21.
+✔ Incremented buildNumber from 20 to 21.
+
+
+ios.buildNumber field in app config is ignored when version source is set to remote, but this value will still be in the manifest available via expo-constants. It's recommended to remove this value from app config.
+✔ Using remote iOS credentials (Expo server)
+
+Distribution Certificate is not validated for non-interactive builds.
+Skipping Provisioning Profile validation on Apple Servers because we aren't authenticated.
+
+Project Credentials Configuration
+
+Project                   @cornishsmuggler/cricket-log-mobile
+Bundle Identifier         com.cricvault.app
+                          
+App Store Configuration   
+                          
+Distribution Certificate  
+Serial Number             1FB023B26FD08C20681274EFC57F8357
+Expiration Date           Fri, 09 Jul 2027 19:33:04 UTC
+Apple Team                5GM5VG9H5Z (NICHOLAS ANTHONY CARTER (Individual))
+Updated                   25 days ago
+                          
+Provisioning Profile      
+Developer Portal ID       QM7XG34A62
+Status                    active
+Expiration                Fri, 09 Jul 2027 19:33:04 UTC
+Apple Team                5GM5VG9H5Z (NICHOLAS ANTHONY CARTER (Individual))
+Updated                   25 days ago
+                          
+All credentials are ready to build @cornishsmuggler/cricket-log-mobile (com.cricvault.app)
+
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+- Compressing project files
+Your project archive is 350 MB. You can reduce its size and the time it takes to upload by excluding files that are unnecessary for the build process in .easignore file. Learn more: https://expo.fyi/eas-build-archive
+- Uploading to EAS Build (0 / 350 MB)
+✔ Uploaded to EAS 2s
+- Computing project fingerprint
+✔ Computed project fingerprint
+
+See logs: https://expo.dev/accounts/cornishsmuggler/projects/cricket-log-mobile/builds/5b484669-c99c-4b32-b2df-5d6a3544515c
+
+Waiting for build to complete. You can press Ctrl+C to exit.
+- Waiting for build to complete.
+✖ Build failed
+
+🍏 iOS build failed:
+Unknown error. See logs of the Install dependencies build phase for more information.
+Error: Process completed with exit code 1.

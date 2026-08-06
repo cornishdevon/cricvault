@@ -105,8 +105,7 @@
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.1",
-    "stripe": "^22.3.1",
-    "stripe-replit-sync": "^1.0.0",
+    "libsodium-wrappers": "^0.8.4",
     "tsx": "catalog:"
   }
 }

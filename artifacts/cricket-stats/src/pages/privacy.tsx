@@ -38,9 +38,6 @@ export default function PrivacyPolicy() {
               <li><span className="font-medium">Identifiers</span> — your account identifier used to sync your data across devices.</li>
               <li><span className="font-medium">Cricket &amp; performance data</span> — match results, runs, wickets, catches, venues, opponents, and other statistics you enter yourself.</li>
               <li><span className="font-medium">Photos &amp; media</span> — photos you choose to attach to match records, stored privately in your account.</li>
-              <li>
-                <span className="font-medium">Purchase history</span> — a record that you hold an active CricVault Pro subscription. Payment card details are handled entirely by Stripe (see Third-Party Services below) and are never stored by CricVault.
-              </li>
             </ul>
           </Section>
 
@@ -75,7 +72,6 @@ export default function PrivacyPolicy() {
               <li>Display your career stats, trends, level badges, and achievements back to you</li>
               <li>Sync your data between the CricVault mobile app and web dashboard</li>
               <li>Generate match and season reports you request</li>
-              <li>Manage your CricVault Pro subscription</li>
               <li>Improve app performance and fix issues</li>
             </ul>
             <p className="mt-3 font-medium">We do not sell your personal data. We do not use your data for advertising or share it with third parties for marketing purposes.</p>
@@ -83,10 +79,6 @@ export default function PrivacyPolicy() {
 
           <Section title="Third-Party Services">
             <ul className="list-disc pl-5 space-y-3">
-              <li>
-                <span className="font-medium">Stripe</span> — payment processing for CricVault Pro subscriptions. When you subscribe, payment information is collected and stored directly by Stripe, Inc. CricVault only receives confirmation that a payment succeeded. Stripe's privacy policy is available at{" "}
-                <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">stripe.com/privacy</a>.
-              </li>
               <li>
                 <span className="font-medium">Cloud infrastructure</span> — our servers and object storage run on third-party cloud providers. These providers process data only as needed to operate the service and are contractually prohibited from using your data for any other purpose.
               </li>

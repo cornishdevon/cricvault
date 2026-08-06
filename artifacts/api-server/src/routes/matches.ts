@@ -10,9 +10,21 @@ import {
   videosTable,
   coachingTipsTable,
 } from "@workspace/db";
-import { eq, ne, desc, sum, max, count } from "drizzle-orm";
+import { eq, ne, and, desc, count } from "drizzle-orm";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
+
+router.use(requireAuth);
+
+/** Returns the match row iff it exists AND belongs to the user, else null. */
+async function getOwnedMatch(userId: string, matchId: number) {
+  const [match] = await db
+    .select()
+    .from(matchesTable)
+    .where(and(eq(matchesTable.id, matchId), eq(matchesTable.userId, userId)));
+  return match ?? null;
+}
 
 // ── Matches ──────────────────────────────────────────────────────────────────
 
@@ -20,6 +32,7 @@ router.get("/matches", async (req, res) => {
   const matches = await db
     .select()
     .from(matchesTable)
+    .where(eq(matchesTable.userId, req.userId!))
     .orderBy(desc(matchesTable.createdAt));
   res.json(
     matches.map((m) => ({
@@ -37,6 +50,7 @@ router.post("/matches", async (req, res) => {
   const [match] = await db
     .insert(matchesTable)
     .values({
+      userId: req.userId!,
       date, opponent,
       venue: venue ?? null,
       matchType,
@@ -57,7 +71,7 @@ router.post("/matches", async (req, res) => {
 
 router.get("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  const [match] = await db.select().from(matchesTable).where(eq(matchesTable.id, matchId));
+  const match = await getOwnedMatch(req.userId!, matchId);
   if (!match) return res.status(404).json({ error: "Match not found" });
   res.json({ ...match, createdAt: match.createdAt.toISOString() });
 });
@@ -83,7 +97,7 @@ router.patch("/matches/:matchId", async (req, res) => {
   const [match] = await db
     .update(matchesTable)
     .set(updates)
-    .where(eq(matchesTable.id, matchId))
+    .where(and(eq(matchesTable.id, matchId), eq(matchesTable.userId, req.userId!)))
     .returning();
   if (!match) return res.status(404).json({ error: "Match not found" });
   res.json({ ...match, createdAt: match.createdAt.toISOString() });
@@ -91,7 +105,9 @@ router.patch("/matches/:matchId", async (req, res) => {
 
 router.delete("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
-  await db.delete(matchesTable).where(eq(matchesTable.id, matchId));
+  await db
+    .delete(matchesTable)
+    .where(and(eq(matchesTable.id, matchId), eq(matchesTable.userId, req.userId!)));
   res.status(204).send();
 });
 
@@ -104,6 +120,7 @@ function calcStrikeRate(runs: number, balls: number): number {
 
 router.get("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const [row] = await db
     .select()
     .from(battingStatsTable)
@@ -114,6 +131,7 @@ router.get("/matches/:matchId/batting", async (req, res) => {
 
 router.post("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty, oppositionBowler, caughtPosition, shotData } = req.body;
   const strikeRate = calcStrikeRate(runs, ballsFaced);
   const [row] = await db
@@ -141,6 +159,7 @@ router.post("/matches/:matchId/batting", async (req, res) => {
 
 router.patch("/matches/:matchId/batting", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { runs, ballsFaced, fours, sixes, battingPosition, howOut, badUmpireDecision, ballsToFifty, ballsToHundred, ballsToHundredFifty, oppositionBowler, caughtPosition, shotData } = req.body;
   const [existing] = await db
     .select()
@@ -181,6 +200,7 @@ function calcEconomy(runs: number, overs: number): number {
 
 router.get("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const [row] = await db
     .select()
     .from(bowlingStatsTable)
@@ -191,6 +211,7 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
 
 router.post("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
   const economyRate = calcEconomy(runsConceded, overs);
   const [row] = await db
@@ -215,6 +236,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
 
 router.patch("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
   const [existing] = await db
     .select()
@@ -247,6 +269,7 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
 
 router.get("/matches/:matchId/fielding", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const [row] = await db
     .select()
     .from(fieldingStatsTable)
@@ -257,6 +280,7 @@ router.get("/matches/:matchId/fielding", async (req, res) => {
 
 router.post("/matches/:matchId/fielding", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { catches, droppedCatches, runOuts, stumpings, missedStumpings } = req.body;
   const [row] = await db
     .insert(fieldingStatsTable)
@@ -274,6 +298,7 @@ router.post("/matches/:matchId/fielding", async (req, res) => {
 
 router.patch("/matches/:matchId/fielding", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { catches, droppedCatches, runOuts, stumpings, missedStumpings } = req.body;
   const updates: Record<string, unknown> = {};
   if (catches !== undefined) updates.catches = catches;
@@ -294,6 +319,7 @@ router.patch("/matches/:matchId/fielding", async (req, res) => {
 
 router.get("/matches/:matchId/report", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const [row] = await db
     .select()
     .from(matchReportsTable)
@@ -304,6 +330,7 @@ router.get("/matches/:matchId/report", async (req, res) => {
 
 router.post("/matches/:matchId/report", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { notes, areasToImprove } = req.body;
   const [row] = await db
     .insert(matchReportsTable)
@@ -314,6 +341,7 @@ router.post("/matches/:matchId/report", async (req, res) => {
 
 router.patch("/matches/:matchId/report", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { notes, areasToImprove, highlightsUrl } = req.body;
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (notes !== undefined) updates.notes = notes;
@@ -332,6 +360,7 @@ router.patch("/matches/:matchId/report", async (req, res) => {
 
 router.get("/matches/:matchId/photos", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const rows = await db
     .select()
     .from(photosTable)
@@ -342,18 +371,21 @@ router.get("/matches/:matchId/photos", async (req, res) => {
 
 router.post("/matches/:matchId/photos", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { url, caption } = req.body;
   if (!url) return res.status(400).json({ error: "url is required" });
   const [row] = await db
     .insert(photosTable)
-    .values({ matchId, url, caption: caption ?? null })
+    .values({ userId: req.userId!, matchId, url, caption: caption ?? null })
     .returning();
   res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.delete("/photos/:photoId", async (req, res) => {
   const photoId = Number(req.params.photoId);
-  await db.delete(photosTable).where(eq(photosTable.id, photoId));
+  await db
+    .delete(photosTable)
+    .where(and(eq(photosTable.id, photoId), eq(photosTable.userId, req.userId!)));
   res.status(204).send();
 });
 
@@ -361,6 +393,7 @@ router.delete("/photos/:photoId", async (req, res) => {
 
 router.get("/matches/:matchId/videos", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const rows = await db
     .select()
     .from(videosTable)
@@ -371,22 +404,25 @@ router.get("/matches/:matchId/videos", async (req, res) => {
 
 router.post("/matches/:matchId/videos", async (req, res) => {
   const matchId = Number(req.params.matchId);
+  if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { objectPath, caption } = req.body;
   if (!objectPath) return res.status(400).json({ error: "objectPath is required" });
   const [row] = await db
     .insert(videosTable)
-    .values({ matchId, objectPath, caption: caption ?? null })
+    .values({ userId: req.userId!, matchId, objectPath, caption: caption ?? null })
     .returning();
   res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.delete("/videos/:videoId", async (req, res) => {
   const videoId = Number(req.params.videoId);
-  await db.delete(videosTable).where(eq(videosTable.id, videoId));
+  await db
+    .delete(videosTable)
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.userId!)));
   res.status(204).send();
 });
 
-// ── Coaching Tips ─────────────────────────────────────────────────────────────
+// ── Coaching Tips (global content, auth still required) ─────────────────────
 
 router.get("/coaching-tips", async (req, res) => {
   const { category } = req.query as { category?: string };
@@ -408,6 +444,7 @@ router.get("/stats/per-match", async (req, res) => {
   const matches = await db
     .select()
     .from(matchesTable)
+    .where(eq(matchesTable.userId, req.userId!))
     .orderBy(matchesTable.date);
 
   const results = await Promise.all(
@@ -474,21 +511,20 @@ router.get("/stats/per-match", async (req, res) => {
 // ── Stats Summary ─────────────────────────────────────────────────────────────
 
 router.get("/stats/summary", async (req, res) => {
-  // Exclude "Back Garden" matches from all career stats
-  const bgIds = new Set(
-    (await db.select({ id: matchesTable.id }).from(matchesTable).where(eq(matchesTable.matchType, "Back Garden"))).map((m) => m.id)
-  );
-
-  const [matchCount] = await db
-    .select({ total: count() })
+  const userMatches = await db
+    .select()
     .from(matchesTable)
-    .where(ne(matchesTable.matchType, "Back Garden"));
+    .where(eq(matchesTable.userId, req.userId!));
+  const userMatchIds = new Set(userMatches.map((m) => m.id));
+  // Exclude "Back Garden" matches from all career stats
+  const bgIds = new Set(userMatches.filter((m) => m.matchType === "Back Garden").map((m) => m.id));
+  const countableIds = new Set(userMatches.filter((m) => m.matchType !== "Back Garden").map((m) => m.id));
 
-  const battingRows = (await db.select().from(battingStatsTable)).filter((r) => !bgIds.has(r.matchId));
-  const bowlingRows = (await db.select().from(bowlingStatsTable)).filter((r) => !bgIds.has(r.matchId));
-  const fieldingRows = (await db.select().from(fieldingStatsTable)).filter((r) => !bgIds.has(r.matchId));
+  const battingRows = (await db.select().from(battingStatsTable)).filter((r) => countableIds.has(r.matchId));
+  const bowlingRows = (await db.select().from(bowlingStatsTable)).filter((r) => countableIds.has(r.matchId));
+  const fieldingRows = (await db.select().from(fieldingStatsTable)).filter((r) => countableIds.has(r.matchId));
 
-  const totalMatches = matchCount.total;
+  const totalMatches = countableIds.size;
 
   const battingInnings = battingRows.length;
   const totalRuns = battingRows.reduce((s, r) => s + r.runs, 0);
@@ -564,8 +600,7 @@ router.get("/stats/summary", async (req, res) => {
   const totalRunOuts = fieldingRows.reduce((s, r) => s + r.runOuts, 0);
   const totalStumpings = fieldingRows.reduce((s, r) => s + r.stumpings, 0);
 
-  const allMatches = await db.select().from(matchesTable).where(ne(matchesTable.matchType, "Back Garden"));
-  const potmCount = allMatches.filter((m) => m.playerOfTheMatch).length;
+  const potmCount = userMatches.filter((m) => m.matchType !== "Back Garden" && m.playerOfTheMatch).length;
 
   res.json({
     totalMatches,
@@ -625,6 +660,7 @@ router.get("/media/photos", async (req, res) => {
     })
     .from(photosTable)
     .leftJoin(matchesTable, eq(photosTable.matchId, matchesTable.id))
+    .where(eq(photosTable.userId, req.userId!))
     .orderBy(desc(photosTable.createdAt));
   res.json(photos);
 });
@@ -632,9 +668,12 @@ router.get("/media/photos", async (req, res) => {
 router.post("/media/photos", async (req, res) => {
   const { url, caption, matchId } = req.body;
   if (!url) return res.status(400).json({ error: "url is required" });
+  if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
+    return res.status(404).json({ error: "Match not found" });
+  }
   const [row] = await db
     .insert(photosTable)
-    .values({ matchId: matchId ?? null, url, caption: caption ?? null })
+    .values({ userId: req.userId!, matchId: matchId ?? null, url, caption: caption ?? null })
     .returning();
   res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
@@ -643,10 +682,19 @@ router.patch("/media/photos/:photoId", async (req, res) => {
   const photoId = Number(req.params.photoId);
   const { matchId, caption } = req.body;
   const updates: Record<string, unknown> = {};
-  if (matchId !== undefined) updates.matchId = matchId ?? null;
+  if (matchId !== undefined) {
+    if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+    updates.matchId = matchId ?? null;
+  }
   if (caption !== undefined) updates.caption = caption;
   if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
-  const [row] = await db.update(photosTable).set(updates).where(eq(photosTable.id, photoId)).returning();
+  const [row] = await db
+    .update(photosTable)
+    .set(updates)
+    .where(and(eq(photosTable.id, photoId), eq(photosTable.userId, req.userId!)))
+    .returning();
   if (!row) return res.status(404).json({ error: "Photo not found" });
   res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });
@@ -664,6 +712,7 @@ router.get("/media/videos", async (req, res) => {
     })
     .from(videosTable)
     .leftJoin(matchesTable, eq(videosTable.matchId, matchesTable.id))
+    .where(eq(videosTable.userId, req.userId!))
     .orderBy(desc(videosTable.createdAt));
   res.json(videos);
 });
@@ -671,9 +720,12 @@ router.get("/media/videos", async (req, res) => {
 router.post("/media/videos", async (req, res) => {
   const { objectPath, caption, matchId } = req.body;
   if (!objectPath) return res.status(400).json({ error: "objectPath is required" });
+  if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
+    return res.status(404).json({ error: "Match not found" });
+  }
   const [row] = await db
     .insert(videosTable)
-    .values({ matchId: matchId ?? null, objectPath, caption: caption ?? null })
+    .values({ userId: req.userId!, matchId: matchId ?? null, objectPath, caption: caption ?? null })
     .returning();
   res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
@@ -682,10 +734,19 @@ router.patch("/media/videos/:videoId", async (req, res) => {
   const videoId = Number(req.params.videoId);
   const { matchId, caption } = req.body;
   const updates: Record<string, unknown> = {};
-  if (matchId !== undefined) updates.matchId = matchId ?? null;
+  if (matchId !== undefined) {
+    if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
+      return res.status(404).json({ error: "Match not found" });
+    }
+    updates.matchId = matchId ?? null;
+  }
   if (caption !== undefined) updates.caption = caption;
   if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nothing to update" });
-  const [row] = await db.update(videosTable).set(updates).where(eq(videosTable.id, videoId)).returning();
+  const [row] = await db
+    .update(videosTable)
+    .set(updates)
+    .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.userId!)))
+    .returning();
   if (!row) return res.status(404).json({ error: "Video not found" });
   res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });

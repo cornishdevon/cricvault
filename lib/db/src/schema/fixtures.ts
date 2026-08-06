@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const fixturesTable = pgTable("fixtures", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   date: text("date").notNull(),
   time: text("time"),
   opponent: text("opponent").notNull(),

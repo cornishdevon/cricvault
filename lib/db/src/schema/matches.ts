@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const matchesTable = pgTable("matches", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   date: text("date").notNull(),
   opponent: text("opponent").notNull(),
   venue: text("venue"),
@@ -97,6 +98,7 @@ export type MatchReport = typeof matchReportsTable.$inferSelect;
 
 export const photosTable = pgTable("photos", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   matchId: integer("match_id").references(() => matchesTable.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
   caption: text("caption"),
@@ -109,6 +111,7 @@ export type Photo = typeof photosTable.$inferSelect;
 
 export const videosTable = pgTable("videos", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   matchId: integer("match_id").references(() => matchesTable.id, { onDelete: "cascade" }),
   objectPath: text("object_path").notNull(),
   caption: text("caption"),

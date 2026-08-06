@@ -1,6 +1,6 @@
 /**
  * Returns the full URL for an API endpoint, respecting the Vite BASE_URL.
- * Paths like "stripe/plans" → "/cricket-stats/api/stripe/plans"
+ * Paths like "stats/summary" → "/cricket-stats/api/stats/summary"
  */
 export function getApiUrl(path: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");

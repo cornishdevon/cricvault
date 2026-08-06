@@ -1,0 +1,9 @@
+---
+name: EAS iOS submission
+description: How CricVault iOS builds are submitted to App Store Connect, current ASC key, and the direct-from-Replit submit method
+---
+- ASC API key **66J5C395C3** (issuer 75c1086f-9020-4a21-a3de-b7c4b2a54f69) replaced the old TK9Z8TVFLD key, which was corrupt ("invalid curve name") and caused every GitHub Actions submit step to fail.
+- **Pipeline fixed (Aug 4 2026):** GitHub secrets `ASC_API_KEY_P8` (P8 with literal \n separators), `ASC_API_KEY_ID`, `ASC_API_KEY_ISSUER_ID` all hold the new key; workflow reads the key ID from the secret (no more hardcoding). User pasted the updated iOS-only workflow via GitHub web UI (workflow files still can't be pushed via API — no `workflow` scope). Verified: full run built + submitted successfully. The Android job was removed from CI until Google Play setup is done — re-add it (from local git history) when that task runs.
+- **Direct submit from Replit works** and needs no GitHub: write the P8 to /tmp, temporarily add `ascApiKeyPath`/`ascApiKeyId`/`ascApiKeyIssuerId` to eas.json `submit.production.ios` (EXPO_ASC_* env vars do NOT work in --non-interactive), then `npx eas-cli submit --platform ios --id <buildId> --profile production --non-interactive` with EXPO_TOKEN from env. Run via `setsid sh -c '... > /tmp/log 2>&1' &` — plain nohup dies with the shell session. Revert eas.json afterwards.
+- Expo submission queue can sit IN_QUEUE for 20+ min; poll via GraphQL `submissions.byId`. **A submission can show ERRORED (with null error and no logs) even when the binary uploaded fine** — always verify against the ASC API directly (`/v1/builds?filter[app]=6789294284`, JWT signed with the P8 via node crypto ES256, dsaEncoding ieee-p1363) before retrying; retries of an already-uploaded build also "fail".
+- If the user pastes a bare P8 body, wrap with BEGIN/END PRIVATE KEY lines and validate with `openssl pkey -noout`.

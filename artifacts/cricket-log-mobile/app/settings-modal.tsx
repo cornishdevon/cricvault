@@ -15,11 +15,11 @@ import {
 } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 import { useRouter } from "expo-router";
+import { useAuth } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppearance } from "@/contexts/AppearanceContext";
-import { usePro } from "@/contexts/ProContext";
 import { PALETTES, hslToHex, hexToHsl, type PaletteId, type PresetPaletteId } from "@/constants/colors";
 import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry, type CricketRegion } from "@/contexts/SeasonContext";
 import { useColors } from "@/hooks/useColors";
@@ -146,23 +146,10 @@ export default function SettingsModal() {
   const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { signOut } = useAuth();
   const { labels, updateLabel, resetLabels } = useTabLabels();
   const { playerName, saveName } = usePlayerName();
   const { locale, setLocale } = useLanguage();
-  const { isPro, isLoading: proLoading, restorePurchases } = usePro();
-
-  const handleRestorePurchases = async () => {
-    const found = await restorePurchases();
-    if (!found) {
-      Alert.alert(
-        "No subscription found",
-        "No active CricVault Pro subscription was found for this Apple ID.",
-        [{ text: "OK" }]
-      );
-    } else {
-      Alert.alert("Restored!", "Your CricVault Pro subscription has been restored.", [{ text: "OK" }]);
-    }
-  };
 
   const [draftName, setDraftName] = useState(playerName);
   const [draft, setDraft] = useState({ ...labels });
@@ -484,62 +471,6 @@ export default function SettingsModal() {
           <Text style={[styles.resetBtnText, { color: colors.mutedForeground }]}>Reset to defaults</Text>
         </TouchableOpacity>
 
-        {/* Subscription */}
-        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>Subscription</Text>
-
-        {isPro ? (
-          <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.iconWrap, { backgroundColor: colors.primary + "20" }]}>
-              <Feather name="star" size={18} color={colors.primary} />
-            </View>
-            <View style={styles.rowBody}>
-              <Text style={[styles.hint, { color: colors.mutedForeground }]}>Status</Text>
-              <Text style={[styles.countryValue, { color: colors.primary }]}>CricVault Pro ✓</Text>
-              <Text style={[styles.hint, { color: colors.mutedForeground, marginTop: 2 }]}>
-                Manage in Apple ID › Subscriptions
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={[styles.row, { backgroundColor: colors.primary, borderColor: colors.primary }]}
-            onPress={() => router.push("/upgrade" as any)}
-            activeOpacity={0.85}
-          >
-            <View style={[styles.iconWrap, { backgroundColor: "rgba(255,255,255,0.15)" }]}>
-              <Feather name="star" size={18} color="#fff" />
-            </View>
-            <View style={[styles.rowBody, { flexDirection: "row", alignItems: "center" }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.hint, { color: "rgba(255,255,255,0.7)" }]}>Unlock everything</Text>
-                <Text style={[styles.countryValue, { color: "#fff" }]}>Upgrade to Pro</Text>
-              </View>
-              <Feather name="chevron-right" size={18} color="rgba(255,255,255,0.7)" />
-            </View>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={handleRestorePurchases}
-          disabled={proLoading}
-          activeOpacity={0.75}
-        >
-          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
-            <Feather name="refresh-cw" size={18} color={colors.primary} />
-          </View>
-          <View style={[styles.rowBody, { flexDirection: "row", alignItems: "center" }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.hint, { color: colors.mutedForeground }]}>Already subscribed?</Text>
-              <Text style={[styles.countryValue, { color: colors.foreground }]}>Restore Purchases</Text>
-            </View>
-            {proLoading
-              ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-            }
-          </View>
-        </TouchableOpacity>
-
         {/* Legal */}
         <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>Legal</Text>
 
@@ -572,6 +503,30 @@ export default function SettingsModal() {
             </Text>
           </View>
         </View>
+
+        {/* Account */}
+        <Text style={[styles.heading, { color: colors.foreground, marginTop: 8 }]}>Account</Text>
+
+        <TouchableOpacity
+          style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={async () => {
+            try {
+              await signOut();
+              router.dismissAll?.();
+              router.replace("/(auth)/sign-in" as never);
+            } catch (e) {
+              console.error("Sign out failed", e);
+            }
+          }}
+          activeOpacity={0.75}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="log-out" size={18} color="#dc2626" />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.countryValue, { color: "#dc2626" }]}>Sign out</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );

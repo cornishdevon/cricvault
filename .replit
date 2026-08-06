@@ -38,3 +38,9 @@ externalPort = 80
 [[ports]]
 localPort = 25973
 externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+OWNER_EMAIL = "ncarterj@yahoo.co.uk"
+DATA_IMPORT_TOKEN = "bd3c3fd2134be0412ae8f26b567190074650d800b12e871f"
