@@ -129,8 +129,8 @@ export default function SignUpScreen() {
           {errors.fields.password && (
             <Text style={s.error}>{errors.fields.password.message}</Text>
           )}
-          {errors.global.length > 0 && (
-            <Text style={s.error}>{errors.global[0].message}</Text>
+          {(errors.global?.length ?? 0) > 0 && (
+            <Text style={s.error}>{errors.global![0].message}</Text>
           )}
 
           <Pressable

@@ -51,8 +51,12 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      "./plugins/withoutAppleSignIn.js",
-      "@clerk/expo",
+      [
+        "@clerk/expo",
+        {
+          "appleSignIn": false
+        }
+      ],
       "expo-router",
       "expo-font",
       "expo-web-browser",
