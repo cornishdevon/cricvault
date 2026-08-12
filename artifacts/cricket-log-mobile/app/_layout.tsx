@@ -40,8 +40,17 @@ const queryClient = new QueryClient({
   },
 });
 
-const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-const clerkProxyUrl = process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined;
+// Fallbacks are the public production values (publishable keys are public by
+// design — the same key ships in the website's JS bundle). They guarantee a
+// store build can never launch without a key, which crashes the app at startup.
+const clerkPublishableKey =
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_live_Y2xlcmsuY3JpY3ZhdWx0LnJlcGxpdC5hcHAk";
+const clerkProxyUrl =
+  process.env.EXPO_PUBLIC_CLERK_PROXY_URL ||
+  (process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+    ? undefined
+    : "https://cricvault.replit.app/api/__clerk");
 
 function AuthTokenBridge() {
   const { getToken } = useAuth();
