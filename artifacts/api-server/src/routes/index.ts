@@ -4,6 +4,7 @@ import matchesRouter from "./matches";
 import storageRouter from "./storage";
 import fixturesRouter from "./fixtures";
 import adminImportRouter from "./adminImport";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(adminImportRouter);
 router.use(matchesRouter);
 router.use(storageRouter);
 router.use(fixturesRouter);
+router.use(accountRouter);
 
 export default router;

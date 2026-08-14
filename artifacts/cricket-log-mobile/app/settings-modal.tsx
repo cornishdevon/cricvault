@@ -16,6 +16,7 @@ import {
 import Svg, { Circle, Path } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { useAuth } from "@clerk/expo";
+import { customFetch } from "@workspace/api-client-react";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -525,6 +526,61 @@ export default function SettingsModal() {
           </View>
           <View style={styles.rowBody}>
             <Text style={[styles.countryValue, { color: "#dc2626" }]}>Sign out</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => {
+            Alert.alert(
+              "Delete account?",
+              "This permanently deletes your account and all your cricket data — matches, stats, photos and videos. This cannot be undone.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Delete",
+                  style: "destructive",
+                  onPress: () => {
+                    Alert.alert(
+                      "Are you absolutely sure?",
+                      "Your entire cricket career log will be gone forever.",
+                      [
+                        { text: "Keep my account", style: "cancel" },
+                        {
+                          text: "Delete everything",
+                          style: "destructive",
+                          onPress: async () => {
+                            try {
+                              await customFetch("/api/account", { method: "DELETE" });
+                              await signOut();
+                              router.dismissAll?.();
+                              router.replace("/(auth)/sign-in" as never);
+                            } catch (e) {
+                              console.error("Account deletion failed", e);
+                              Alert.alert(
+                                "Something went wrong",
+                                "We couldn't delete your account. Please check your connection and try again.",
+                              );
+                            }
+                          },
+                        },
+                      ],
+                    );
+                  },
+                },
+              ],
+            );
+          }}
+          activeOpacity={0.75}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
+            <Feather name="trash-2" size={18} color="#dc2626" />
+          </View>
+          <View style={styles.rowBody}>
+            <Text style={[styles.countryValue, { color: "#dc2626" }]}>Delete account</Text>
+            <Text style={[styles.hint, { color: colors.mutedForeground, marginTop: 2 }]}>
+              Permanently removes your account and all data
+            </Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
