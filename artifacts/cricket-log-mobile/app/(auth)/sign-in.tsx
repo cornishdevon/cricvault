@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 
 export const useWarmUpBrowser = () => {
   useEffect(() => {
@@ -155,6 +156,8 @@ export default function SignInScreen() {
           >
             <Text style={s.buttonText}>{busy ? "Signing in…" : "Sign in"}</Text>
           </Pressable>
+
+          <SocialAuthButtons />
 
           <View style={s.footerRow}>
             <Text style={s.footerText}>New to CricVault? </Text>

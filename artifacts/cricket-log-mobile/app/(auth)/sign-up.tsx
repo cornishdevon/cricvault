@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { makeStyles, useWarmUpBrowser } from "./sign-in";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -140,6 +141,8 @@ export default function SignUpScreen() {
           >
             <Text style={s.buttonText}>{busy ? "Creating account…" : "Sign up"}</Text>
           </Pressable>
+
+          <SocialAuthButtons />
 
           <View style={s.footerRow}>
             <Text style={s.footerText}>Already have an account? </Text>
