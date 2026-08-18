@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { safeFormatDate } from "@/lib/utils";
 import { useState } from "react";
+import { format } from "date-fns";
 import { ArrowLeft, Printer, Share2 } from "lucide-react";
 
 function StatCell({ label, value }: { label: string; value: string | number | null | undefined }) {

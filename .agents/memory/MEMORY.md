@@ -8,4 +8,5 @@
 - [iOS App Store submission via EAS](eas-ios-submission.md) — new ASC key 66J5C395C3 works; direct submit from Replit via eas.json edit; GitHub workflow still hardcodes old dead key ID.
 - [GitHub push workaround](github-push-workaround.md) — gitPush callback fails on this repo; push via connectors-sdk + Git Data API; token can't touch .github/workflows.
 - [Clerk auth across web/API/mobile](clerk-multiplatform-auth.md) — legacy-row claim must be advisory-lock atomic; rebuild lib/db dist types after schema edits; owner signs in first.
+- [Private media signed URLs](private-media-tokens.md) — media tags can't send auth headers; private object streaming requires HMAC `?token=`, minted server-side via withObjectToken.
 - [Deployment build fixes for stable-25_05](deployment-build-fixes.md) — two changes needed: remove packageManager field from root package.json (prevents @pnpm/exe SIGABRT); exclude mobile from build script (Expo auth token not available in deployment container).

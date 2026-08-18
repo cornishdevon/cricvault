@@ -54,7 +54,7 @@
       [
         "@clerk/expo",
         {
-          "appleSignIn": true
+          "appleSignIn": false
         }
       ],
       "expo-router",

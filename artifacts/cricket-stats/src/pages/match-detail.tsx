@@ -63,6 +63,7 @@ const HOW_OUT_SUGGESTIONS = [
 ];
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FreeTextSelect } from "@/components/ui/free-text-select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Trash2, Save, X, Share2, Pencil } from "lucide-react";
 import { Link } from "wouter";

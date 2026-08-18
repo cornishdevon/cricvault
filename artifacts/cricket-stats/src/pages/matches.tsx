@@ -15,7 +15,7 @@ export default function Matches() {
   });
   const { data: perMatchRaw } = useGetPerMatchStats();
   const statsByMatchId = useMemo(() => {
-    const map = new Map<number, { runs: number | null; howOut: string | null; wickets: number | null; overs: number | null; runsConceded: number | null }>();
+    const map = new Map<number, { runs?: number | null; howOut?: string | null; wickets?: number | null; overs?: number | null; runsConceded?: number | null }>();
     for (const s of perMatchRaw ?? []) map.set(s.matchId, s as typeof s & { matchId: number });
     return map;
   }, [perMatchRaw]);

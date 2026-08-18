@@ -18,6 +18,7 @@ import { SeasonTargets } from "@/components/season-targets";
 import { ShareCard } from "@/components/share-card";
 import { MilestoneTracker } from "@/components/milestone-tracker";
 import { ExtendedBattingStats } from "@/components/extended-batting-stats";
+import { SeasonScoreboard } from "@/components/season-scoreboard";
 import { ExtendedBowlingStats } from "@/components/extended-bowling-stats";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -625,6 +626,23 @@ export default function Dashboard() {
     return (seasonRuns / filteredDismissals).toFixed(1);
   }, [seasonRuns, filteredDismissals]);
 
+  const seasonCatches = useMemo(
+    () => filteredData.reduce((s, m) => s + (m.catches ?? 0), 0),
+    [filteredData]
+  );
+
+  // Runs delta vs the previous season (only when a specific season is selected)
+  const { runsDelta, prevSeasonLabel } = useMemo(() => {
+    if (selectedSeason === "all" || !perMatch) return { runsDelta: null as number | null, prevSeasonLabel: undefined as string | undefined };
+    const idx = seasons.indexOf(selectedSeason);
+    const prev = idx >= 0 && idx + 1 < seasons.length ? seasons[idx + 1] : undefined;
+    if (!prev) return { runsDelta: null as number | null, prevSeasonLabel: undefined as string | undefined };
+    const prevRuns = perMatch
+      .filter((d) => d.matchType !== "Back Garden" && d.date.startsWith(prev) && d.runs != null)
+      .reduce((s, d) => s + (d.runs ?? 0), 0);
+    return { runsDelta: seasonRuns - prevRuns, prevSeasonLabel: prev };
+  }, [selectedSeason, seasons, perMatch, seasonRuns]);
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -674,6 +692,22 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Season scoreboard — split-flap digits, matching the mobile app */}
+      {chartLoading ? (
+        <Skeleton className="h-48 rounded-2xl" />
+      ) : (
+        <SeasonScoreboard
+          seasonLabel={selectedSeason === "all" ? "All-Time" : selectedSeason}
+          runs={seasonRuns}
+          wickets={seasonWickets}
+          catches={seasonCatches}
+          matches={filteredData.length}
+          battingAvg={filteredBattingAvg}
+          runsDelta={runsDelta}
+          prevSeasonLabel={prevSeasonLabel}
+        />
+      )}
 
       {/* Summary cards */}
       <div id="stats" className="-mt-4" />
@@ -750,7 +784,7 @@ export default function Dashboard() {
 
       {/* Extended batting & bowling breakdown */}
       {!summaryLoading && summary?.batting && (
-        <ExtendedBattingStats batting={summary.batting as any} potmCount={summary.potmCount ?? 0} />
+        <ExtendedBattingStats batting={summary.batting as any} potmCount={potmCount} />
       )}
       {!summaryLoading && summary?.bowling && (
         <ExtendedBowlingStats bowling={summary.bowling as any} />

@@ -13,6 +13,7 @@ import {
   getGetStatsSummaryQueryKey,
   getListMatchPhotosQueryKey,
   getListMatchVideosQueryKey,
+  customFetch,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -364,16 +365,16 @@ function SectionCard({
 
 async function uploadMobileFile(uri: string, contentType: string): Promise<string | null> {
   try {
-    const domain = process.env.EXPO_PUBLIC_DOMAIN;
-    const apiBase = domain ? `https://${domain}` : "";
     const filename = uri.split("/").pop() ?? "upload";
-    const urlRes = await fetch(`${apiBase}/api/storage/uploads/request-url`, {
+    // customFetch attaches the Clerk bearer token + API base URL.
+    const { uploadURL, objectPath } = await customFetch<{
+      uploadURL: string;
+      objectPath: string;
+    }>("/api/storage/uploads/request-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: filename, size: 0, contentType }),
     });
-    if (!urlRes.ok) return null;
-    const { uploadURL, objectPath } = await urlRes.json();
     const fileRes = await fetch(uri);
     const blob = await fileRes.blob();
     await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": contentType }, body: blob });

@@ -14,7 +14,7 @@ router.get("/fixtures", async (req, res) => {
     .from(fixturesTable)
     .where(eq(fixturesTable.userId, req.userId!))
     .orderBy(asc(fixturesTable.date));
-  res.json(fixtures.map((f) => ({ ...f, createdAt: f.createdAt.toISOString() })));
+  return res.json(fixtures.map((f) => ({ ...f, createdAt: f.createdAt.toISOString() })));
 });
 
 router.post("/fixtures", async (req, res) => {
@@ -36,7 +36,7 @@ router.post("/fixtures", async (req, res) => {
       notes: notes ?? null,
     })
     .returning();
-  res.status(201).json({ ...fixture, createdAt: fixture.createdAt.toISOString() });
+  return res.status(201).json({ ...fixture, createdAt: fixture.createdAt.toISOString() });
 });
 
 router.patch("/fixtures/:id", async (req, res) => {
@@ -57,7 +57,7 @@ router.patch("/fixtures/:id", async (req, res) => {
     .where(and(eq(fixturesTable.id, id), eq(fixturesTable.userId, req.userId!)))
     .returning();
   if (!fixture) return res.status(404).json({ error: "Fixture not found" });
-  res.json({ ...fixture, createdAt: fixture.createdAt.toISOString() });
+  return res.json({ ...fixture, createdAt: fixture.createdAt.toISOString() });
 });
 
 router.delete("/fixtures/:id", async (req, res) => {
@@ -65,7 +65,7 @@ router.delete("/fixtures/:id", async (req, res) => {
   await db
     .delete(fixturesTable)
     .where(and(eq(fixturesTable.id, id), eq(fixturesTable.userId, req.userId!)));
-  res.status(204).send();
+  return res.status(204).send();
 });
 
 export default router;

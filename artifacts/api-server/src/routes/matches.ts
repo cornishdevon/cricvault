@@ -12,6 +12,8 @@ import {
 } from "@workspace/db";
 import { eq, ne, and, desc, count } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
+import { withObjectToken } from "../lib/signedObjectUrls";
+import { userOwnsObjectPath } from "../lib/objectOwnership";
 
 const router = Router();
 
@@ -34,7 +36,7 @@ router.get("/matches", async (req, res) => {
     .from(matchesTable)
     .where(eq(matchesTable.userId, req.userId!))
     .orderBy(desc(matchesTable.createdAt));
-  res.json(
+  return res.json(
     matches.map((m) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
@@ -66,14 +68,14 @@ router.post("/matches", async (req, res) => {
       isPractice: !!isPractice,
     })
     .returning();
-  res.status(201).json({ ...match, createdAt: match.createdAt.toISOString() });
+  return res.status(201).json({ ...match, createdAt: match.createdAt.toISOString() });
 });
 
 router.get("/matches/:matchId", async (req, res) => {
   const matchId = Number(req.params.matchId);
   const match = await getOwnedMatch(req.userId!, matchId);
   if (!match) return res.status(404).json({ error: "Match not found" });
-  res.json({ ...match, createdAt: match.createdAt.toISOString() });
+  return res.json({ ...match, createdAt: match.createdAt.toISOString() });
 });
 
 router.patch("/matches/:matchId", async (req, res) => {
@@ -100,7 +102,7 @@ router.patch("/matches/:matchId", async (req, res) => {
     .where(and(eq(matchesTable.id, matchId), eq(matchesTable.userId, req.userId!)))
     .returning();
   if (!match) return res.status(404).json({ error: "Match not found" });
-  res.json({ ...match, createdAt: match.createdAt.toISOString() });
+  return res.json({ ...match, createdAt: match.createdAt.toISOString() });
 });
 
 router.delete("/matches/:matchId", async (req, res) => {
@@ -108,7 +110,7 @@ router.delete("/matches/:matchId", async (req, res) => {
   await db
     .delete(matchesTable)
     .where(and(eq(matchesTable.id, matchId), eq(matchesTable.userId, req.userId!)));
-  res.status(204).send();
+  return res.status(204).send();
 });
 
 // ── Batting ───────────────────────────────────────────────────────────────────
@@ -126,7 +128,7 @@ router.get("/matches/:matchId/batting", async (req, res) => {
     .from(battingStatsTable)
     .where(eq(battingStatsTable.matchId, matchId));
   if (!row) return res.json(null);
-  res.json({ ...row, strikeRate: Number(row.strikeRate) });
+  return res.json({ ...row, strikeRate: Number(row.strikeRate) });
 });
 
 router.post("/matches/:matchId/batting", async (req, res) => {
@@ -154,7 +156,7 @@ router.post("/matches/:matchId/batting", async (req, res) => {
       shotData: shotData ?? null,
     })
     .returning();
-  res.status(201).json({ ...row, strikeRate: Number(row.strikeRate) });
+  return res.status(201).json({ ...row, strikeRate: Number(row.strikeRate) });
 });
 
 router.patch("/matches/:matchId/batting", async (req, res) => {
@@ -188,7 +190,7 @@ router.patch("/matches/:matchId/batting", async (req, res) => {
     .set(updates)
     .where(eq(battingStatsTable.matchId, matchId))
     .returning();
-  res.json({ ...row, strikeRate: Number(row.strikeRate) });
+  return res.json({ ...row, strikeRate: Number(row.strikeRate) });
 });
 
 // ── Bowling ───────────────────────────────────────────────────────────────────
@@ -206,7 +208,7 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
     .from(bowlingStatsTable)
     .where(eq(bowlingStatsTable.matchId, matchId));
   if (!row) return res.json(null);
-  res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate) });
+  return res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate) });
 });
 
 router.post("/matches/:matchId/bowling", async (req, res) => {
@@ -231,7 +233,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
       wouldHaveReferred: wouldHaveReferred ?? null,
     })
     .returning();
-  res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
+  return res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
 });
 
 router.patch("/matches/:matchId/bowling", async (req, res) => {
@@ -262,7 +264,7 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
     .set(updates)
     .where(eq(bowlingStatsTable.matchId, matchId))
     .returning();
-  res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
+  return res.json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
 });
 
 // ── Fielding ──────────────────────────────────────────────────────────────────
@@ -275,7 +277,7 @@ router.get("/matches/:matchId/fielding", async (req, res) => {
     .from(fieldingStatsTable)
     .where(eq(fieldingStatsTable.matchId, matchId));
   if (!row) return res.json(null);
-  res.json(row);
+  return res.json(row);
 });
 
 router.post("/matches/:matchId/fielding", async (req, res) => {
@@ -293,7 +295,7 @@ router.post("/matches/:matchId/fielding", async (req, res) => {
       missedStumpings: missedStumpings ?? 0,
     })
     .returning();
-  res.status(201).json(row);
+  return res.status(201).json(row);
 });
 
 router.patch("/matches/:matchId/fielding", async (req, res) => {
@@ -312,7 +314,7 @@ router.patch("/matches/:matchId/fielding", async (req, res) => {
     .where(eq(fieldingStatsTable.matchId, matchId))
     .returning();
   if (!row) return res.status(404).json({ error: "Fielding stats not found" });
-  res.json(row);
+  return res.json(row);
 });
 
 // ── Match Report ──────────────────────────────────────────────────────────────
@@ -325,7 +327,7 @@ router.get("/matches/:matchId/report", async (req, res) => {
     .from(matchReportsTable)
     .where(eq(matchReportsTable.matchId, matchId));
   if (!row) return res.json(null);
-  res.json({ ...row, updatedAt: row.updatedAt.toISOString() });
+  return res.json({ ...row, updatedAt: row.updatedAt.toISOString() });
 });
 
 router.post("/matches/:matchId/report", async (req, res) => {
@@ -336,7 +338,7 @@ router.post("/matches/:matchId/report", async (req, res) => {
     .insert(matchReportsTable)
     .values({ matchId, notes: notes ?? null, areasToImprove: areasToImprove ?? null })
     .returning();
-  res.status(201).json({ ...row, updatedAt: row.updatedAt.toISOString() });
+  return res.status(201).json({ ...row, updatedAt: row.updatedAt.toISOString() });
 });
 
 router.patch("/matches/:matchId/report", async (req, res) => {
@@ -353,7 +355,7 @@ router.patch("/matches/:matchId/report", async (req, res) => {
     .where(eq(matchReportsTable.matchId, matchId))
     .returning();
   if (!row) return res.status(404).json({ error: "Report not found" });
-  res.json({ ...row, updatedAt: row.updatedAt.toISOString() });
+  return res.json({ ...row, updatedAt: row.updatedAt.toISOString() });
 });
 
 // ── Photos ────────────────────────────────────────────────────────────────────
@@ -366,7 +368,7 @@ router.get("/matches/:matchId/photos", async (req, res) => {
     .from(photosTable)
     .where(eq(photosTable.matchId, matchId))
     .orderBy(desc(photosTable.createdAt));
-  res.json(rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })));
+  return res.json(rows.map((r) => ({ ...r, url: withObjectToken(r.url), createdAt: r.createdAt.toISOString() })));
 });
 
 router.post("/matches/:matchId/photos", async (req, res) => {
@@ -374,11 +376,14 @@ router.post("/matches/:matchId/photos", async (req, res) => {
   if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { url, caption } = req.body;
   if (!url) return res.status(400).json({ error: "url is required" });
+  if (!(await userOwnsObjectPath(req.userId!, url))) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   const [row] = await db
     .insert(photosTable)
     .values({ userId: req.userId!, matchId, url, caption: caption ?? null })
     .returning();
-  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.status(201).json({ ...row, url: withObjectToken(row.url), createdAt: row.createdAt.toISOString() });
 });
 
 router.delete("/photos/:photoId", async (req, res) => {
@@ -386,7 +391,7 @@ router.delete("/photos/:photoId", async (req, res) => {
   await db
     .delete(photosTable)
     .where(and(eq(photosTable.id, photoId), eq(photosTable.userId, req.userId!)));
-  res.status(204).send();
+  return res.status(204).send();
 });
 
 // ── Videos ────────────────────────────────────────────────────────────────────
@@ -399,7 +404,7 @@ router.get("/matches/:matchId/videos", async (req, res) => {
     .from(videosTable)
     .where(eq(videosTable.matchId, matchId))
     .orderBy(desc(videosTable.createdAt));
-  res.json(rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })));
+  return res.json(rows.map((r) => ({ ...r, objectPath: withObjectToken(r.objectPath), createdAt: r.createdAt.toISOString() })));
 });
 
 router.post("/matches/:matchId/videos", async (req, res) => {
@@ -407,11 +412,14 @@ router.post("/matches/:matchId/videos", async (req, res) => {
   if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
   const { objectPath, caption } = req.body;
   if (!objectPath) return res.status(400).json({ error: "objectPath is required" });
+  if (!(await userOwnsObjectPath(req.userId!, objectPath))) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   const [row] = await db
     .insert(videosTable)
     .values({ userId: req.userId!, matchId, objectPath, caption: caption ?? null })
     .returning();
-  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.status(201).json({ ...row, objectPath: withObjectToken(row.objectPath), createdAt: row.createdAt.toISOString() });
 });
 
 router.delete("/videos/:videoId", async (req, res) => {
@@ -419,7 +427,7 @@ router.delete("/videos/:videoId", async (req, res) => {
   await db
     .delete(videosTable)
     .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.userId!)));
-  res.status(204).send();
+  return res.status(204).send();
 });
 
 // ── Coaching Tips (global content, auth still required) ─────────────────────
@@ -435,7 +443,7 @@ router.get("/coaching-tips", async (req, res) => {
   } else {
     rows = await db.select().from(coachingTipsTable);
   }
-  res.json(rows);
+  return res.json(rows);
 });
 
 // ── Per-Match Stats (for charting) ────────────────────────────────────────────
@@ -505,7 +513,7 @@ router.get("/stats/per-match", async (req, res) => {
     })
   );
 
-  res.json(results);
+  return res.json(results);
 });
 
 // ── Stats Summary ─────────────────────────────────────────────────────────────
@@ -602,7 +610,7 @@ router.get("/stats/summary", async (req, res) => {
 
   const potmCount = userMatches.filter((m) => m.matchType !== "Back Garden" && m.playerOfTheMatch).length;
 
-  res.json({
+  return res.json({
     totalMatches,
     potmCount,
     batting: {
@@ -662,7 +670,7 @@ router.get("/media/photos", async (req, res) => {
     .leftJoin(matchesTable, eq(photosTable.matchId, matchesTable.id))
     .where(eq(photosTable.userId, req.userId!))
     .orderBy(desc(photosTable.createdAt));
-  res.json(photos);
+  return res.json(photos.map((p) => ({ ...p, url: withObjectToken(p.url) })));
 });
 
 router.post("/media/photos", async (req, res) => {
@@ -671,11 +679,14 @@ router.post("/media/photos", async (req, res) => {
   if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
     return res.status(404).json({ error: "Match not found" });
   }
+  if (!(await userOwnsObjectPath(req.userId!, url))) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   const [row] = await db
     .insert(photosTable)
     .values({ userId: req.userId!, matchId: matchId ?? null, url, caption: caption ?? null })
     .returning();
-  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.patch("/media/photos/:photoId", async (req, res) => {
@@ -696,7 +707,7 @@ router.patch("/media/photos/:photoId", async (req, res) => {
     .where(and(eq(photosTable.id, photoId), eq(photosTable.userId, req.userId!)))
     .returning();
   if (!row) return res.status(404).json({ error: "Photo not found" });
-  res.json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.get("/media/videos", async (req, res) => {
@@ -714,7 +725,7 @@ router.get("/media/videos", async (req, res) => {
     .leftJoin(matchesTable, eq(videosTable.matchId, matchesTable.id))
     .where(eq(videosTable.userId, req.userId!))
     .orderBy(desc(videosTable.createdAt));
-  res.json(videos);
+  return res.json(videos.map((v) => ({ ...v, objectPath: withObjectToken(v.objectPath) })));
 });
 
 router.post("/media/videos", async (req, res) => {
@@ -723,11 +734,14 @@ router.post("/media/videos", async (req, res) => {
   if (matchId != null && !(await getOwnedMatch(req.userId!, Number(matchId)))) {
     return res.status(404).json({ error: "Match not found" });
   }
+  if (!(await userOwnsObjectPath(req.userId!, objectPath))) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   const [row] = await db
     .insert(videosTable)
     .values({ userId: req.userId!, matchId: matchId ?? null, objectPath, caption: caption ?? null })
     .returning();
-  res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.status(201).json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 router.patch("/media/videos/:videoId", async (req, res) => {
@@ -748,7 +762,7 @@ router.patch("/media/videos/:videoId", async (req, res) => {
     .where(and(eq(videosTable.id, videoId), eq(videosTable.userId, req.userId!)))
     .returning();
   if (!row) return res.status(404).json({ error: "Video not found" });
-  res.json({ ...row, createdAt: row.createdAt.toISOString() });
+  return res.json({ ...row, createdAt: row.createdAt.toISOString() });
 });
 
 export default router;

@@ -8,12 +8,15 @@ import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage"
 import { ObjectPermission } from "../lib/objectAcl";
 
 import { requireAuth } from "../middlewares/requireAuth";
+import { verifyObjectToken } from "../lib/signedObjectUrls";
+import { db, objectUploadsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 
-// Uploading requires a signed-in user; serving objects stays public
-// (mobile video players can't attach auth headers to media URLs).
+// Uploading requires a signed-in user. Private objects are served only with a
+// short-lived HMAC token (media players can't attach auth headers, so the API
+// appends a signed `?token=` to media URLs it returns to the owning user).
 router.post("/storage/uploads/request-url", requireAuth);
 
 /**
@@ -35,6 +38,13 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
 
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+
+    // Bind the object to the uploading user; media rows may only reference
+    // objects recorded here for the same user.
+    await db
+      .insert(objectUploadsTable)
+      .values({ objectPath, userId: req.userId! })
+      .onConflictDoNothing();
 
     res.json(
       RequestUploadUrlResponse.parse({
@@ -95,22 +105,18 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
     const objectPath = `/objects/${wildcardPath}`;
-    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
 
-    // --- Protected route example (uncomment when using replit-auth) ---
-    // if (!req.isAuthenticated()) {
-    //   res.status(401).json({ error: "Unauthorized" });
-    //   return;
-    // }
-    // const canAccess = await objectStorageService.canAccessObjectEntity({
-    //   userId: req.user.id,
-    //   objectFile,
-    //   requestedPermission: ObjectPermission.READ,
-    // });
-    // if (!canAccess) {
-    //   res.status(403).json({ error: "Forbidden" });
-    //   return;
-    // }
+    // Authorization: a valid, unexpired signed token for this exact object
+    // path is required. Tokens are only ever minted by the API for the user
+    // who owns the photo/video row, so possession of the token proves the
+    // requester received the URL through an authenticated, owner-scoped call.
+    const token = typeof req.query.token === "string" ? req.query.token : undefined;
+    if (!verifyObjectToken(objectPath, token)) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
 
     const response = await objectStorageService.downloadObject(objectFile);
 

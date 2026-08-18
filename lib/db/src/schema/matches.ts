@@ -122,6 +122,16 @@ export const insertVideoSchema = createInsertSchema(videosTable).omit({ id: true
 export type InsertVideo = z.infer<typeof insertVideoSchema>;
 export type Video = typeof videosTable.$inferSelect;
 
+// Records which user requested each private-object upload URL, so media rows
+// can only ever reference objects their creator actually uploaded.
+export const objectUploadsTable = pgTable("object_uploads", {
+  objectPath: text("object_path").primaryKey(),
+  userId: text("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ObjectUpload = typeof objectUploadsTable.$inferSelect;
+
 export const coachingTipsTable = pgTable("coaching_tips", {
   id: serial("id").primaryKey(),
   category: text("category").notNull(),

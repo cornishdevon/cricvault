@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListMatches } from "@workspace/api-client-react";
+import { useListMatches, customFetch } from "@workspace/api-client-react";
 
 import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
@@ -123,20 +123,19 @@ function UploadModal({
       const fileName = `upload_${Date.now()}.${ext}`;
       const isVideo = category === "videos";
 
-      const urlRes = await fetch(
-        `${getApiBase()}/api/storage/uploads/request-url`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: fileName,
-            size: imageSize,
-            contentType: imageMime,
-          }),
-        }
-      );
-      if (!urlRes.ok) throw new Error("Could not get upload URL");
-      const { uploadURL, objectPath } = await urlRes.json();
+      // customFetch attaches the Clerk bearer token + API base URL.
+      const { uploadURL, objectPath } = await customFetch<{
+        uploadURL: string;
+        objectPath: string;
+      }>("/api/storage/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fileName,
+          size: imageSize,
+          contentType: imageMime,
+        }),
+      });
 
       const fileRes = await fetch(imageUri);
       const blob = await fileRes.blob();
@@ -157,19 +156,19 @@ function UploadModal({
 
       if (isVideo) {
         const endpoint = selectedMatchId
-          ? `${getApiBase()}/api/matches/${selectedMatchId}/videos`
-          : `${getApiBase()}/api/media/videos`;
-        await fetch(endpoint, {
+          ? `/api/matches/${selectedMatchId}/videos`
+          : `/api/media/videos`;
+        await customFetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ objectPath, caption: finalCaption }),
         });
       } else {
-        const publicUrl = `${getApiBase()}/api/storage${objectPath}`;
+        const publicUrl = `/api/storage${objectPath}`;
         const endpoint = selectedMatchId
-          ? `${getApiBase()}/api/matches/${selectedMatchId}/photos`
-          : `${getApiBase()}/api/media/photos`;
-        await fetch(endpoint, {
+          ? `/api/matches/${selectedMatchId}/photos`
+          : `/api/media/photos`;
+        await customFetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url: publicUrl, caption: finalCaption }),

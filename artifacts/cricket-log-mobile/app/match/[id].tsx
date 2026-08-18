@@ -25,6 +25,7 @@ import {
   getGetMatchReportQueryKey,
   getListMatchPhotosQueryKey,
   getListMatchVideosQueryKey,
+  customFetch,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
@@ -144,13 +145,15 @@ function Card({
 async function uploadToPresignedUrl(uri: string, contentType: string): Promise<string | null> {
   try {
     const filename = uri.split("/").pop() ?? "upload";
-    const urlRes = await fetch("/api/storage/uploads/request-url", {
+    // customFetch attaches the Clerk bearer token + API base URL.
+    const { uploadURL, objectPath } = await customFetch<{
+      uploadURL: string;
+      objectPath: string;
+    }>("/api/storage/uploads/request-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: filename, size: 0, contentType }),
     });
-    if (!urlRes.ok) return null;
-    const { uploadURL, objectPath } = await urlRes.json();
 
     const fileRes = await fetch(uri);
     const blob = await fileRes.blob();
