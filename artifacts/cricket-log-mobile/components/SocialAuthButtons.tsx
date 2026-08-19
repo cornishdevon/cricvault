@@ -98,7 +98,7 @@ export function SocialAuthButtons() {
           disabled={busy !== null}
           accessibilityLabel="Continue with Apple"
         >
-          <Text style={s.appleLogo}></Text>
+          <Text style={s.appleLogo}>{"\uF8FF"}</Text>
           <Text style={s.appleButtonText}>
             {busy === "apple" ? "Opening…" : "Continue with Apple"}
           </Text>

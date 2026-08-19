@@ -1,5 +1,9 @@
 import app from "./app";
+import { ensureClerkRedirectUrls } from "./lib/ensureClerkRedirectUrls";
 import { logger } from "./lib/logger";
+
+// Fire-and-forget: allowlist the mobile app's OAuth redirect URL on Clerk.
+void ensureClerkRedirectUrls();
 
 const rawPort = process.env["PORT"];
 if (!rawPort) throw new Error("PORT environment variable is required but was not provided.");
