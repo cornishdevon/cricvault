@@ -1,4 +1,6 @@
 import { useSSO } from "@clerk/expo";
+import { useSignInWithApple } from "@clerk/expo/apple";
+import * as AppleAuthentication from "expo-apple-authentication";
 import * as AuthSession from "expo-auth-session";
 import { type Href, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -14,20 +16,23 @@ import {
 import { useColors } from "@/hooks/useColors";
 
 /**
- * "Continue with Apple" and "Continue with Google" buttons using Clerk's
- * SSO browser flow (ASWebAuthenticationSession on iOS).
+ * "Sign in with Apple" (native, Apple-approved button) and
+ * "Continue with Google" (Clerk SSO browser flow) buttons.
  *
  * Both sign up new users AND sign in existing ones — no email
  * verification codes involved. Added for App Store review, where the
  * reviewer's device cannot receive emails (guideline 4.8 also requires
  * Sign in with Apple when other social logins are offered).
  *
- * The browser-based Apple flow is used deliberately: it needs no
- * Sign in with Apple entitlement in the provisioning profile, which we
- * cannot regenerate without a working App Store Connect API key.
+ * The native Apple button uses expo-apple-authentication + Clerk's
+ * useSignInWithApple hook. This requires the "Sign in with Apple"
+ * entitlement in the provisioning profile (appleSignIn: true in
+ * app.json) and an EAS build authenticated with the ASC API key so
+ * EAS can sync the capability to the profile.
  */
 export function SocialAuthButtons() {
   const { startSSOFlow } = useSSO();
+  const { startAppleAuthenticationFlow } = useSignInWithApple();
   const router = useRouter();
   const colors = useColors();
   const scheme = useColorScheme();
@@ -51,37 +56,60 @@ export function SocialAuthButtons() {
     [router],
   );
 
-  const handleSSO = useCallback(
-    (provider: "apple" | "google") => async () => {
-      setError(null);
-      setBusy(provider);
-      try {
-        const { createdSessionId, setActive } = await startSSOFlow({
-          strategy: provider === "apple" ? "oauth_apple" : "oauth_google",
-          redirectUrl: AuthSession.makeRedirectUri({ scheme: "cricvault" }),
-        });
-        if (createdSessionId && setActive) {
-          await setActive({ session: createdSessionId, navigate });
-        } else {
-          // User closed the browser sheet or flow needs more steps — stay quiet
-          // unless nothing at all happened is unexpected; show gentle message.
-          setError(null);
-        }
-      } catch (err: any) {
-        if (err?.code === "ERR_REQUEST_CANCELED") return;
+  const finish = useCallback(
+    async (result: { createdSessionId: string | null; setActive?: any }) => {
+      const { createdSessionId, setActive } = result;
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId, navigate });
+      } else {
         setError(
-          err?.errors?.[0]?.longMessage ??
-            err?.errors?.[0]?.message ??
-            "Sign in didn't complete. Please try again.",
+          "Sign in didn't complete. Please try again, or use email and password.",
         );
-      } finally {
-        setBusy(null);
       }
     },
-    [navigate, startSSOFlow],
+    [navigate],
   );
 
-  const s = makeStyles(colors, scheme === "dark");
+  const handleApple = useCallback(async () => {
+    setError(null);
+    setBusy("apple");
+    try {
+      await finish(await startAppleAuthenticationFlow());
+    } catch (err: any) {
+      // User cancelled the native Apple sheet — not an error
+      if (err?.code === "ERR_REQUEST_CANCELED") return;
+      setError(
+        err?.errors?.[0]?.longMessage ??
+          err?.errors?.[0]?.message ??
+          "Apple sign in didn't complete. Please try again.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }, [finish, startAppleAuthenticationFlow]);
+
+  const handleGoogle = useCallback(async () => {
+    setError(null);
+    setBusy("google");
+    try {
+      await finish(
+        await startSSOFlow({
+          strategy: "oauth_google",
+          redirectUrl: AuthSession.makeRedirectUri({ scheme: "cricvault" }),
+        }),
+      );
+    } catch (err: any) {
+      setError(
+        err?.errors?.[0]?.longMessage ??
+          err?.errors?.[0]?.message ??
+          "Google sign in didn't complete. Please try again.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }, [finish, startSSOFlow]);
+
+  const s = makeStyles(colors);
 
   return (
     <View>
@@ -92,24 +120,23 @@ export function SocialAuthButtons() {
       </View>
 
       {Platform.OS === "ios" && (
-        <Pressable
-          style={[s.appleButton, busy === "apple" && s.disabled]}
-          onPress={handleSSO("apple")}
-          disabled={busy !== null}
-          accessibilityLabel="Continue with Apple"
-        >
-          <Text style={s.appleLogo}>{"\uF8FF"}</Text>
-          <Text style={s.appleButtonText}>
-            {busy === "apple" ? "Opening…" : "Continue with Apple"}
-          </Text>
-        </Pressable>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+          buttonStyle={
+            scheme === "dark"
+              ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+              : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+          }
+          cornerRadius={12}
+          style={s.appleButton}
+          onPress={busy ? () => {} : handleApple}
+        />
       )}
 
       <Pressable
         style={[s.socialButton, busy === "google" && s.disabled]}
-        onPress={handleSSO("google")}
+        onPress={handleGoogle}
         disabled={busy !== null}
-        accessibilityLabel="Continue with Google"
       >
         <Text style={s.socialButtonText}>
           {busy === "google" ? "Opening…" : "Continue with Google"}
@@ -121,7 +148,7 @@ export function SocialAuthButtons() {
   );
 }
 
-const makeStyles = (colors: ReturnType<typeof useColors>, dark: boolean) =>
+const makeStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     dividerRow: { flexDirection: "row", alignItems: "center", marginVertical: 18 },
     dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
@@ -132,24 +159,8 @@ const makeStyles = (colors: ReturnType<typeof useColors>, dark: boolean) =>
       fontSize: 13,
     },
     appleButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: dark ? "#FFFFFF" : "#000000",
-      borderRadius: 12,
-      paddingVertical: 14,
+      height: 48,
       marginBottom: 10,
-      gap: 6,
-    },
-    appleLogo: {
-      color: dark ? "#000000" : "#FFFFFF",
-      fontSize: 17,
-      marginTop: -2,
-    },
-    appleButtonText: {
-      color: dark ? "#000000" : "#FFFFFF",
-      fontFamily: "Inter_600SemiBold",
-      fontSize: 15,
     },
     socialButton: {
       borderWidth: 1,
