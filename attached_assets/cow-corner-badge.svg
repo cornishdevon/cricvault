@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <defs>
+    <filter id="shadow" x="-30%" y="-40%" width="160%" height="190%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#2a1808" flood-opacity=".2"/>
+    </filter>
+  </defs>
+  <rect width="900" height="520" fill="#F5F2E9"/>
+  <g transform="translate(450 260) rotate(-5) translate(-450 -260)" filter="url(#shadow)">
+    <rect x="130" y="146" width="640" height="228" rx="52" fill="#FFF3CF" stroke="#8B5E24" stroke-width="6"/>
+    <g stroke="#493426" stroke-width="5" stroke-linejoin="round">
+      <path d="M231 208 Q200 155 235 164 L257 205 M310 206 Q347 157 320 164 L295 197" fill="#DEC190"/>
+      <path d="M233 216 Q175 184 187 235 Q208 258 238 241 M309 216 Q365 184 357 232 Q340 258 307 240" fill="#FFFDF5"/>
+      <path d="M201 220 Q219 218 230 236 M341 220 Q322 218 312 236" stroke="#DE9B8B" stroke-width="12"/>
+      <path d="M228 215 Q236 181 273 187 Q313 184 321 223 L316 280 Q306 313 273 315 Q233 315 223 280Z" fill="#FFFDF5"/>
+      <path d="M237 203 Q258 187 274 194 L266 225 Q241 243 232 225Z" fill="#493426" stroke="none"/>
+      <ellipse cx="273" cy="281" rx="52" ry="32" fill="#EAB09B"/>
+      <path d="M245 246 Q252 237 259 246 M288 246 Q295 237 302 246" fill="none" stroke-linecap="round"/>
+      <ellipse cx="253" cy="278" rx="5" ry="7" fill="#493426" stroke="none"/>
+      <ellipse cx="294" cy="278" rx="5" ry="7" fill="#493426" stroke="none"/>
+      <path d="M263 293 Q274 301 286 293" fill="none" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <text x="535" y="264" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="82" letter-spacing="5" fill="#5A3516">MOO!</text>
+    <text x="535" y="309" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-weight="bold" font-size="21" letter-spacing="3" fill="#7A5125">COW CORNER SIX</text>
+  </g>
+</svg>

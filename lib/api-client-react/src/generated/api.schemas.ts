@@ -9,123 +9,67 @@ export interface HealthStatus {
   status: string;
 }
 
-export type MatchMatchType = typeof MatchMatchType[keyof typeof MatchMatchType];
-
-
-export const MatchMatchType = {
-  T20: 'T20',
-  ODI: 'ODI',
-  Test: 'Test',
-  Club: 'Club',
-  Friendly: 'Friendly',
-  Other: 'Other',
-} as const;
-
-/**
- * @nullable
- */
-export type MatchResult = typeof MatchResult[keyof typeof MatchResult] | null;
-
-
-export const MatchResult = {
-  Win: 'Win',
-  Loss: 'Loss',
-  Draw: 'Draw',
-  No_Result: 'No Result',
-} as const;
-
 export interface Match {
   id: number;
   date: string;
   opponent: string;
   /** @nullable */
   venue?: string | null;
-  matchType: MatchMatchType;
+  matchType: string;
   /** @nullable */
   playingFor?: string | null;
   /** @nullable */
-  result?: MatchResult;
+  result?: string | null;
+  playerOfTheMatch: boolean;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  pitchType?: string | null;
+  /** @nullable */
+  weatherConditions?: string | null;
+  /** @nullable */
+  tossWinner?: string | null;
+  /** @nullable */
+  tossDecision?: string | null;
+  /** @nullable */
+  series?: string | null;
+  isPractice: boolean;
   createdAt: string;
 }
-
-export type MatchInputMatchType = typeof MatchInputMatchType[keyof typeof MatchInputMatchType];
-
-
-export const MatchInputMatchType = {
-  T20: 'T20',
-  ODI: 'ODI',
-  Test: 'Test',
-  Club: 'Club',
-  Friendly: 'Friendly',
-  Other: 'Other',
-} as const;
-
-export type MatchInputResult = typeof MatchInputResult[keyof typeof MatchInputResult];
-
-
-export const MatchInputResult = {
-  Win: 'Win',
-  Loss: 'Loss',
-  Draw: 'Draw',
-  No_Result: 'No Result',
-} as const;
 
 export interface MatchInput {
   date: string;
   opponent: string;
   venue?: string;
-  matchType: MatchInputMatchType;
+  matchType: string;
   playingFor?: string;
-  result?: MatchInputResult;
+  result?: string;
+  playerOfTheMatch?: boolean;
+  notes?: string;
+  pitchType?: string;
+  weatherConditions?: string;
+  tossWinner?: string;
+  tossDecision?: string;
+  series?: string;
+  isPractice?: boolean;
 }
-
-export type MatchUpdateMatchType = typeof MatchUpdateMatchType[keyof typeof MatchUpdateMatchType];
-
-
-export const MatchUpdateMatchType = {
-  T20: 'T20',
-  ODI: 'ODI',
-  Test: 'Test',
-  Club: 'Club',
-  Friendly: 'Friendly',
-  Other: 'Other',
-} as const;
-
-export type MatchUpdateResult = typeof MatchUpdateResult[keyof typeof MatchUpdateResult];
-
-
-export const MatchUpdateResult = {
-  Win: 'Win',
-  Loss: 'Loss',
-  Draw: 'Draw',
-  No_Result: 'No Result',
-} as const;
 
 export interface MatchUpdate {
   date?: string;
   opponent?: string;
   venue?: string;
-  matchType?: MatchUpdateMatchType;
+  matchType?: string;
   playingFor?: string;
-  result?: MatchUpdateResult;
+  result?: string;
+  playerOfTheMatch?: boolean;
+  notes?: string;
+  pitchType?: string;
+  weatherConditions?: string;
+  tossWinner?: string;
+  tossDecision?: string;
+  series?: string;
+  isPractice?: boolean;
 }
-
-/**
- * @nullable
- */
-export type BattingStatsHowOut = typeof BattingStatsHowOut[keyof typeof BattingStatsHowOut] | null;
-
-
-export const BattingStatsHowOut = {
-  Bowled: 'Bowled',
-  Caught: 'Caught',
-  LBW: 'LBW',
-  Run_Out: 'Run Out',
-  Stumped: 'Stumped',
-  Hit_Wicket: 'Hit Wicket',
-  Not_Out: 'Not Out',
-  Retired: 'Retired',
-} as const;
 
 export interface BattingStats {
   id: number;
@@ -138,7 +82,9 @@ export interface BattingStats {
   /** @nullable */
   battingPosition?: number | null;
   /** @nullable */
-  howOut?: BattingStatsHowOut;
+  howOut?: string | null;
+  /** @nullable */
+  badUmpireDecision?: boolean | null;
   /**
      * @minimum 0
      * @nullable
@@ -162,20 +108,6 @@ export interface BattingStats {
   shotData?: string | null;
 }
 
-export type BattingStatsInputHowOut = typeof BattingStatsInputHowOut[keyof typeof BattingStatsInputHowOut];
-
-
-export const BattingStatsInputHowOut = {
-  Bowled: 'Bowled',
-  Caught: 'Caught',
-  LBW: 'LBW',
-  Run_Out: 'Run Out',
-  Stumped: 'Stumped',
-  Hit_Wicket: 'Hit Wicket',
-  Not_Out: 'Not Out',
-  Retired: 'Retired',
-} as const;
-
 export interface BattingStatsInput {
   /** @minimum 0 */
   runs: number;
@@ -187,7 +119,8 @@ export interface BattingStatsInput {
   sixes: number;
   /** @minimum 1 */
   battingPosition?: number;
-  howOut?: BattingStatsInputHowOut;
+  howOut?: string;
+  badUmpireDecision?: boolean;
   /** @minimum 0 */
   ballsToFifty?: number;
   /** @minimum 0 */
@@ -198,20 +131,6 @@ export interface BattingStatsInput {
   caughtPosition?: string;
   shotData?: string;
 }
-
-export type BattingStatsUpdateHowOut = typeof BattingStatsUpdateHowOut[keyof typeof BattingStatsUpdateHowOut];
-
-
-export const BattingStatsUpdateHowOut = {
-  Bowled: 'Bowled',
-  Caught: 'Caught',
-  LBW: 'LBW',
-  Run_Out: 'Run Out',
-  Stumped: 'Stumped',
-  Hit_Wicket: 'Hit Wicket',
-  Not_Out: 'Not Out',
-  Retired: 'Retired',
-} as const;
 
 export interface BattingStatsUpdate {
   /** @minimum 0 */
@@ -224,7 +143,8 @@ export interface BattingStatsUpdate {
   sixes?: number;
   /** @minimum 1 */
   battingPosition?: number;
-  howOut?: BattingStatsUpdateHowOut;
+  howOut?: string;
+  badUmpireDecision?: boolean;
   /** @minimum 0 */
   ballsToFifty?: number;
   /** @minimum 0 */
@@ -247,6 +167,14 @@ export interface BowlingStats {
   noBalls?: number;
   wides?: number;
   hatTrick?: boolean;
+  /** @minimum 0 */
+  bowledWickets: number;
+  /** @minimum 0 */
+  lbwWickets: number;
+  /** @nullable */
+  wouldHaveReferred?: boolean | null;
+  /** @nullable */
+  wicketMap?: string | null;
 }
 
 export interface BowlingStatsInput {
@@ -263,6 +191,13 @@ export interface BowlingStatsInput {
   /** @minimum 0 */
   wides?: number;
   hatTrick?: boolean;
+  /** @minimum 0 */
+  bowledWickets?: number;
+  /** @minimum 0 */
+  lbwWickets?: number;
+  wouldHaveReferred?: boolean;
+  /** @nullable */
+  wicketMap?: string | null;
 }
 
 export interface BowlingStatsUpdate {
@@ -279,6 +214,13 @@ export interface BowlingStatsUpdate {
   /** @minimum 0 */
   wides?: number;
   hatTrick?: boolean;
+  /** @minimum 0 */
+  bowledWickets?: number;
+  /** @minimum 0 */
+  lbwWickets?: number;
+  wouldHaveReferred?: boolean;
+  /** @nullable */
+  wicketMap?: string | null;
 }
 
 export interface FieldingStats {
@@ -288,6 +230,8 @@ export interface FieldingStats {
   droppedCatches: number;
   runOuts?: number;
   stumpings?: number;
+  /** @minimum 0 */
+  missedStumpings: number;
 }
 
 export interface FieldingStatsInput {
@@ -299,6 +243,8 @@ export interface FieldingStatsInput {
   runOuts?: number;
   /** @minimum 0 */
   stumpings?: number;
+  /** @minimum 0 */
+  missedStumpings?: number;
 }
 
 export interface FieldingStatsUpdate {
@@ -310,6 +256,8 @@ export interface FieldingStatsUpdate {
   runOuts?: number;
   /** @minimum 0 */
   stumpings?: number;
+  /** @minimum 0 */
+  missedStumpings?: number;
 }
 
 export interface MatchReport {
@@ -418,6 +366,8 @@ export interface PerMatchStat {
   battingPosition?: number | null;
   /** @nullable */
   wickets?: number | null;
+  /** @nullable */
+  wicketMap?: string | null;
   /** @nullable */
   overs?: number | null;
   /** @nullable */

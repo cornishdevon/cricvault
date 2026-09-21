@@ -35,6 +35,7 @@ import { SplitFlapDisplay } from "@/components/SplitFlapDisplay";
 import { ScoreboardCard } from "@/components/ScoreboardCard";
 import { NextMatchCard } from "@/components/NextMatchCard";
 import { AddFixtureModal } from "@/components/AddFixtureModal";
+import { CombinedWheels } from "@/components/CombinedWheels";
 import { BallHitsStumps, StumpsExploding, CricketPitch, TwoCricketCaps, BarChartStats, BullseyeTarget, TrendLine, StackedCards, CricketBallSvg } from "@/components/CricketIcons";
 
 // ── Season list builder ────────────────────────────────────────────────────────
@@ -531,6 +532,7 @@ function ShortcutPills({
   const t = useT();
   const shortcuts = [
     { key: "stats",      label: t("home.stats") },
+    { key: "wheels",     label: t("combinedWheels.title") },
     { key: "goals",      label: t("home.targets") },
     { key: "form",       label: t("home.form") },
     { key: "dismissals", label: t("home.dismissals") },
@@ -554,6 +556,11 @@ function ShortcutPills({
           {s.key === "stats" ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <BarChartStats size={18} />
+              <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
+            </View>
+          ) : s.key === "wheels" ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <Feather name="target" size={16} color={colors.primary} />
               <Text style={[styles.pillText, { color: colors.foreground }]}>{s.label}</Text>
             </View>
           ) : s.key === "goals" ? (
@@ -601,7 +608,7 @@ export default function DashboardScreen() {
   const colors = useColors();
   const t = useT();
   const insets = useSafeAreaInsets();
-  const { playerName } = usePlayerName();
+  const { playerName, battingHand } = usePlayerName();
   const router = useRouter();
 
   const {
@@ -620,6 +627,8 @@ export default function DashboardScreen() {
 
   const {
     data: perMatch,
+    isLoading: perMatchLoading,
+    error: perMatchError,
     refetch: refetchPerMatch,
     isRefetching: perMatchRefetching,
   } = useGetPerMatchStats();
@@ -1368,6 +1377,15 @@ export default function DashboardScreen() {
         </>
       ) : null}
 
+      <View onLayout={measureSection("wheels")} />
+      <CombinedWheels
+        data={perMatch}
+        isLoading={perMatchLoading}
+        error={perMatchError}
+        onRetry={() => { void refetchPerMatch(); }}
+        battingHand={battingHand}
+      />
+
       <View onLayout={measureSection("recent")} />
       {recentMatches.length > 0 ? (
         <>
@@ -1709,7 +1727,6 @@ const styles = StyleSheet.create({
   pillText: {
     fontSize: 12,
     fontFamily: "Inter_500Medium",
-    whiteSpace: "nowrap",
   },
 
   // Analysis cards

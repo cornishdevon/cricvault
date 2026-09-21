@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="-25 -25 360 360">
+  <rect x="-25" y="-25" width="360" height="360" fill="white"/>
+  <ellipse cx="155" cy="155" rx="166.38" ry="166.38" fill="#FFB300" fill-opacity=".0314" stroke="#FFB300" stroke-opacity=".188" stroke-width="1" stroke-dasharray="3 4"/>
+  <ellipse cx="155" cy="155" rx="141" ry="141" fill="#4CAF50" fill-opacity=".4" stroke="#9B8052" stroke-width="4"/>
+  <ellipse cx="155" cy="155" rx="141" ry="141" fill="none" stroke="#E7D5A9" stroke-width="3"/>
+  <ellipse cx="155" cy="155" rx="141" ry="141" fill="none" stroke="#B99D6B" stroke-width="2.5" stroke-dasharray="1 4"/>
+  <ellipse cx="155" cy="155" rx="84.6" ry="84.6" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <g fill="none" stroke="#F6BC7D" stroke-width="1" stroke-opacity=".9">
+    <path d="M155 130L122.72 17.74 M155 130L187.28 17.74 M155 130L232.20 37.01 M155 130L279.05 87.97 M155 130L295.33 168.74 M155 130L280.59 219.10 M155 130L261.59 247.30 M155 130L205.16 286.78 M155 130L104.84 286.78 M155 130L38.9 235.01 M155 130L17.48 186.13 M155 130L14.11 149.52 M155 130L30.96 87.96"/>
+  </g>
+  <g text-anchor="middle" font-family="DejaVu Sans" font-size="8" fill="#284D2C" font-weight="500">
+    <text x="155" y="44"><tspan x="155" y="39">Lucky</tspan><tspan x="155" y="49">edge</tspan></text>
+    <text x="198" y="49"><tspan x="198" y="44">Leg</tspan><tspan x="198" y="54">glance</tspan></text>
+    <text x="155" y="266">Straight drive</text>
+    <text x="83" y="231">Cover drive</text>
+    <text x="57" y="186">Square drive</text>
+    <text x="52" y="132">Cut</text>
+    <text x="48" y="158"><tspan x="48" y="153">Leading</tspan><tspan x="48" y="163">edge</tspan></text>
+    <text x="86" y="75">Late cut</text>
+    <text x="224" y="75">Sweep</text>
+    <text x="257" y="132">Pull / Hook</text>
+    <text x="253" y="186">Flick</text>
+    <text x="246" y="209">Slog</text>
+    <text x="227" y="231">On drive</text>
+  </g>
+  <rect x="145" y="123" width="20" height="64" rx="2" fill="#C8A96E" stroke="#A07040" stroke-width="1"/>
+  <g stroke="#FFFFFF" stroke-width="1.5">
+    <path d="M142 133H168 M142 177H168"/>
+  </g>
+  <g stroke="#54351D" stroke-width="1.5">
+    <path d="M152 130V125 M155 130V125 M158 130V125 M151 125H159"/>
+    <path d="M152 180V185 M155 180V185 M158 180V185 M151 180H159"/>
+  </g>
+</svg>

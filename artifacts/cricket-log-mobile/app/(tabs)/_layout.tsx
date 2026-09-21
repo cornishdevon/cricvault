@@ -31,7 +31,7 @@ function BackButton() {
   const colors = useColors();
   return (
     <TouchableOpacity
-      onPress={() => router.navigate("/(tabs)/")}
+      onPress={() => router.navigate("/(tabs)")}
       style={{ paddingHorizontal: 14, paddingVertical: 6, flexDirection: "row", alignItems: "center", gap: 4 }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >

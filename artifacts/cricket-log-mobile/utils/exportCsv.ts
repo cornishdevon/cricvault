@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
 export type CsvRow = {
@@ -34,7 +34,7 @@ export type CsvRow = {
 function escape(v: unknown): string {
   if (v === null || v === undefined) return "";
   const s = String(v);
-  if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+  if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")) {
     return `"${s.replace(/"/g, '""')}"`;
   }
   return s;
@@ -54,13 +54,16 @@ export async function exportStatsCsv(rows: CsvRow[]): Promise<void> {
   const csv = `${header}\n${body}`;
 
   const filename = `cricvault_stats_${new Date().toISOString().slice(0, 10)}.csv`;
+  if (!FileSystem.documentDirectory) {
+    throw new Error("File storage is not available on this device");
+  }
   const uri = FileSystem.documentDirectory + filename;
 
   await FileSystem.writeAsStringAsync(uri, csv, { encoding: FileSystem.EncodingType.UTF8 });
 
   const canShare = await Sharing.isAvailableAsync();
   if (canShare) {
-    await Sharing.shareAsync(uri, { mimeType: "text/csv", dialogTitle: "Export CricVault Stats" });
+    await Sharing.shareAsync(uri, { mimeType: "text/csv", UTI: "public.comma-separated-values-text", dialogTitle: "Export CricVault Stats" });
   } else {
     throw new Error("Sharing is not available on this device");
   }

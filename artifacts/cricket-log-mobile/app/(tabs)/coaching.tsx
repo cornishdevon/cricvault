@@ -1,4 +1,4 @@
-import { useListCoachingTips } from "@workspace/api-client-react";
+import { getListCoachingTipsQueryKey, useListCoachingTips } from "@workspace/api-client-react";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
@@ -150,6 +150,7 @@ export default function CoachingScreen() {
     activeCategory !== "All" ? { category: activeCategory } : {},
     {
       query: {
+        queryKey: getListCoachingTipsQueryKey(activeCategory !== "All" ? { category: activeCategory } : {}),
         refetchInterval: 5 * 60 * 1000,
         staleTime: 60 * 1000,
       },

@@ -1,3 +1,5 @@
+- [Wicket metadata compatibility](wicket-metadata-compatibility.md) — strict new metadata rules must not block unrelated updates to legacy maps.
+- [Bowling map visual preference](bowling-map-design.md) — user approved numbered red balls; preserve this treatment in future wheel refinements.
 - [CricVault architecture](cricvault-arch.md) — multi-artifact cricket stats app; web, API, and mobile share a single data layer via @workspace/api-client-react hooks
 - [react-native-worklets @babel/generator fix](babel-generator-worklets.md) — manual symlink needed after @babel/core upgrade past 7.25.x breaks worklets Babel plugin
 - [Career XP system](career-xp.md) — XP formula for cricket level badge (Novice→Legend), computed client-side from summary stats.
@@ -10,3 +12,7 @@
 - [Clerk auth across web/API/mobile](clerk-multiplatform-auth.md) — legacy-row claim must be advisory-lock atomic; rebuild lib/db dist types after schema edits; owner signs in first.
 - [Private media signed URLs](private-media-tokens.md) — media tags can't send auth headers; private object streaming requires HMAC `?token=`, minted server-side via withObjectToken.
 - [Deployment build fixes for stable-25_05](deployment-build-fixes.md) — two changes needed: remove packageManager field from root package.json (prevents @pnpm/exe SIGABRT); exclude mobile from build script (Expo auth token not available in deployment container).
+- [Android Play release](android-play-release.md) — Android uses EAS-managed signing; production builds create Play-ready AABs, but Play Console submission still needs initial app/service-account setup.
+- [Wagon wheel compatibility](wagon-wheel-compatibility.md) — preserve historical shot coordinates when resizing the wheel or mirroring batting-hand sectors.
+- [API codegen compatibility](api-codegen-drift.md) — regeneration can alter unrelated contracts; inspect diffs and rebuild declaration outputs after narrowing changes.
+- [iOS profile replacement](ios-profile-replacement.md) — verify Expo’s replacement controls before guiding users; do not assume a web upload button exists.

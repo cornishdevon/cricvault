@@ -665,7 +665,7 @@ components:
 
     Match:
       type: object
-      required: [id, date, opponent, matchType, createdAt]
+      required: [id, date, opponent, matchType, playerOfTheMatch, isPractice, createdAt]
       properties:
         id:
           type: integer
@@ -677,12 +677,26 @@ components:
           type: ["string", "null"]
         matchType:
           type: string
-          enum: [T20, ODI, Test, Club, Friendly, Other]
         playingFor:
           type: ["string", "null"]
         result:
           type: ["string", "null"]
-          enum: [Win, Loss, Draw, "No Result", null]
+        playerOfTheMatch:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        pitchType:
+          type: ["string", "null"]
+        weatherConditions:
+          type: ["string", "null"]
+        tossWinner:
+          type: ["string", "null"]
+        tossDecision:
+          type: ["string", "null"]
+        series:
+          type: ["string", "null"]
+        isPractice:
+          type: boolean
         createdAt:
           type: string
 
@@ -698,12 +712,26 @@ components:
           type: string
         matchType:
           type: string
-          enum: [T20, ODI, Test, Club, Friendly, Other]
         playingFor:
           type: string
         result:
           type: string
-          enum: [Win, Loss, Draw, "No Result"]
+        playerOfTheMatch:
+          type: boolean
+        notes:
+          type: string
+        pitchType:
+          type: string
+        weatherConditions:
+          type: string
+        tossWinner:
+          type: string
+        tossDecision:
+          type: string
+        series:
+          type: string
+        isPractice:
+          type: boolean
 
     MatchUpdate:
       type: object
@@ -716,12 +744,26 @@ components:
           type: string
         matchType:
           type: string
-          enum: [T20, ODI, Test, Club, Friendly, Other]
         playingFor:
           type: string
         result:
           type: string
-          enum: [Win, Loss, Draw, "No Result"]
+        playerOfTheMatch:
+          type: boolean
+        notes:
+          type: string
+        pitchType:
+          type: string
+        weatherConditions:
+          type: string
+        tossWinner:
+          type: string
+        tossDecision:
+          type: string
+        series:
+          type: string
+        isPractice:
+          type: boolean
 
     BattingStats:
       type: object
@@ -745,7 +787,8 @@ components:
           type: ["integer", "null"]
         howOut:
           type: ["string", "null"]
-          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired, null]
+        badUmpireDecision:
+          type: ["boolean", "null"]
         ballsToFifty:
           type: ["integer", "null"]
           minimum: 0
@@ -755,6 +798,12 @@ components:
         ballsToHundredFifty:
           type: ["integer", "null"]
           minimum: 0
+        oppositionBowler:
+          type: ["string", "null"]
+        caughtPosition:
+          type: ["string", "null"]
+        shotData:
+          type: ["string", "null"]
 
     BattingStatsInput:
       type: object
@@ -777,7 +826,8 @@ components:
           minimum: 1
         howOut:
           type: string
-          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+        badUmpireDecision:
+          type: boolean
         ballsToFifty:
           type: integer
           minimum: 0
@@ -787,6 +837,12 @@ components:
         ballsToHundredFifty:
           type: integer
           minimum: 0
+        oppositionBowler:
+          type: string
+        caughtPosition:
+          type: string
+        shotData:
+          type: string
 
     BattingStatsUpdate:
       type: object
@@ -808,7 +864,8 @@ components:
           minimum: 1
         howOut:
           type: string
-          enum: [Bowled, Caught, LBW, "Run Out", Stumped, "Hit Wicket", "Not Out", Retired]
+        badUmpireDecision:
+          type: boolean
         ballsToFifty:
           type: integer
           minimum: 0
@@ -818,10 +875,16 @@ components:
         ballsToHundredFifty:
           type: integer
           minimum: 0
+        oppositionBowler:
+          type: string
+        caughtPosition:
+          type: string
+        shotData:
+          type: string
 
     BowlingStats:
       type: object
-      required: [id, matchId, overs, maidens, runsConceded, wickets, economyRate]
+      required: [id, matchId, overs, maidens, runsConceded, wickets, economyRate, bowledWickets, lbwWickets]
       properties:
         id:
           type: integer
@@ -843,6 +906,16 @@ components:
           type: integer
         hatTrick:
           type: boolean
+        bowledWickets:
+          type: integer
+          minimum: 0
+        lbwWickets:
+          type: integer
+          minimum: 0
+        wouldHaveReferred:
+          type: ["boolean", "null"]
+        wicketMap:
+          type: ["string", "null"]
 
     BowlingStatsInput:
       type: object
@@ -868,6 +941,16 @@ components:
           minimum: 0
         hatTrick:
           type: boolean
+        bowledWickets:
+          type: integer
+          minimum: 0
+        lbwWickets:
+          type: integer
+          minimum: 0
+        wouldHaveReferred:
+          type: boolean
+        wicketMap:
+          type: ["string", "null"]
 
     BowlingStatsUpdate:
       type: object
@@ -892,10 +975,20 @@ components:
           minimum: 0
         hatTrick:
           type: boolean
+        bowledWickets:
+          type: integer
+          minimum: 0
+        lbwWickets:
+          type: integer
+          minimum: 0
+        wouldHaveReferred:
+          type: boolean
+        wicketMap:
+          type: ["string", "null"]
 
     FieldingStats:
       type: object
-      required: [id, matchId, catches, droppedCatches]
+      required: [id, matchId, catches, droppedCatches, missedStumpings]
       properties:
         id:
           type: integer
@@ -909,6 +1002,9 @@ components:
           type: integer
         stumpings:
           type: integer
+        missedStumpings:
+          type: integer
+          minimum: 0
 
     FieldingStatsInput:
       type: object
@@ -926,6 +1022,9 @@ components:
         stumpings:
           type: integer
           minimum: 0
+        missedStumpings:
+          type: integer
+          minimum: 0
 
     FieldingStatsUpdate:
       type: object
@@ -940,6 +1039,9 @@ components:
           type: integer
           minimum: 0
         stumpings:
+          type: integer
+          minimum: 0
+        missedStumpings:
           type: integer
           minimum: 0
 
@@ -1130,6 +1232,8 @@ components:
           type: ["number", "null"]
         wickets:
           type: ["integer", "null"]
+        wicketMap:
+          type: ["string", "null"]
         runsConceded:
           type: ["integer", "null"]
         economyRate:

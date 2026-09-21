@@ -20,6 +20,8 @@ export interface PerMatchStat {
   /** @nullable */
   wickets?: number | null;
   /** @nullable */
+  wicketMap?: string | null;
+  /** @nullable */
   runsConceded?: number | null;
   /** @nullable */
   economyRate?: number | null;

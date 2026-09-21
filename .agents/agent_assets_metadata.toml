@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "mTcclJMrgRmvWT79q4ED5"
@@ -348,3 +347,157 @@ id = "dZ4_BmNqhigibMa3IEgP4"
 uri = "file://artifacts/cricket-log-mobile/assets/badges/keepRunning.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "VT_-gxBf0VKK3zeFg3QK7"
+uri = "file://attached_assets/wagon-wheel-preview.png"
+type = "image"
+title = "Leading edge added"
+description = "Updated static preview with Leading edge stacked in its own section between Cut and Square drive."
+logical_id = "98e74291-3ff4-4505-a8ce-360e5f7bd00f"
+content_hash = "sha256:df5d68f20d0e80396ee1a630427d6fdf6865e23fc236a4d30d53d7a48f889a80"
+size = 128923
+mtime_ms = 1789348999563
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/98e74291-3ff4-4505-a8ce-360e5f7bd00f/09c9fc48-582d-4954-80a0-a6819689391d"
+storage_version_token = "1789349009232176"
+content_type = "image/png"
+
+[[outputs]]
+id = "j_YeCnfAuta1KVRFLWxB7"
+uri = "file://artifacts/cricket-log-mobile/assets/sounds/cow-moo.mp3"
+type = "audio"
+title = "Play the moo"
+description = "Press play to hear the cow-corner sound."
+logical_id = "95c6d452-2ec1-47f3-951f-cf4abece7054"
+content_hash = "sha256:772e9d21088cbc2d3dc88b961db8583e901725b41a933030fd34a1dfa0e627ac"
+size = 23031
+mtime_ms = 1789352789559
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/95c6d452-2ec1-47f3-951f-cf4abece7054/6b8a7397-003d-4aef-bb68-d0d161c433eb"
+storage_version_token = "1789352998327065"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "umWzAzUbIB5b81yIDGtJR"
+uri = "file://artifacts/cricket-log-mobile/assets/sounds/cow-moo_2.mp3"
+type = "audio"
+title = "Revised cow moo"
+description = "New generated sound aimed at a natural bovine moo rather than a human imitation. Also replaced the app’s sound clip."
+logical_id = "8caf7666-614d-4845-9974-1892af8b094e"
+content_hash = "sha256:e5e113e952fe69e53e6278de6866459bbb77de51aa22fd95e172b13a02d13036"
+size = 29301
+mtime_ms = 1789354058079
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/8caf7666-614d-4845-9974-1892af8b094e/2ad4978b-d8e7-416f-8cf9-2279864cde33"
+storage_version_token = "1789354066266375"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "194B0BakvYUmX6wO1dGSE"
+uri = "file://attached_assets/cow-moo-listen.wav"
+type = "audio"
+title = "Cow moo — WAV playback"
+description = "Press play to hear the moo. If the inline player stays silent, download this WAV file and open it on your device."
+logical_id = "ed61a7ce-09d8-41a3-a086-4e64f181b1e0"
+content_hash = "sha256:f755ea040e1b46e246d23ca751acd40ceeb53c25a936d8f0497771207d06e85f"
+size = 155310
+mtime_ms = 1789354159822
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/ed61a7ce-09d8-41a3-a086-4e64f181b1e0/493e8f52-1372-4f7e-af3d-e3eb24c906fd"
+storage_version_token = "1789354164420961"
+content_type = "audio/wav"
+
+[[outputs]]
+id = "DnaBN8juw7QA2SV_RjbNB"
+uri = "file://attached_assets/cow-corner-badge.png"
+type = "image"
+title = "MOO! — Cow Corner Six"
+description = "Badge design preview with an illustrated cow. The app currently uses a cow emoji; this preview shows a custom illustrated alternative."
+logical_id = "1310692e-e447-48a4-9bec-7871cf2d5cc9"
+content_hash = "sha256:c34a86986fde095971f7250067ece9cf8f27260d565997fd0cd982840e0bcbfc"
+size = 52511
+mtime_ms = 1789354305626
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/1310692e-e447-48a4-9bec-7871cf2d5cc9/0b2a61f3-6cbc-4d8d-8599-9e2f89b348fe"
+storage_version_token = "1789354314343038"
+content_type = "image/png"
+
+[[outputs]]
+id = "MzI5S6N-tc_RkZq2qVBlS"
+uri = "file://attached_assets/wagon-wheel-dynamic.jpg"
+type = "image"
+title = "Dynamic wagon wheel"
+description = "Design preview with richer grass, mowing stripes, textured rope and added depth. All shot labels are preserved."
+logical_id = "ab66507b-77cd-4307-92f8-44fce2831e13"
+content_hash = "sha256:db6c2c7951c9eaee5b8abc94a723e9d801894ce6411ce5341a72fc3751884172"
+size = 28863
+mtime_ms = 1789349198767
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/ab66507b-77cd-4307-92f8-44fce2831e13/cb00950d-0f4e-47be-97b0-486cdf81ab37"
+storage_version_token = "1789354411746890"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "M6oHO_OWmunFH0NFkJPS2"
+uri = "file://artifacts/cricket-log-mobile/assets/sounds/duck-quack.mp3"
+type = "audio"
+title = "Duck — quack quack"
+description = "The new double-quack sound used when a dismissed-on-zero innings is saved."
+logical_id = "66d87f73-543c-4d6e-9f51-0e5586bba38c"
+content_hash = "sha256:861e908b08610ab2275fa73b9e120e0120700714254739c40dc1f7cffe3f3b72"
+size = 33062
+mtime_ms = 1789423155904
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/66d87f73-543c-4d6e-9f51-0e5586bba38c/2d92603e-6f18-4c13-8d2a-1b482a739aca"
+storage_version_token = "1789423203630594"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "kKc4fGsmssQ9uz_heB-9x"
+uri = "file://attached_assets/wagon-wheel-purple-six.jpg"
+type = "image"
+title = "Wagon wheel — shot labels"
+description = "The approved right-handed design reference used for the mobile wheel. Use the labels to choose your popup wording."
+logical_id = "976535dc-b2f6-4483-b9ef-62b56463d14c"
+content_hash = "sha256:4a1d494700ee83c1147f391e7971deee98274afda40e3bea9da85a1fdb42d465"
+size = 27997
+mtime_ms = 1789354917187
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/976535dc-b2f6-4483-b9ef-62b56463d14c/eb2684e6-0186-4002-b85f-d433750fdbc1"
+storage_version_token = "1789423584284087"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "GrDX6AdRbylx63rtlVv_N"
+uri = "file://attached_assets/wagon-wheel-updated.png"
+type = "image"
+title = "Updated wagon wheel"
+description = "Static preview rendered from the current mobile wheel geometry, including Scoop and Reverse Sweep. Right-handed layout."
+logical_id = "6323514c-2472-4dce-b5fd-5b586bb044dd"
+content_hash = "sha256:674dd9939bf8cd245aef3ae56b51d1f02ab1f052da65c45ae2da03c07bb772b2"
+size = 287708
+mtime_ms = 1789424295008
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/6323514c-2472-4dce-b5fd-5b586bb044dd/d38d830e-0f61-4107-9c60-0001b3f57016"
+storage_version_token = "1789424302771566"
+content_type = "image/png"
+
+[[outputs]]
+id = "f7dDjoJMhdk2kapgF-eBG"
+uri = "file://attached_assets/bowler-wicket-map.png"
+type = "image"
+title = "Corrected wicket numbering"
+description = "Every wicket has its own numbered ball: catches 1 and 2, bowled 3, LBW 4."
+logical_id = "a90751c2-408b-4532-89ca-eefc8b303863"
+content_hash = "sha256:208c612a1315fd84ee9b1c57db840ee81a9d257f2d8792e86cf1f8e55e667bc4"
+size = 181991
+mtime_ms = 1789428942258
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/a90751c2-408b-4532-89ca-eefc8b303863/61e7d639-ee0b-4d50-b612-636d9ade4f2b"
+storage_version_token = "1789428957741069"
+content_type = "image/png"
+
+[[outputs]]
+id = "V5cBdVTsRwUCwRAI_ED-F"
+uri = "file://screenshots/wicket-information.jpg"
+type = "image"
+title = "Bowler’s wheel — wicket information"
+description = "Current web form shown with example data: tap wicket 1 to enter the batter, over and how the wicket was taken. No match data was changed."
+logical_id = "d057446a-ed09-4b89-92c5-cbf646bbffe0"
+content_hash = "sha256:bb53e892aec06c3531859269c4e812a381ceec325ec01bbe613aad7ddfe523dd"
+size = 54274
+mtime_ms = 1789948698286
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:d71b0b69-cf64-4e44-a0b5-88b1ba2f85d5/d057446a-ed09-4b89-92c5-cbf646bbffe0/c33131e7-d82a-4efc-9f38-e0daabcb4cd6"
+storage_version_token = "1789948702935771"
+content_type = "image/jpeg"

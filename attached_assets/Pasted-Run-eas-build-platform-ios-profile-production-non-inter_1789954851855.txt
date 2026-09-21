@@ -1,0 +1,77 @@
+Run eas build --platform ios --profile production --non-interactive
+
+⚠️ Detected that your app uses Expo Go for development, this is not recommended when building production apps.
+Learn more: https://expo.fyi/why-not-build-expo-go-for-production
+To suppress this warning, set EAS_BUILD_NO_EXPO_GO_WARNING=true.
+
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Resolved "production" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "production" environment on EAS.
+Environment variables loaded from the "production" build profile "env" configuration: EAS_NO_FROZEN_LOCKFILE.
+
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+- Incrementing buildNumber from 34 to 35.
+✔ Incremented buildNumber from 34 to 35.
+
+
+ios.buildNumber field in app config is ignored when version source is set to remote, but this value will still be in the manifest available via expo-constants. It's recommended to remove this value from app config.
+✔ Using remote iOS credentials (Expo server)
+
+Distribution Certificate is not validated for non-interactive builds.
+Skipping Provisioning Profile validation on Apple Servers because we aren't authenticated.
+
+Project Credentials Configuration
+
+Project                   @cornishsmuggler/cricket-log-mobile
+Bundle Identifier         com.cricvault.app
+                          
+App Store Configuration   
+                          
+Distribution Certificate  
+Serial Number             1FB023B26FD08C20681274EFC57F8357
+Expiration Date           Fri, 09 Jul 2027 19:33:04 UTC
+Apple Team                5GM5VG9H5Z (NICHOLAS ANTHONY CARTER (Individual))
+Updated                   2 months ago
+                          
+Provisioning Profile      
+Developer Portal ID       QM7XG34A62
+Status                    active
+Expiration                Fri, 09 Jul 2027 19:33:04 UTC
+Apple Team                5GM5VG9H5Z (NICHOLAS ANTHONY CARTER (Individual))
+Updated                   2 months ago
+                          
+All credentials are ready to build @cornishsmuggler/cricket-log-mobile (com.cricvault.app)
+
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+- Compressing project files
+Your project archive is 350 MB. You can reduce its size and the time it takes to upload by excluding files that are unnecessary for the build process in .easignore file. Learn more: https://expo.fyi/eas-build-archive
+- Uploading to EAS Build (0 / 350 MB)
+✔ Uploaded to EAS 4s
+- Computing project fingerprint
+✔ Computed project fingerprint
+
+See logs: https://expo.dev/accounts/cornishsmuggler/projects/cricket-log-mobile/builds/24c09948-054a-4e59-b3f2-abafed411ac5
+
+Waiting for build to complete. You can press Ctrl+C to exit.
+- Waiting for build to complete.
+✖ Build failed
+
+🍏 iOS build failed:
+The "Run fastlane" step failed because of an error in the Xcode build process. We automatically detected following errors in your Xcode build logs:
+- Provisioning profile "*[expo] com.cricvault.app AppStore 2026-07-09T19:43:14.596Z" doesn't support the Sign in with Apple capability.  (in target 'CricVault' from project 'CricVault')
+- Provisioning profile "*[expo] com.cricvault.app AppStore 2026-07-09T19:43:14.596Z" doesn't include the com.apple.developer.applesignin entitlement. (in target 'CricVault' from project 'CricVault')
+Refer to "Xcode Logs" below for additional, more detailed logs.
+Error: Process completed with exit code 1.

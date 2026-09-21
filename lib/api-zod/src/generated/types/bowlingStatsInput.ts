@@ -20,4 +20,6 @@ export interface BowlingStatsInput {
   /** @minimum 0 */
   wides?: number;
   hatTrick?: boolean;
+  /** @nullable */
+  wicketMap?: string | null;
 }

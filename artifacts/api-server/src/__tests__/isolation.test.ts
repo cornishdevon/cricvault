@@ -21,7 +21,7 @@ vi.mock("@clerk/express", () => ({
 
 import express from "express";
 import router from "../routes";
-import { db, matchesTable, photosTable, objectUploadsTable } from "@workspace/db";
+import { db, matchesTable, bowlingStatsTable, photosTable, objectUploadsTable } from "@workspace/db";
 import { eq, inArray } from "drizzle-orm";
 import { signObjectToken } from "../lib/signedObjectUrls";
 
@@ -49,7 +49,7 @@ async function api(
   } catch {
     /* no body */
   }
-  return { status: res.status, data };
+  return { status: res.status, data, headers: res.headers };
 }
 
 async function cleanup() {
@@ -76,6 +76,15 @@ afterAll(async () => {
 });
 
 describe("unauthenticated access", () => {
+  it("serves anonymous liveness checks without exposing data", async () => {
+    for (const path of ["", "/", "/healthz"]) {
+      const res = await api(path);
+      expect(res.status, path).toBe(200);
+      expect(res.data).toEqual({ status: "ok" });
+      expect(res.headers.get("cache-control")).toBe("no-store");
+    }
+  });
+
   it("rejects all data routes with 401", async () => {
     for (const path of ["/matches", "/fixtures", "/stats/per-match", "/media/photos", "/media/videos"]) {
       const res = await api(path);
@@ -114,6 +123,144 @@ describe("two-account isolation", () => {
     expect((list.data as Array<{ id: number }>).some((m) => m.id === matchIdA)).toBe(true);
   });
 
+  it("persists, validates, and clears a bowling wicket map", async () => {
+    const match = await api("/matches", {
+      method: "POST",
+      user: USER_A,
+      body: { date: "2026-08-19", opponent: "Wicket Map Test XI", matchType: "T20" },
+    });
+    expect(match.status).toBe(201);
+    const wicketMatchId = (match.data as { id: number }).id;
+    const wicketMap = JSON.stringify([
+      {
+        id: "wicket-1",
+        kind: "caught",
+        x: 0.25,
+        y: 0.75,
+        batter: "Alex Batter",
+        over: "4.5",
+        note: "Taken cleanly at slip",
+      },
+      { id: "wicket-2", kind: "bowled", x: 1, y: 0 },
+      { id: "wicket-3", kind: "lbw", x: 0.5, y: 0.4, batter: "Sam Batter", over: "0" },
+    ]);
+    const bowlingWithMap = {
+      overs: 4,
+      maidens: 0,
+      runsConceded: 20,
+      wickets: 3,
+      bowledWickets: 1,
+      lbwWickets: 1,
+      wicketMap,
+    };
+    for (const totals of [
+      { wickets: 2, bowledWickets: 1, lbwWickets: 1 },
+      { wickets: 3, bowledWickets: 0, lbwWickets: 1 },
+      { wickets: 3, bowledWickets: 1, lbwWickets: 0 },
+      { wickets: 3, bowledWickets: 2, lbwWickets: 2 },
+    ]) {
+      const inconsistent = await api(`/matches/${wicketMatchId}/bowling`, {
+        method: "POST",
+        user: USER_A,
+        body: { ...bowlingWithMap, ...totals },
+      });
+      expect(inconsistent.status).toBe(400);
+    }
+    const created = await api(`/matches/${wicketMatchId}/bowling`, {
+      method: "POST",
+      user: USER_A,
+      body: bowlingWithMap,
+    });
+    expect(created.status).toBe(201);
+    expect((created.data as { wicketMap: string }).wicketMap).toBe(wicketMap);
+    expect((created.data as { lbwWickets: number }).lbwWickets).toBe(1);
+
+    const fetched = await api(`/matches/${wicketMatchId}/bowling`, { user: USER_A });
+    expect(fetched.status).toBe(200);
+    expect((fetched.data as { wicketMap: string }).wicketMap).toBe(wicketMap);
+
+    const perMatch = await api("/stats/per-match", { user: USER_A });
+    expect(perMatch.status).toBe(200);
+    const perMatchRows = perMatch.data as Array<{ matchId: number; wicketMap: string | null }>;
+    expect(perMatchRows.find((row) => row.matchId === wicketMatchId)?.wicketMap).toBe(wicketMap);
+    expect(perMatchRows.find((row) => row.matchId === matchIdA)?.wicketMap).toBeNull();
+
+    const patched = await api(`/matches/${wicketMatchId}/bowling`, {
+      method: "PATCH",
+      user: USER_A,
+      body: { lbwWickets: 1 },
+    });
+    expect(patched.status).toBe(200);
+    expect((patched.data as { lbwWickets: number }).lbwWickets).toBe(1);
+    expect((patched.data as { wicketMap: string }).wicketMap).toBe(wicketMap);
+
+    const legacyWicketMap = JSON.stringify([
+      { id: "wicket-1", kind: "caught", x: 0.25, y: 0.75, over: 4 },
+      { id: "wicket-2", kind: "bowled", x: 1, y: 0 },
+      { id: "wicket-3", kind: "lbw", x: 0.5, y: 0.4 },
+    ]);
+    await db
+      .update(bowlingStatsTable)
+      .set({ wicketMap: legacyWicketMap })
+      .where(eq(bowlingStatsTable.matchId, wicketMatchId));
+
+    const legacyPatched = await api(`/matches/${wicketMatchId}/bowling`, {
+      method: "PATCH",
+      user: USER_A,
+      body: { maidens: 1 },
+    });
+    expect(legacyPatched.status).toBe(200);
+    expect((legacyPatched.data as { wicketMap: string }).wicketMap).toBe(legacyWicketMap);
+
+    const explicitLegacyMap = await api(`/matches/${wicketMatchId}/bowling`, {
+      method: "PATCH",
+      user: USER_A,
+      body: { wicketMap: legacyWicketMap },
+    });
+    expect(explicitLegacyMap.status).toBe(400);
+
+    for (const updates of [
+      { wickets: 2 },
+      { bowledWickets: 0 },
+      { lbwWickets: 0 },
+      { wickets: 3, bowledWickets: 2, lbwWickets: 2 },
+    ]) {
+      const inconsistent = await api(`/matches/${wicketMatchId}/bowling`, {
+        method: "PATCH",
+        user: USER_A,
+        body: updates,
+      });
+      expect(inconsistent.status).toBe(400);
+    }
+
+    for (const invalidMap of [
+      "not-json",
+      JSON.stringify({ id: "wicket-1", kind: "caught", x: 0.25, y: 0.75 }),
+      JSON.stringify([{ id: "wicket-1", kind: "stumped", x: 0.25, y: 0.75 }]),
+      JSON.stringify([{ id: "wicket-1", kind: "caught", x: 1.1, y: 0.75 }]),
+      JSON.stringify([{ id: "wicket-1", kind: "caught", x: 0.25, y: null }]),
+      JSON.stringify([{ id: "wicket-1", kind: "caught", x: 0.25, y: 0.75, over: "4.6" }]),
+      JSON.stringify([{ id: "wicket-1", kind: "caught", x: 0.25, y: 0.75, over: "-1" }]),
+      JSON.stringify([{ id: "wicket-1", kind: "caught", x: 0.25, y: 0.75, note: "n".repeat(1001) }]),
+      JSON.stringify(Array.from({ length: 101 }, (_, i) => ({ id: String(i), kind: "caught", x: 0.5, y: 0.5 }))),
+    ]) {
+      const invalid = await api(`/matches/${wicketMatchId}/bowling`, {
+        method: "PATCH",
+        user: USER_A,
+        body: { wicketMap: invalidMap },
+      });
+      expect(invalid.status).toBe(400);
+    }
+
+    const cleared = await api(`/matches/${wicketMatchId}/bowling`, {
+      method: "PATCH",
+      user: USER_A,
+      body: { wicketMap: null },
+    });
+    expect(cleared.status).toBe(200);
+    expect((cleared.data as { wicketMap: string | null }).wicketMap).toBeNull();
+  });
+
   it("user B starts at zero and cannot see user A's data", async () => {
     const list = await api("/matches", { user: USER_B });
     expect(list.status).toBe(200);
@@ -140,6 +287,24 @@ describe("two-account isolation", () => {
         method: "POST",
         user: USER_B,
         body: { runs: 100, ballsFaced: 50, fours: 10, sixes: 5 },
+      })).status,
+    ).toBe(404);
+    expect(
+      (await api(`/matches/${matchIdA}/bowling`, {
+        method: "POST",
+        user: USER_B,
+        body: { overs: 1, maidens: 0, runsConceded: 0, wickets: 0, wicketMap: "[]" },
+      })).status,
+    ).toBe(404);
+    expect(
+      (await api(`/matches/${matchIdA}/bowling`, {
+        method: "PATCH",
+        user: USER_B,
+        body: {
+          wicketMap: JSON.stringify([
+            { id: "wicket-1", kind: "caught", x: 0.25, y: 0.75, over: "4.5" },
+          ]),
+        },
       })).status,
     ).toBe(404);
     expect((await api(`/matches/${matchIdA}/photos`, { user: USER_B })).status).toBe(404);

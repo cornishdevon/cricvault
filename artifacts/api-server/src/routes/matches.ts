@@ -200,6 +200,149 @@ function calcEconomy(runs: number, overs: number): number {
   return parseFloat((runs / overs).toFixed(2));
 }
 
+type ValidatedWicketMap = {
+  value: string | null;
+  wicketCount: number;
+  bowledWicketCount: number;
+  lbwWicketCount: number;
+};
+
+const cricketOversPattern = /^(?:0|[1-9]\d*)(?:\.[0-5])?$/;
+
+function validateWicketMap(
+  value: unknown,
+  options: { validateMetadata?: boolean } = {},
+): ValidatedWicketMap {
+  const validateMetadata = options.validateMetadata ?? true;
+  if (value === null || value === undefined) {
+    return { value: null, wicketCount: 0, bowledWicketCount: 0, lbwWicketCount: 0 };
+  }
+  if (typeof value !== "string") {
+    throw new Error("wicketMap must be a JSON array string or null");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error("wicketMap must be valid JSON");
+  }
+
+  if (!Array.isArray(parsed) || parsed.length > 100) {
+    throw new Error("wicketMap must be a JSON array with at most 100 entries");
+  }
+
+  for (const entry of parsed) {
+    if (entry === null || typeof entry !== "object" || Array.isArray(entry)) {
+      throw new Error("wicketMap entries must be objects");
+    }
+    const { id, kind, x, y, batter, over, note } = entry as {
+      id?: unknown;
+      kind?: unknown;
+      x?: unknown;
+      y?: unknown;
+      batter?: unknown;
+      over?: unknown;
+      note?: unknown;
+    };
+    if (typeof id !== "string") {
+      throw new Error("wicketMap entry id must be a string");
+    }
+    if (kind !== "caught" && kind !== "bowled" && kind !== "lbw") {
+      throw new Error("wicketMap entry kind must be caught, bowled, or lbw");
+    }
+    if (
+      typeof x !== "number" ||
+      !Number.isFinite(x) ||
+      x < 0 ||
+      x > 1 ||
+      typeof y !== "number" ||
+      !Number.isFinite(y) ||
+      y < 0 ||
+      y > 1
+    ) {
+      throw new Error("wicketMap entry x and y must be finite numbers between 0 and 1");
+    }
+    if (validateMetadata) {
+      if (batter !== undefined) {
+        if (typeof batter !== "string") {
+          throw new Error("wicketMap entry batter must be a string");
+        }
+        if (batter.length > 120) {
+          throw new Error("wicketMap entry batter must be at most 120 characters");
+        }
+      }
+      if (over !== undefined) {
+        if (typeof over !== "string") {
+          throw new Error("wicketMap entry over must be a string");
+        }
+        if (over.length > 8 || !cricketOversPattern.test(over)) {
+          throw new Error("wicketMap entry over must be nonnegative completed overs in n or n.0-n.5 notation");
+        }
+      }
+      if (note !== undefined) {
+        if (typeof note !== "string") {
+          throw new Error("wicketMap entry note must be a string");
+        }
+        if (note.length > 1000) {
+          throw new Error("wicketMap entry note must be at most 1000 characters");
+        }
+      }
+    }
+  }
+
+  return {
+    value,
+    wicketCount: parsed.length,
+    bowledWicketCount: parsed.filter(
+      (entry) => (entry as { kind: string }).kind === "bowled",
+    ).length,
+    lbwWicketCount: parsed.filter(
+      (entry) => (entry as { kind: string }).kind === "lbw",
+    ).length,
+  };
+}
+
+function validateWicketTotals(
+  map: ValidatedWicketMap,
+  wickets: unknown,
+  bowledWickets: unknown,
+  lbwWickets: unknown,
+): string | null {
+  if (map.wicketCount === 0) return null;
+  if (
+    typeof wickets !== "number" ||
+    !Number.isFinite(wickets) ||
+    wickets < map.wicketCount
+  ) {
+    return `wickets must be at least ${map.wicketCount} when wicketMap contains ${map.wicketCount} entries`;
+  }
+  if (
+    typeof bowledWickets !== "number" ||
+    !Number.isFinite(bowledWickets) ||
+    bowledWickets < map.bowledWicketCount
+  ) {
+    return `bowledWickets must be at least ${map.bowledWicketCount} when wicketMap contains ${map.bowledWicketCount} bowled entries`;
+  }
+  if (
+    typeof lbwWickets !== "number" ||
+    !Number.isFinite(lbwWickets) ||
+    lbwWickets < map.lbwWicketCount
+  ) {
+    return `lbwWickets must be at least ${map.lbwWicketCount} when wicketMap contains ${map.lbwWicketCount} lbw entries`;
+  }
+  if (bowledWickets > wickets) {
+    return "bowledWickets cannot exceed wickets when wicketMap is nonempty";
+  }
+  if (lbwWickets > wickets) {
+    return "lbwWickets cannot exceed wickets when wicketMap is nonempty";
+  }
+  if (bowledWickets + lbwWickets > wickets) {
+    return "bowledWickets plus lbwWickets cannot exceed wickets when wicketMap is nonempty";
+  }
+  return null;
+}
+
 router.get("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
   if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
@@ -214,7 +357,20 @@ router.get("/matches/:matchId/bowling", async (req, res) => {
 router.post("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
   if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred, wicketMap } = req.body;
+  let validatedWicketMap: ValidatedWicketMap;
+  try {
+    validatedWicketMap = validateWicketMap(wicketMap);
+  } catch (error) {
+    return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid wicketMap" });
+  }
+  const totalsError = validateWicketTotals(
+    validatedWicketMap,
+    wickets,
+    bowledWickets ?? 0,
+    lbwWickets ?? 0,
+  );
+  if (totalsError) return res.status(400).json({ error: totalsError });
   const economyRate = calcEconomy(runsConceded, overs);
   const [row] = await db
     .insert(bowlingStatsTable)
@@ -231,6 +387,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
       bowledWickets: bowledWickets ?? 0,
       lbwWickets: lbwWickets ?? 0,
       wouldHaveReferred: wouldHaveReferred ?? null,
+      wicketMap: validatedWicketMap.value,
     })
     .returning();
   return res.status(201).json({ ...row, overs: Number(row.overs), economyRate: Number(row.economyRate), hatTrick: !!row.hatTrick });
@@ -239,7 +396,7 @@ router.post("/matches/:matchId/bowling", async (req, res) => {
 router.patch("/matches/:matchId/bowling", async (req, res) => {
   const matchId = Number(req.params.matchId);
   if (!(await getOwnedMatch(req.userId!, matchId))) return res.status(404).json({ error: "Match not found" });
-  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred } = req.body;
+  const { overs, maidens, runsConceded, wickets, noBalls, wides, hatTrick, bowledWickets, lbwWickets, wouldHaveReferred, wicketMap } = req.body;
   const [existing] = await db
     .select()
     .from(bowlingStatsTable)
@@ -256,6 +413,30 @@ router.patch("/matches/:matchId/bowling", async (req, res) => {
   if (bowledWickets !== undefined) updates.bowledWickets = bowledWickets;
   if (lbwWickets !== undefined) updates.lbwWickets = lbwWickets;
   if (wouldHaveReferred !== undefined) updates.wouldHaveReferred = wouldHaveReferred;
+  let mapForValidation: ValidatedWicketMap | null = null;
+  if (wicketMap !== undefined) {
+    try {
+      mapForValidation = validateWicketMap(wicketMap);
+      updates.wicketMap = mapForValidation.value;
+    } catch (error) {
+      return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid wicketMap" });
+    }
+  } else if (existing.wicketMap) {
+    try {
+      mapForValidation = validateWicketMap(existing.wicketMap, { validateMetadata: false });
+    } catch (error) {
+      return res.status(400).json({ error: error instanceof Error ? error.message : "Invalid wicketMap" });
+    }
+  }
+  if (mapForValidation) {
+    const totalsError = validateWicketTotals(
+      mapForValidation,
+      wickets ?? existing.wickets,
+      bowledWickets ?? existing.bowledWickets,
+      lbwWickets ?? existing.lbwWickets,
+    );
+    if (totalsError) return res.status(400).json({ error: totalsError });
+  }
   const newRuns = runsConceded ?? existing.runsConceded;
   const newOvers = overs ?? Number(existing.overs);
   updates.economyRate = String(calcEconomy(newRuns, newOvers));
@@ -499,6 +680,7 @@ router.get("/stats/per-match", async (req, res) => {
         noBalls: bowling ? bowling.noBalls : null,
         wides: bowling ? bowling.wides : null,
         hatTrick: bowling ? !!bowling.hatTrick : null,
+         wicketMap: bowling ? bowling.wicketMap ?? null : null,
         bowledWickets: bowling ? bowling.bowledWickets : null,
         lbwWickets: bowling ? bowling.lbwWickets : null,
         wouldHaveReferred: bowling ? bowling.wouldHaveReferred ?? null : null,

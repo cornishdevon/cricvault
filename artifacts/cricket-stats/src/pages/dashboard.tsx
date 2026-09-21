@@ -706,6 +706,9 @@ export default function Dashboard() {
           battingAvg={filteredBattingAvg}
           runsDelta={runsDelta}
           prevSeasonLabel={prevSeasonLabel}
+          seasons={seasons}
+          selectedSeason={selectedSeason}
+          onSeasonChange={setSelectedSeason}
         />
       )}
 

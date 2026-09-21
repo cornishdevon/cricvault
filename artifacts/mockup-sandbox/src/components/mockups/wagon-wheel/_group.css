@@ -1,0 +1,39 @@
+.wagon-wheel-preview {
+  min-height: 100vh;
+}
+
+.wagon-wheel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.wagon-wheel-legend {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wagon-wheel-legend-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.wagon-wheel-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.wagon-wheel-legend-text {
+  color: #555;
+  font-family: Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+}

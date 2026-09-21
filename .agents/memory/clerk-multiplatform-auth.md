@@ -7,5 +7,5 @@ description: Durable lessons from adding Replit-managed Clerk auth + per-user da
 - **Why:** two concurrent first sign-ins could each see zero owned rows and both claim the dataset; last commit wins → wrong owner.
 - Stale composite-build declarations: after editing `lib/db` schema, api-server typecheck still fails with "property does not exist" until `pnpm exec tsc -b lib/db --force` regenerates `lib/db/dist/*.d.ts`.
 - Object *serving* stays public deliberately (mobile video players can't send auth headers); only upload-URL generation is auth-gated.
-- Owner must sign in on the web app FIRST after auth ships, to claim their historical data before any other user signs up.
+- Owner must sign in on the web app after auth ships to claim historical data. Apple SSO works for this when the owner chooses “Share My Email” and the Apple email matches OWNER_EMAIL; it avoids an unreliable emailed code.
 - Web `/` is a public landing page for signed-out users (Clerk `<Show when="signed-out">`); dashboard renders only when signed in. API 401s are the expected signed-out behavior.

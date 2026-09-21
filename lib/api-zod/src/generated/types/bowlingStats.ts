@@ -17,4 +17,6 @@ export interface BowlingStats {
   noBalls?: number;
   wides?: number;
   hatTrick?: boolean;
+  /** @nullable */
+  wicketMap?: string | null;
 }

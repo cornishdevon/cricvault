@@ -26,6 +26,7 @@ import { useSeasonContext, CRICKET_COUNTRIES, type CricketCountry, type CricketR
 import { useColors } from "@/hooks/useColors";
 import { DEFAULT_LABELS, useTabLabels, type TabKey } from "@/hooks/useTabLabels";
 import { usePlayerName } from "@/hooks/usePlayerName";
+import type { BattingHand, PlayingRole } from "@/contexts/PlayerNameContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SUPPORTED_LOCALES, type LocaleCode } from "@/i18n";
 
@@ -149,17 +150,25 @@ export default function SettingsModal() {
   const router = useRouter();
   const { signOut } = useAuth();
   const { labels, updateLabel, resetLabels } = useTabLabels();
-  const { playerName, saveName } = usePlayerName();
+  const { playerName, battingHand, playingRole, saveProfile } = usePlayerName();
   const { locale, setLocale } = useLanguage();
 
   const [draftName, setDraftName] = useState(playerName);
+  const [draftBattingHand, setDraftBattingHand] = useState<BattingHand>(battingHand);
+  const [draftPlayingRole, setDraftPlayingRole] = useState<PlayingRole>(playingRole);
   const [draft, setDraft] = useState({ ...labels });
 
   useEffect(() => { setDraftName(playerName); }, [playerName]);
+  useEffect(() => { setDraftBattingHand(battingHand); }, [battingHand]);
+  useEffect(() => { setDraftPlayingRole(playingRole); }, [playingRole]);
   useEffect(() => { setDraft({ ...labels }); }, [labels]);
 
   const handleSave = async () => {
-    await saveName(draftName);
+    await saveProfile({
+      name: draftName,
+      battingHand: draftBattingHand,
+      playingRole: draftPlayingRole,
+    });
     for (const { key } of TAB_DEFS) {
       await updateLabel(key, draft[key]);
     }
@@ -238,6 +247,60 @@ export default function SettingsModal() {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+        </View>
+        <View style={[styles.profileChoiceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.choiceLabel, { color: colors.foreground }]}>Batting hand</Text>
+          <View style={styles.schemeRow}>
+            {([
+              ["right", "Right-handed"],
+              ["left", "Left-handed"],
+            ] as const).map(([value, label]) => (
+              <TouchableOpacity
+                key={value}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: draftBattingHand === value }}
+                style={[
+                  styles.schemeBtn,
+                  {
+                    backgroundColor: draftBattingHand === value ? colors.primary : colors.muted,
+                    borderColor: draftBattingHand === value ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => setDraftBattingHand(value)}
+              >
+                <Text style={[styles.schemeBtnText, { color: draftBattingHand === value ? colors.primaryForeground : colors.mutedForeground }]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={[styles.choiceLabel, { color: colors.foreground, marginTop: 12 }]}>Bowling / fielding role</Text>
+          <View style={[styles.schemeRow, { flexWrap: "wrap" }]}>
+            {([
+              ["rightArmBowler", "Right-arm bowler"],
+              ["leftArmBowler", "Left-arm bowler"],
+              ["wicketKeeper", "Wicket keeper"],
+            ] as const).map(([value, label]) => (
+              <TouchableOpacity
+                key={value}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: draftPlayingRole === value }}
+                style={[
+                  styles.roleBtn,
+                  {
+                    backgroundColor: draftPlayingRole === value ? colors.primary : colors.muted,
+                    borderColor: draftPlayingRole === value ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => setDraftPlayingRole(value)}
+              >
+                <Text style={[styles.schemeBtnText, { color: draftPlayingRole === value ? colors.primaryForeground : colors.mutedForeground }]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -715,4 +778,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   schemeBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  profileChoiceCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 12 },
+  choiceLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  roleBtn: { minWidth: "47%", flexGrow: 1, borderWidth: 1, borderRadius: 8, paddingVertical: 9, paddingHorizontal: 8, alignItems: "center" },
 });

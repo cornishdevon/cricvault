@@ -129,7 +129,8 @@ function Calendar({
           return (
             <div
               data-slot="calendar"
-              ref={rootRef}
+              // DayPicker and this app resolve different React 19 ref typings.
+              ref={rootRef as React.Ref<HTMLDivElement>}
               className={cn(className)}
               {...props}
             />

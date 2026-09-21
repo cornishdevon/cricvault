@@ -50,7 +50,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
 import { useColors } from "@/hooks/useColors";
+import { usePlayerName } from "@/hooks/usePlayerName";
 import { ShareCard } from "@/components/ShareCard";
+import { BowlingWicketMap, parseWicketMap, type BowlingWicket } from "@/components/BowlingWicketMap";
+import { WagonWheel, type WheelShot } from "@/components/WagonWheel";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -61,6 +64,26 @@ const MATCH_TYPES = [
 ];
 
 const RESULT_OPTIONS = ["Win", "Loss", "Draw", "Tie", "No Result", "Abandoned"];
+
+function parseSavedWheelShots(value: unknown): WheelShot[] | null {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return null;
+    const shots = parsed.filter((shot): shot is WheelShot => {
+      if (!shot || typeof shot !== "object") return false;
+      const candidate = shot as Record<string, unknown>;
+      return typeof candidate.x === "number"
+        && Number.isFinite(candidate.x)
+        && typeof candidate.y === "number"
+        && Number.isFinite(candidate.y)
+        && (candidate.runs === 1 || candidate.runs === 2 || candidate.runs === 4 || candidate.runs === 6);
+    });
+    return shots.length === parsed.length ? shots : null;
+  } catch {
+    return null;
+  }
+}
 
 function StatRow({
   label,
@@ -431,6 +454,7 @@ export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const matchId = Number(id);
   const colors = useColors();
+  const { battingHand } = usePlayerName();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const router = useRouter();
@@ -460,7 +484,9 @@ export default function MatchDetailScreen() {
     opponent: "", date: "", matchType: "", venue: "", result: "",
     notes: "", pitchType: "", weather: "", tossWinner: "", tossDecision: "",
     runs: "", balls: "", fours: "", sixes: "", howOut: "",
-    wickets: "", overs: "", runsConceded: "", maidens: "",
+    wheelShots: [] as WheelShot[], wheelShotsChanged: false,
+    wickets: "", overs: "", runsConceded: "", maidens: "", bowledWickets: "", lbwWickets: "",
+    wicketMap: [] as BowlingWicket[], wicketMapChanged: false,
     catches: "", stumpings: "", runOuts: "", dropped: "",
   });
 
@@ -481,11 +507,17 @@ export default function MatchDetailScreen() {
   const [editFours, setEditFours] = useState("");
   const [editSixes, setEditSixes] = useState("");
   const [editHowOut, setEditHowOut] = useState("");
+  const [editWheelShots, setEditWheelShots] = useState<WheelShot[]>([]);
+  const [editWheelShotsChanged, setEditWheelShotsChanged] = useState(false);
   // Bowling fields
   const [editWickets, setEditWickets] = useState("");
   const [editOvers, setEditOvers] = useState("");
   const [editRunsConceded, setEditRunsConceded] = useState("");
   const [editMaidens, setEditMaidens] = useState("");
+  const [editBowledWickets, setEditBowledWickets] = useState("");
+  const [editLbwWickets, setEditLbwWickets] = useState("");
+  const [editWicketMap, setEditWicketMap] = useState<BowlingWicket[]>([]);
+  const [editWicketMapChanged, setEditWicketMapChanged] = useState(false);
   // Fielding fields
   const [editCatches, setEditCatches] = useState("");
   const [editStumpings, setEditStumpings] = useState("");
@@ -500,8 +532,11 @@ export default function MatchDetailScreen() {
     tossWinner: editTossWinner, tossDecision: editTossDecision,
     runs: editRuns, balls: editBalls, fours: editFours,
     sixes: editSixes, howOut: editHowOut,
+    wheelShots: editWheelShots, wheelShotsChanged: editWheelShotsChanged,
     wickets: editWickets, overs: editOvers,
     runsConceded: editRunsConceded, maidens: editMaidens,
+    bowledWickets: editBowledWickets, lbwWickets: editLbwWickets,
+    wicketMap: editWicketMap, wicketMapChanged: editWicketMapChanged,
     catches: editCatches, stumpings: editStumpings,
     runOuts: editRunOuts, dropped: editDropped,
   };
@@ -524,11 +559,17 @@ export default function MatchDetailScreen() {
     setEditFours(bat?.fours != null ? String(bat.fours) : "");
     setEditSixes(bat?.sixes != null ? String(bat.sixes) : "");
     setEditHowOut(bat?.howOut ?? "");
+    setEditWheelShots(parseSavedWheelShots(bat?.shotData) ?? []);
+    setEditWheelShotsChanged(false);
     const bowl = bowling as any;
     setEditWickets(bowl?.wickets != null ? String(bowl.wickets) : "");
     setEditOvers(bowl?.overs != null ? String(Number(bowl.overs).toFixed(1)) : "");
     setEditRunsConceded(bowl?.runsConceded != null ? String(bowl.runsConceded) : "");
     setEditMaidens(bowl?.maidens != null ? String(bowl.maidens) : "");
+    setEditBowledWickets(bowl?.bowledWickets != null ? String(bowl.bowledWickets) : "");
+    setEditLbwWickets(bowl?.lbwWickets != null ? String(bowl.lbwWickets) : "");
+    setEditWicketMap(parseWicketMap(bowl?.wicketMap));
+    setEditWicketMapChanged(false);
     const field = fielding as any;
     setEditCatches(field?.catches != null ? String(field.catches) : "");
     setEditStumpings(field?.stumpings != null ? String(field.stumpings) : "");
@@ -539,9 +580,86 @@ export default function MatchDetailScreen() {
 
   const cancelEdit = () => setEditMode(false);
 
+  const updateEditWheelShots = (next: WheelShot[]) => {
+    setEditWheelShots(next);
+    setEditWheelShotsChanged(true);
+  };
+
+  const updateEditWicketMap = (next: BowlingWicket[]) => {
+    const mappedWickets = next.length;
+    const mappedBowledWickets = next.filter((wicket) => wicket.kind === "bowled").length;
+    const mappedLbwWickets = next.filter((wicket) => wicket.kind === "lbw").length;
+    setEditWicketMap(next);
+    setEditWicketMapChanged(true);
+    setEditWickets((current) => {
+      const wickets = Number(current);
+      return mappedWickets > (Number.isFinite(wickets) && wickets >= 0 ? wickets : 0)
+        ? String(mappedWickets)
+        : current;
+    });
+    setEditBowledWickets((current) => {
+      const bowledWickets = Number(current);
+      return mappedBowledWickets > (Number.isFinite(bowledWickets) && bowledWickets >= 0 ? bowledWickets : 0)
+        ? String(mappedBowledWickets)
+        : current;
+    });
+    setEditLbwWickets((current) => {
+      const lbwWickets = Number(current);
+      return mappedLbwWickets > (Number.isFinite(lbwWickets) && lbwWickets >= 0 ? lbwWickets : 0)
+        ? String(mappedLbwWickets)
+        : current;
+    });
+  };
+
   const handleSave = async () => {
     // Read from ref so this works even when memoised by React Compiler
     const v = editValuesRef.current;
+    const mappedWickets = v.wicketMap.length;
+    const mappedBowledWickets = v.wicketMap.filter((wicket) => wicket.kind === "bowled").length;
+    const mappedLbwWickets = v.wicketMap.filter((wicket) => wicket.kind === "lbw").length;
+    const overs = v.overs.trim();
+    const totalWickets = Number(v.wickets);
+    const bowledWickets = Number(v.bowledWickets);
+    const lbwWickets = Number(v.lbwWickets);
+
+    if (mappedWickets > 0 && bowledWickets > totalWickets) {
+      Alert.alert("Check bowling stats", "Bowled wickets cannot exceed total wickets.");
+      return;
+    }
+    if (mappedWickets > 0 && lbwWickets > totalWickets) {
+      Alert.alert("Check bowling stats", "LBW wickets cannot exceed total wickets.");
+      return;
+    }
+    if (mappedWickets > 0 && bowledWickets + lbwWickets > totalWickets) {
+      Alert.alert("Check bowling stats", "Bowled and LBW wickets cannot exceed total wickets.");
+      return;
+    }
+    if (mappedWickets > 0 && !overs) {
+      Alert.alert("Check bowling stats", "Enter overs before saving a bowling wicket map.");
+      return;
+    }
+    if (mappedWickets > 0 && (!Number.isFinite(totalWickets) || totalWickets < mappedWickets)) {
+      Alert.alert(
+        "Check bowling stats",
+        `Total wickets (${Number.isFinite(totalWickets) ? totalWickets : 0}) must be at least the ${mappedWickets} wickets on the map.`,
+      );
+      return;
+    }
+    if (mappedBowledWickets > 0 && (!Number.isFinite(bowledWickets) || bowledWickets < mappedBowledWickets)) {
+      Alert.alert(
+        "Check bowling stats",
+        `Bowled wickets (${Number.isFinite(bowledWickets) ? bowledWickets : 0}) must be at least the ${mappedBowledWickets} bowled entries on the map.`,
+      );
+      return;
+    }
+    if (mappedLbwWickets > 0 && (!Number.isFinite(lbwWickets) || lbwWickets < mappedLbwWickets)) {
+      Alert.alert(
+        "Check bowling stats",
+        `LBW wickets (${Number.isFinite(lbwWickets) ? lbwWickets : 0}) must be at least the ${mappedLbwWickets} LBW entries on the map.`,
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       await updateMatch.mutateAsync({
@@ -568,6 +686,7 @@ export default function MatchDetailScreen() {
             fours: v.fours !== "" ? Number(v.fours) : undefined,
             sixes: v.sixes !== "" ? Number(v.sixes) : undefined,
             howOut: v.howOut || undefined,
+            ...(v.wheelShotsChanged ? { shotData: JSON.stringify(v.wheelShots) } : {}),
           } as any,
         });
       }
@@ -579,6 +698,9 @@ export default function MatchDetailScreen() {
             overs: v.overs !== "" ? Number(v.overs) : undefined,
             runsConceded: v.runsConceded !== "" ? Number(v.runsConceded) : undefined,
             maidens: v.maidens !== "" ? Number(v.maidens) : undefined,
+            bowledWickets: v.bowledWickets !== "" ? Number(v.bowledWickets) : undefined,
+            lbwWickets: v.lbwWickets !== "" ? Number(v.lbwWickets) : undefined,
+            ...(v.wicketMapChanged ? { wicketMap: JSON.stringify(v.wicketMap) } : {}),
           } as any,
         });
       }
@@ -747,6 +869,8 @@ export default function MatchDetailScreen() {
   const sr = batting ? Number(batting.strikeRate).toFixed(1) : null;
   const econ = bowling ? Number(bowling.economyRate).toFixed(2) : null;
   const overs = bowling ? Number(bowling.overs).toFixed(1) : null;
+  const savedWicketMap = bowling ? parseWicketMap((bowling as any).wicketMap) : [];
+  const savedWheelShots = batting ? parseSavedWheelShots((batting as any).shotData) ?? [] : [];
 
   const shareCardData = match ? {
     date: (match as any).date ?? "",
@@ -891,6 +1015,17 @@ export default function MatchDetailScreen() {
           <StatRow label="Balls to 50" value={batting.ballsToFifty ?? undefined} colors={colors} />
           <StatRow label="Balls to 100" value={batting.ballsToHundred ?? undefined} colors={colors} />
           <StatRow label="Balls to 150" value={batting.ballsToHundredFifty ?? undefined} colors={colors} />
+          {(editMode || savedWheelShots.length > 0) ? (
+            <View style={[styles.wagonWheelBlock, { borderTopColor: colors.border }]}>
+              <Text style={[styles.wagonWheelTitle, { color: colors.mutedForeground }]}>Batting Wagon Wheel</Text>
+              <WagonWheel
+                shots={editMode ? editWheelShots : savedWheelShots}
+                onShotsChange={editMode ? updateEditWheelShots : undefined}
+                battingHand={battingHand}
+                readOnly={!editMode}
+              />
+            </View>
+          ) : null}
         </Card>
       ) : null}
 
@@ -904,13 +1039,22 @@ export default function MatchDetailScreen() {
           <EditableRow label="Maidens" value={bowling.maidens} editValue={editMaidens} onChangeText={setEditMaidens} editing={editMode} numeric colors={colors} />
           <StatRow label="No Balls" value={bowling.noBalls} colors={colors} />
           <StatRow label="Wides" value={bowling.wides} colors={colors} />
-          <StatRow label="Bowled" value={bowling.bowledWickets} colors={colors} />
-          <StatRow label="LBW" value={bowling.lbwWickets} colors={colors} />
+          <EditableRow label="Bowled" value={bowling.bowledWickets} editValue={editBowledWickets} onChangeText={setEditBowledWickets} editing={editMode} numeric colors={colors} />
+          <EditableRow label="LBW" value={bowling.lbwWickets} editValue={editLbwWickets} onChangeText={setEditLbwWickets} editing={editMode} numeric colors={colors} />
           {bowling.hatTrick ? (
             <StatRow label="Hat Trick" value="Yes 🎩" colors={colors} />
           ) : null}
           {bowling.wouldHaveReferred ? (
             <StatRow label="Would Have Referred" value="Yes" colors={colors} />
+          ) : null}
+          {(editMode || savedWicketMap.length > 0) ? (
+            <View style={[styles.wicketMapBlock, { borderTopColor: colors.border }]}>
+              <Text style={[styles.wicketMapTitle, { color: colors.mutedForeground }]}>Wicket Map</Text>
+              <BowlingWicketMap
+                wickets={editMode ? editWicketMap : savedWicketMap}
+                onChange={editMode ? updateEditWicketMap : undefined}
+              />
+            </View>
           ) : null}
         </Card>
       ) : null}
@@ -1150,6 +1294,30 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     minWidth: 80,
     textAlign: "right",
+  },
+  wicketMapBlock: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    padding: 14,
+    paddingBottom: 16,
+  },
+  wicketMapTitle: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  wagonWheelBlock: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    padding: 14,
+    paddingBottom: 16,
+  },
+  wagonWheelTitle: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 
   // Photos

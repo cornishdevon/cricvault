@@ -62,6 +62,9 @@ export function SeasonScoreboard({
   battingAvg,
   runsDelta,
   prevSeasonLabel,
+  seasons,
+  selectedSeason,
+  onSeasonChange,
 }: {
   seasonLabel: string;
   runs: number;
@@ -71,6 +74,11 @@ export function SeasonScoreboard({
   battingAvg: string;
   runsDelta?: number | null;
   prevSeasonLabel?: string;
+  /** Year strings e.g. ["2025","2024"] — omit "all" entry; the board adds it. */
+  seasons?: string[];
+  /** Currently selected value: a year string or "all". */
+  selectedSeason?: string;
+  onSeasonChange?: (season: string) => void;
 }) {
   const flaps = useFlapValues(runs, wickets, catches, matches);
   const runsStr = String(flaps.runs);
@@ -84,15 +92,40 @@ export function SeasonScoreboard({
     >
       {/* Header strip */}
       <div
-        className="flex items-center justify-between px-4 py-2"
+        className="flex items-center justify-between px-4 py-2 gap-2"
         style={{ backgroundColor: BOARD_STRIP, borderBottom: `1px solid ${BOARD_BORDER}` }}
       >
         <span
-          className="text-[10px] font-semibold uppercase"
+          className="text-[10px] font-semibold uppercase shrink-0"
           style={{ color: LABEL_COLOR, letterSpacing: "1.4px" }}
         >
           {seasonLabel} Season
         </span>
+
+        {/* Season pills — only when multiple seasons exist */}
+        {seasons && seasons.length > 1 && onSeasonChange && (
+          <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* "All" pill */}
+            {(["all" as string]).concat(seasons).map((s) => {
+              const isActive = (selectedSeason ?? "all") === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => onSeasonChange(s)}
+                  className="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: isActive ? "#1a4a28" : "transparent",
+                    color: isActive ? "#6ee7b7" : "#7aaa8a",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {s === "all" ? "All" : s}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Main runs block */}

@@ -32,11 +32,11 @@ export function CleanMinimal() {
           {/* Season row */}
           <div className="flex gap-2 mb-5 overflow-x-auto scrollbar-none">
             {["2026", "2025", "2024"].map((y, i) => (
-              <div key={y} className="px-3 py-1 rounded-full text-xs font-medium flex-shrink-0" style={{ fontFamily: "system-ui" }}
-                style={i === 0
+              <div key={y} className="px-3 py-1 rounded-full text-xs font-medium flex-shrink-0"
+                style={{ fontFamily: "system-ui", ...(i === 0
                   ? { background: "#4ade80", color: "#14532d", fontWeight: "700" }
                   : { background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }
-                }>{y}</div>
+                ) }}>{y}</div>
             ))}
           </div>
 

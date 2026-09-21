@@ -2,8 +2,10 @@ import { useGetPerMatchStats } from "@workspace/api-client-react";
 import { useMemo, useState } from "react";
 import { RollingAverageChart } from "@/components/rolling-average-chart";
 import { SeasonComparison } from "@/components/season-comparison";
+import { CombinedWheels } from "@/components/combined-wheels";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 import {
   ResponsiveContainer,
@@ -38,6 +40,8 @@ type PerMatchStat = {
   result?: string | null;
   playerOfTheMatch?: boolean | null;
   catches?: number | null;
+  shotData?: string | null;
+  wicketMap?: string | null;
 };
 
 const DISMISSAL_COLORS = [
@@ -653,8 +657,9 @@ function RecentPerformanceChart({ data }: { data: PerMatchStat[] }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AnalysisPage() {
-  const { data: perMatch, isLoading } = useGetPerMatchStats();
-  const data = ((perMatch ?? []) as PerMatchStat[]).filter((d) => d.matchType !== "Back Garden");
+  const { data: perMatch, isLoading, isError, refetch } = useGetPerMatchStats();
+  const allData = (perMatch ?? []) as PerMatchStat[];
+  const data = allData.filter((d) => d.matchType !== "Back Garden");
   const [selectedOpponent, setSelectedOpponent] = useState<string>("all");
 
   const opponents = useMemo(() => {
@@ -676,7 +681,22 @@ export default function AnalysisPage() {
     );
   }
 
-  if (data.length === 0) {
+  if (isError) {
+    return (
+      <div className="text-center py-24">
+        <h2 className="text-xl font-bold tracking-tight mb-2">Could not load analysis</h2>
+        <p className="text-muted-foreground mb-6">There was a problem fetching your match data.</p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm transition-opacity hover:opacity-90"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  if (allData.length === 0) {
     return (
       <div className="text-center py-24 text-muted-foreground">
         No matches logged yet — log some matches to see your breakdown analysis.
@@ -686,42 +706,55 @@ export default function AnalysisPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-start justify-between flex-wrap gap-4">
+      <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analysis</h1>
           <p className="text-muted-foreground mt-1">Deep dives into how, where, and when you perform.</p>
         </div>
-        {opponents.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by opponent:</span>
-            <Select value={selectedOpponent} onValueChange={setSelectedOpponent}>
-              <SelectTrigger className="w-44">
-                <SelectValue placeholder="All opponents" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All opponents</SelectItem>
-                {opponents.map((opp) => (
-                  <SelectItem key={opp} value={opp}>{opp}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
       </div>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="maps">Combined Maps</TabsTrigger>
+        </TabsList>
 
-      {selectedOpponent !== "all" && (
-        <HeadToHeadStats data={data} opponent={selectedOpponent} />
-      )}
+        <TabsContent value="overview" className="space-y-8 mt-0">
+          {opponents.length > 1 && (
+            <div className="flex items-center gap-2 justify-end mb-6">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Filter by opponent:</span>
+              <Select value={selectedOpponent} onValueChange={setSelectedOpponent}>
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="All opponents" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All opponents</SelectItem>
+                  {opponents.map((opp) => (
+                    <SelectItem key={opp} value={opp}>{opp}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-      <RecentPerformanceChart data={filteredData} />
-      <DismissalBreakdown data={filteredData} />
-      <MatchTypeComparison data={filteredData} />
-      <RollingAverageChart data={filteredData} />
-      <SeasonComparison data={filteredData} />
-      <VenueStats data={filteredData} />
-      <BattingPositionBreakdown data={filteredData} />
-      <PlayingForTracker data={filteredData} />
-      <PressurePerformance data={filteredData} />
+          {selectedOpponent !== "all" && (
+            <HeadToHeadStats data={data} opponent={selectedOpponent} />
+          )}
+
+          <RecentPerformanceChart data={filteredData} />
+          <DismissalBreakdown data={filteredData} />
+          <MatchTypeComparison data={filteredData} />
+          <RollingAverageChart data={filteredData} />
+          <SeasonComparison data={filteredData} />
+          <VenueStats data={filteredData} />
+          <BattingPositionBreakdown data={filteredData} />
+          <PlayingForTracker data={filteredData} />
+          <PressurePerformance data={filteredData} />
+        </TabsContent>
+
+        <TabsContent value="maps" className="mt-0">
+          <CombinedWheels data={allData} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

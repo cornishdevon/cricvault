@@ -1,0 +1,54 @@
+.dynamic-wheel {
+  --ink: #183f31;
+  --orange: #f4bc7a;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 9px;
+  overflow: hidden;
+  padding: 18px 12px 22px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% 44%, #fff8df 0 21%, transparent 51%),
+    linear-gradient(145deg, #f6edcf, #e8dbb7);
+  font-family: "DM Sans", "Trebuchet MS", sans-serif;
+}
+.dynamic-wheel *, .dynamic-wheel *::before, .dynamic-wheel *::after { box-sizing: border-box; }
+.dynamic-wheel__heading { width: min(336px, 100%); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dynamic-wheel__eyebrow { font-family: "Space Mono", monospace; text-transform: uppercase; letter-spacing: .08em; font-size: 8px; color: #53705a; }
+.dynamic-wheel__hint { color: #7b805d; font-size: 10px; font-style: italic; text-align: right; }
+.dynamic-wheel__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 13px; font-size: 10px; color: #496450; }
+.dynamic-wheel__key { display: inline-flex; align-items: center; gap: 5px; }
+.dynamic-wheel__key i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--key); box-shadow: 0 1px 1px #1d3c252e; }
+.dynamic-wheel__stage { position: relative; width: min(336px, 94vw); aspect-ratio: 1; isolation: isolate; }
+.dynamic-wheel__svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 13px 9px rgba(57, 70, 36, .2)); }
+.dynamic-wheel__six-zone { fill: #7c3aed0b; stroke: #7c3aed; stroke-width: 1; stroke-dasharray: 2 4; }
+.dynamic-wheel__field-shadow { fill: #2a5432; opacity: .28; filter: url("#soft"); }
+.dynamic-wheel__inner-ring { fill: none; stroke: #fffbe3; stroke-width: 1.5; stroke-opacity: .9; }
+.dynamic-wheel__regions line { stroke: var(--orange); stroke-width: 1; stroke-opacity: .82; }
+.dynamic-wheel__rope-under { fill: none; stroke: #76502e; stroke-width: 6.5; opacity: .8; }
+.dynamic-wheel__rope { fill: none; stroke: #f5dd9c; stroke-width: 4.3; }
+.dynamic-wheel__rope-twist { fill: none; stroke: #b78b52; stroke-width: 2; stroke-dasharray: 1 4.2; }
+.dynamic-wheel__label { cursor: pointer; outline: none; }
+.dynamic-wheel__label circle { fill: #fcf3d5; opacity: 0; transform-box: fill-box; transform-origin: center; transition: opacity .2s ease, transform .2s ease; }
+.dynamic-wheel__label text { fill: #000; font-family: "DM Sans", sans-serif; font-size: 8.7px; font-weight: 700; letter-spacing: -.02em; text-anchor: middle; }
+.dynamic-wheel__label:hover circle, .dynamic-wheel__label:focus circle, .dynamic-wheel__label.is-active circle { opacity: .86; transform: scale(1.1); }
+.dynamic-wheel__label:hover text, .dynamic-wheel__label:focus text, .dynamic-wheel__label.is-active text { fill: #b34d2f; }
+.dynamic-wheel__pitch-shadow rect { fill: #34472a; opacity: .35; }
+.dynamic-wheel__pitch { stroke: #8c5e32; stroke-width: 1; }
+.dynamic-wheel__crease { stroke: #fff8df; stroke-width: 1.6; }
+.dynamic-wheel__stumps line { stroke: #56351e; stroke-width: 1.7; stroke-linecap: round; }
+.dynamic-wheel__ground-mark { position: absolute; left: 50%; top: 50%; z-index: -1; transform: translate(-50%, -50%); display: grid; place-items: center; width: 47%; aspect-ratio: 1; border: 1px solid #f4bc7a55; border-radius: 50%; color: #fcf5cf90; font-family: Georgia, serif; font-size: 28px; font-style: italic; }
+.dynamic-wheel__caption { margin: 1px 0 0; color: #5c7051; font-size: 10px; letter-spacing: .02em; }
+@media (max-width: 360px) {
+  .dynamic-wheel { padding-inline: 6px; }
+  .dynamic-wheel__stage { width: min(322px, 96vw); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dynamic-wheel__svg { animation: dynamic-wheel-arrive .65s cubic-bezier(.2,.8,.2,1) both; }
+  .dynamic-wheel__field { transform-box: fill-box; transform-origin: center; animation: dynamic-wheel-breathe 8s ease-in-out infinite; }
+}
+@keyframes dynamic-wheel-arrive { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes dynamic-wheel-breathe { 50% { transform: scale(1.008); } }

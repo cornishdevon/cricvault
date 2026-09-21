@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -68,12 +68,101 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Trash2, Save, X, Share2, Pencil } from "lucide-react";
 import { Link } from "wouter";
 import { safeFormatDate } from "@/lib/utils";
+import { WagonWheel, type WheelShot } from "@/components/wagon-wheel";
+import { BowlingWicketMap, parseWicketMap, type BowlingWicket } from "@/components/bowling-wicket-map";
+import { playDuckSound } from "@/utils/cricket-audio";
+import { useBattingHand, type BattingHand } from "@/hooks/use-batting-hand";
 
 function StatBadge({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex flex-col items-center rounded-lg bg-muted px-4 py-3 text-center min-w-[80px]">
       <span className="text-xl font-bold text-foreground">{value}</span>
       <span className="text-xs text-muted-foreground mt-0.5">{label}</span>
+    </div>
+  );
+}
+
+const BLANK_BATTING_FORM = {
+  runs: "",
+  ballsFaced: "",
+  fours: "",
+  sixes: "",
+  battingPosition: "",
+  howOut: "",
+  badUmpireDecision: "" as "" | "yes" | "no",
+  ballsToFifty: "",
+  ballsToHundred: "",
+  ballsToHundredFifty: "",
+};
+
+const BLANK_BOWLING_FORM = {
+  overs: "",
+  maidens: "",
+  runsConceded: "",
+  wickets: "",
+  noBalls: "",
+  wides: "",
+  hatTrick: false,
+  bowledWickets: "",
+  lbwWickets: "",
+  wouldHaveReferred: "" as "" | "yes" | "no",
+};
+
+function parseShotData(value: unknown): WheelShot[] {
+  if (typeof value !== "string" || !value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((shot): shot is WheelShot => (
+      !!shot
+      && typeof shot === "object"
+      && Number.isFinite((shot as WheelShot).x)
+      && Number.isFinite((shot as WheelShot).y)
+      && [1, 2, 4, 6].includes((shot as WheelShot).runs)
+    ));
+  } catch {
+    return [];
+  }
+}
+
+function isDuck(hasBatting: boolean, runs: string, howOut: string): boolean {
+  const dismissal = howOut.trim().toLowerCase();
+  return hasBatting
+    && runs.trim() !== ""
+    && Number(runs) === 0
+    && dismissal !== ""
+    && !["not out", "retired", "retired hurt", "did not bat", "absent hurt"].includes(dismissal);
+}
+
+function nonNegativeNumber(value: string): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function BattingHandSelector({
+  battingHand,
+  onChange,
+}: {
+  battingHand: BattingHand;
+  onChange: (value: BattingHand) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-3 py-2.5">
+      <div>
+        <Label htmlFor="batting-hand-setting">Batting hand</Label>
+        <p className="text-xs text-muted-foreground">Used to orient the wagon wheel.</p>
+      </div>
+      <Select value={battingHand} onValueChange={(value) => {
+        if (value === "right" || value === "left") onChange(value);
+      }}>
+        <SelectTrigger id="batting-hand-setting" className="w-[150px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="right">Right-handed</SelectItem>
+          <SelectItem value="left">Left-handed</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
@@ -88,22 +177,16 @@ function BattingTab({ matchId }: { matchId: number }) {
   });
   const createBatting = useCreateBattingStats();
   const updateBatting = useUpdateBattingStats();
+  const { battingHand, setBattingHand } = useBattingHand();
 
-  const [form, setForm] = useState({
-    runs: "",
-    ballsFaced: "",
-    fours: "",
-    sixes: "",
-    battingPosition: "",
-    howOut: "",
-    badUmpireDecision: "" as "" | "yes" | "no",
-    ballsToFifty: "",
-    ballsToHundred: "",
-    ballsToHundredFifty: "",
-  });
+  const [form, setForm] = useState(BLANK_BATTING_FORM);
+  const [shots, setShots] = useState<WheelShot[]>([]);
+  const [shotsChanged, setShotsChanged] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
+  const savedShots = hasStats ? parseShotData((stats as any).shotData) : [];
+  const hasSavedShots = savedShots.length > 0;
 
   const handleEdit = () => {
     if (hasStats) {
@@ -122,8 +205,22 @@ function BattingTab({ matchId }: { matchId: number }) {
         ballsToHundred: stats.ballsToHundred != null ? String(stats.ballsToHundred) : "",
         ballsToHundredFifty: stats.ballsToHundredFifty != null ? String(stats.ballsToHundredFifty) : "",
       });
+      setShots(savedShots);
+      setShotsChanged(false);
     }
     setEditing(true);
+  };
+
+  const handleNew = () => {
+    setForm({ ...BLANK_BATTING_FORM });
+    setShots([]);
+    setShotsChanged(false);
+    setEditing(true);
+  };
+
+  const handleShotsChange = (next: WheelShot[]) => {
+    setShots(next);
+    setShotsChanged(true);
   };
 
   const handleSave = () => {
@@ -145,6 +242,7 @@ function BattingTab({ matchId }: { matchId: number }) {
       ballsToFifty: form.ballsToFifty ? Number(form.ballsToFifty) : undefined,
       ballsToHundred: form.ballsToHundred ? Number(form.ballsToHundred) : undefined,
       ballsToHundredFifty: form.ballsToHundredFifty ? Number(form.ballsToHundredFifty) : undefined,
+      ...(shotsChanged ? { shotData: JSON.stringify(shots) } : {}),
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBattingStatsQueryKey(matchId) });
@@ -154,12 +252,27 @@ function BattingTab({ matchId }: { matchId: number }) {
     if (hasStats) {
       updateBatting.mutate(
         { matchId, data: payload },
-        { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Batting stats updated" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) }
+        {
+          onSuccess: () => {
+            invalidate();
+            setEditing(false);
+            toast({ title: "Batting stats updated" });
+          },
+          onError: () => toast({ title: "Failed to save", variant: "destructive" }),
+        }
       );
     } else {
       createBatting.mutate(
-        { matchId, data: payload },
-        { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Batting stats saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) }
+        { matchId, data: payload as any },
+        {
+          onSuccess: () => {
+            invalidate();
+            setEditing(false);
+            toast({ title: "Batting stats saved" });
+            if (isDuck(true, form.runs, form.howOut)) void playDuckSound();
+          },
+          onError: () => toast({ title: "Failed to save", variant: "destructive" }),
+        }
       );
     }
   };
@@ -213,6 +326,12 @@ function BattingTab({ matchId }: { matchId: number }) {
                 {stats.ballsToFifty != null && <StatBadge label="Balls to 50" value={stats.ballsToFifty} />}
                 {stats.ballsToHundred != null && <StatBadge label="Balls to 100" value={stats.ballsToHundred} />}
                 {stats.ballsToHundredFifty != null && <StatBadge label="Balls to 150" value={stats.ballsToHundredFifty} />}
+              </div>
+            )}
+            {hasSavedShots && (
+              <div className="border-t pt-4">
+                <BattingHandSelector battingHand={battingHand} onChange={setBattingHand} />
+                <WagonWheel shots={savedShots} battingHand={battingHand} />
               </div>
             )}
           </CardContent>
@@ -278,6 +397,11 @@ function BattingTab({ matchId }: { matchId: number }) {
                 Strike Rate: <span className="font-semibold text-foreground">{((Number(form.runs) / Number(form.ballsFaced)) * 100).toFixed(1)}</span>
               </p>
             )}
+            <div className="border-t pt-4">
+              <BattingHandSelector battingHand={battingHand} onChange={setBattingHand} />
+              <Label className="mb-2 mt-3 block">Wagon Wheel</Label>
+              <WagonWheel shots={shots} onChange={handleShotsChange} battingHand={battingHand} />
+            </div>
             <div className="flex gap-2 pt-1">
               <Button onClick={handleSave} disabled={createBatting.isPending || updateBatting.isPending}>
                 <Save className="h-4 w-4 mr-2" /> Save
@@ -290,7 +414,7 @@ function BattingTab({ matchId }: { matchId: number }) {
         <Card className="border-dashed bg-transparent shadow-none">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
             <p className="text-muted-foreground mb-4">No batting stats recorded for this match.</p>
-            <Button onClick={() => setEditing(true)}>Log Batting Stats</Button>
+            <Button onClick={handleNew}>Log Batting Stats</Button>
           </CardContent>
         </Card>
       )}
@@ -309,10 +433,14 @@ function BowlingTab({ matchId }: { matchId: number }) {
   const createBowling = useCreateBowlingStats();
   const updateBowling = useUpdateBowlingStats();
 
-  const [form, setForm] = useState({ overs: "", maidens: "", runsConceded: "", wickets: "", noBalls: "", wides: "", hatTrick: false, bowledWickets: "", lbwWickets: "", wouldHaveReferred: "" as "" | "yes" | "no" });
+  const [form, setForm] = useState(BLANK_BOWLING_FORM);
+  const [wicketMap, setWicketMap] = useState<BowlingWicket[]>([]);
+  const [wicketMapChanged, setWicketMapChanged] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const hasStats = stats && (stats as any) !== null;
+  const savedWicketMap = hasStats ? parseWicketMap((stats as any).wicketMap) : [];
+  const hasSavedWicketMap = savedWicketMap.length > 0;
 
   const handleEdit = () => {
     if (hasStats) {
@@ -331,11 +459,94 @@ function BowlingTab({ matchId }: { matchId: number }) {
           : (stats as any).wouldHaveReferred === false ? "no"
           : "",
       });
+      setWicketMap(savedWicketMap);
+      setWicketMapChanged(false);
     }
     setEditing(true);
   };
 
+  const handleNew = () => {
+    setForm({ ...BLANK_BOWLING_FORM });
+    setWicketMap([]);
+    setWicketMapChanged(false);
+    setEditing(true);
+  };
+
+  const updateWicketMap = (next: BowlingWicket[]) => {
+    const mappedWickets = next.length;
+    const mappedBowledWickets = next.filter((wicket) => wicket.kind === "bowled").length;
+    const mappedLbwWickets = next.filter((wicket) => wicket.kind === "lbw").length;
+
+    setWicketMap(next);
+    setWicketMapChanged(true);
+    setForm((current) => ({
+      ...current,
+      wickets: mappedWickets > nonNegativeNumber(current.wickets)
+        ? String(mappedWickets)
+        : current.wickets,
+      bowledWickets: mappedBowledWickets > nonNegativeNumber(current.bowledWickets)
+        ? String(mappedBowledWickets)
+        : current.bowledWickets,
+      lbwWickets: mappedLbwWickets > nonNegativeNumber(current.lbwWickets)
+        ? String(mappedLbwWickets)
+        : current.lbwWickets,
+    }));
+  };
+
   const handleSave = () => {
+    if (wicketMap.length > 0 && !form.overs.trim()) {
+      toast({
+        title: "Check bowling stats",
+        description: "Enter overs before saving a bowling wicket map.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const mappedWickets = wicketMap.length;
+    const mappedBowledWickets = wicketMap.filter((wicket) => wicket.kind === "bowled").length;
+    const mappedLbwWickets = wicketMap.filter((wicket) => wicket.kind === "lbw").length;
+    const totalWickets = nonNegativeNumber(form.wickets);
+    const bowledWickets = nonNegativeNumber(form.bowledWickets);
+    const lbwWickets = nonNegativeNumber(form.lbwWickets);
+
+    if (mappedWickets > 0 && bowledWickets > totalWickets) {
+      toast({ title: "Check bowling stats", description: "Bowled wickets cannot exceed total wickets.", variant: "destructive" });
+      return;
+    }
+    if (mappedWickets > 0 && lbwWickets > totalWickets) {
+      toast({ title: "Check bowling stats", description: "LBW wickets cannot exceed total wickets.", variant: "destructive" });
+      return;
+    }
+    if (mappedWickets > 0 && bowledWickets + lbwWickets > totalWickets) {
+      toast({ title: "Check bowling stats", description: "Bowled and LBW wickets cannot exceed total wickets.", variant: "destructive" });
+      return;
+    }
+    if (mappedWickets > 0 && totalWickets < mappedWickets) {
+      toast({
+        title: "Check bowling stats",
+        description: `Total wickets (${totalWickets}) must be at least the ${mappedWickets} wickets on the map.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (mappedWickets > 0 && bowledWickets < mappedBowledWickets) {
+      toast({
+        title: "Check bowling stats",
+        description: `Bowled wickets (${bowledWickets}) must be at least the ${mappedBowledWickets} bowled entries on the map.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (mappedWickets > 0 && lbwWickets < mappedLbwWickets) {
+      toast({
+        title: "Check bowling stats",
+        description: `LBW wickets (${lbwWickets}) must be at least the ${mappedLbwWickets} LBW entries on the map.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const payload = {
       overs: Number(form.overs) || 0,
       maidens: Number(form.maidens) || 0,
@@ -347,6 +558,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
       bowledWickets: Number(form.bowledWickets) || 0,
       lbwWickets: Number(form.lbwWickets) || 0,
       wouldHaveReferred: form.wouldHaveReferred !== "" ? form.wouldHaveReferred === "yes" : undefined,
+      ...(wicketMapChanged ? { wicketMap: JSON.stringify(wicketMap) } : {}),
     };
     const invalidate = () => {
       qc.invalidateQueries({ queryKey: getGetBowlingStatsQueryKey(matchId) });
@@ -354,9 +566,9 @@ function BowlingTab({ matchId }: { matchId: number }) {
       qc.invalidateQueries({ queryKey: getGetPerMatchStatsQueryKey() });
     };
     if (hasStats) {
-      updateBowling.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Bowling stats updated" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
+      updateBowling.mutate({ matchId, data: payload as any }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Bowling stats updated" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
     } else {
-      createBowling.mutate({ matchId, data: payload }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Bowling stats saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
+      createBowling.mutate({ matchId, data: { ...payload, wicketMap: wicketMapChanged ? JSON.stringify(wicketMap) : null } as any }, { onSuccess: () => { invalidate(); setEditing(false); toast({ title: "Bowling stats saved" }); }, onError: () => toast({ title: "Failed to save", variant: "destructive" }) });
     }
   };
 
@@ -398,6 +610,11 @@ function BowlingTab({ matchId }: { matchId: number }) {
                 >
                   {(stats as any).wouldHaveReferred ? "📺 Would have referred" : "✓ Happy with decision"}
                 </Badge>
+              </div>
+            )}
+            {hasSavedWicketMap && (
+              <div className="border-t pt-4">
+                <BowlingWicketMap wickets={savedWicketMap} />
               </div>
             )}
           </CardContent>
@@ -464,6 +681,9 @@ function BowlingTab({ matchId }: { matchId: number }) {
                 {" "}• Figures: <span className="font-semibold text-foreground">{form.wickets || 0}/{form.runsConceded}</span>
               </p>
             )}
+            <div className="border-t pt-4">
+              <BowlingWicketMap wickets={wicketMap} onChange={updateWicketMap} />
+            </div>
             <div className="flex gap-2 pt-1">
               <Button onClick={handleSave} disabled={createBowling.isPending || updateBowling.isPending}>
                 <Save className="h-4 w-4 mr-2" /> Save
@@ -476,7 +696,7 @@ function BowlingTab({ matchId }: { matchId: number }) {
         <Card className="border-dashed bg-transparent shadow-none">
           <CardContent className="flex flex-col items-center justify-center p-10 text-center">
             <p className="text-muted-foreground mb-4">No bowling stats recorded for this match.</p>
-            <Button onClick={() => setEditing(true)}>Log Bowling Stats</Button>
+            <Button onClick={handleNew}>Log Bowling Stats</Button>
           </CardContent>
         </Card>
       )}
@@ -1175,6 +1395,10 @@ export default function MatchDetail() {
   const [hPlayingFor, setHPlayingFor] = useState("");
   const [hSeries, setHSeries] = useState("");
 
+  useEffect(() => {
+    setEditingHeader(false);
+  }, [matchId]);
+
   const handleEditHeader = () => {
     const m = match as any;
     setHOpponent(m.opponent ?? "");
@@ -1442,7 +1666,7 @@ export default function MatchDetail() {
         </Card>
       )}
 
-      <Tabs defaultValue="batting" className="w-full">
+      <Tabs key={matchId} defaultValue="batting" className="w-full">
         <TabsList className="w-full sm:w-auto flex-wrap h-auto gap-1">
           <TabsTrigger value="batting">Batting</TabsTrigger>
           <TabsTrigger value="bowling">Bowling</TabsTrigger>

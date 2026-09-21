@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Feather } from "@expo/vector-icons";
+import { useAudioPlayer } from "expo-audio";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CricketBallSvg, CatchingHandsSvg } from "@/components/CricketIcons";
 import {
@@ -40,10 +41,13 @@ import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { usePlayerName } from "@/hooks/usePlayerName";
 import { useT } from "@/hooks/useT";
 import { computeBadges, type PerMatchStat } from "@/utils/computeBadges";
 import { WagonWheel, type WheelShot } from "@/components/WagonWheel";
+import { BowlingWicketMap, type BowlingWicket } from "@/components/BowlingWicketMap";
 import { DatePickerCalendar } from "@/components/DatePickerCalendar";
+import { isDuck } from "@/utils/isDuck";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -136,6 +140,11 @@ function isoToDisplay(iso: string) {
 function displayToIso(display: string) {
   const m = display.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : display;
+}
+
+function nonNegativeNumber(value: string): number {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
 }
 
 const defaultMatch: MatchForm = {
@@ -694,6 +703,7 @@ export default function LogMatchScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { battingHand } = usePlayerName();
 
   const [popupBadges, setPopupBadges] = useState<{ id: string; icon: string; label: string; imageKey?: string }[]>([]);
   const fadeAnim  = useRef(new Animated.Value(0)).current;
@@ -735,6 +745,7 @@ export default function LogMatchScreen() {
   const [battingForm, setBattingForm] = useState<BattingForm>(defaultBatting);
   const [wheelShots, setWheelShots] = useState<WheelShot[]>([]);
   const [bowlingForm, setBowlingForm] = useState<BowlingForm>(defaultBowling);
+  const [wicketMap, setWicketMap] = useState<BowlingWicket[]>([]);
   const [fieldingForm, setFieldingForm] = useState<FieldingForm>(defaultFielding);
   const [customDismissals, setCustomDismissals] = useState<string[]>([]);
   const [customHowOutInput, setCustomHowOutInput] = useState("");
@@ -747,6 +758,18 @@ export default function LogMatchScreen() {
   const [step, setStep] = useState<1 | 2>(1);
   const [createdMatchId, setCreatedMatchId] = useState<number | null>(null);
   const [savedOpponent, setSavedOpponent] = useState("");
+  const duckPlayer = useAudioPlayer(require("../../assets/sounds/duck-quack.mp3"));
+
+  const playDuckSound = async () => {
+    try {
+      duckPlayer.pause();
+      await duckPlayer.seekTo(0);
+      duckPlayer.play();
+    } catch (error) {
+      // Audio feedback must never turn a saved match into a reported save failure.
+      console.warn("Duck sound could not play", error);
+    }
+  };
 
   const { mutateAsync: createMatch, isPending } = useCreateMatch();
   const { mutateAsync: createBattingStats } = useCreateBattingStats();
@@ -759,11 +782,80 @@ export default function LogMatchScreen() {
   const updateBatting = (k: keyof BattingForm, v: string | boolean) => setBattingForm(p => ({ ...p, [k]: v }));
   const updateBowling = (k: keyof BowlingForm, v: string | boolean) => setBowlingForm(p => ({ ...p, [k]: v }));
   const updateFielding= (k: keyof FieldingForm,v: string)           => setFieldingForm(p => ({ ...p, [k]: v }));
+  const updateWicketMap = (next: BowlingWicket[]) => {
+    const mappedWickets = next.length;
+    const mappedBowledWickets = next.filter((wicket) => wicket.kind === "bowled").length;
+    const mappedLbwWickets = next.filter((wicket) => wicket.kind === "lbw").length;
+    setWicketMap(next);
+    setBowlingForm((current) => ({
+      ...current,
+      wickets: mappedWickets > nonNegativeNumber(current.wickets)
+        ? String(mappedWickets)
+        : current.wickets,
+      bowledWickets: mappedBowledWickets > nonNegativeNumber(current.bowledWickets)
+        ? String(mappedBowledWickets)
+        : current.bowledWickets,
+      lbwWickets: mappedLbwWickets > nonNegativeNumber(current.lbwWickets)
+        ? String(mappedLbwWickets)
+        : current.lbwWickets,
+    }));
+  };
 
   const handleSave = () => {
     if (!matchForm.opponent.trim()) {
       Alert.alert(t("log.required"), t("log.enterOpponent"));
       return;
+    }
+
+    if (hasBowling && wicketMap.length > 0 && !bowlingForm.overs.trim()) {
+      Alert.alert(
+        t("log.required"),
+        "Enter overs before saving a bowling wicket map.",
+      );
+      return;
+    }
+
+    if (hasBowling) {
+      const mappedWickets = wicketMap.length;
+      const mappedBowledWickets = wicketMap.filter((wicket) => wicket.kind === "bowled").length;
+      const mappedLbwWickets = wicketMap.filter((wicket) => wicket.kind === "lbw").length;
+      const totalWickets = nonNegativeNumber(bowlingForm.wickets);
+      const bowledWickets = nonNegativeNumber(bowlingForm.bowledWickets);
+      const lbwWickets = nonNegativeNumber(bowlingForm.lbwWickets);
+
+      if (mappedWickets > 0 && bowledWickets > totalWickets) {
+        Alert.alert(t("log.required"), "Bowled wickets cannot exceed total wickets.");
+        return;
+      }
+      if (mappedWickets > 0 && lbwWickets > totalWickets) {
+        Alert.alert(t("log.required"), "LBW wickets cannot exceed total wickets.");
+        return;
+      }
+      if (mappedWickets > 0 && bowledWickets + lbwWickets > totalWickets) {
+        Alert.alert(t("log.required"), "Bowled and LBW wickets cannot exceed total wickets.");
+        return;
+      }
+      if (totalWickets < mappedWickets) {
+        Alert.alert(
+          t("log.required"),
+          `Total wickets (${totalWickets}) must be at least the ${mappedWickets} wickets on the map.`,
+        );
+        return;
+      }
+      if (bowledWickets < mappedBowledWickets) {
+        Alert.alert(
+          t("log.required"),
+          `Bowled wickets (${bowledWickets}) must be at least the ${mappedBowledWickets} bowled entries on the map.`,
+        );
+        return;
+      }
+      if (lbwWickets < mappedLbwWickets) {
+        Alert.alert(
+          t("log.required"),
+          `LBW wickets (${lbwWickets}) must be at least the ${mappedLbwWickets} LBW entries on the map.`,
+        );
+        return;
+      }
     }
 
     // Duplicate detection — same date + opponent (case-insensitive) already saved
@@ -850,7 +942,8 @@ export default function LogMatchScreen() {
               bowledWickets: Number(bowlingForm.bowledWickets) || 0,
               lbwWickets: Number(bowlingForm.lbwWickets) || 0,
               wouldHaveReferred: bowlingForm.wouldHaveReferred,
-            },
+              wicketMap: wicketMap.length > 0 ? JSON.stringify(wicketMap) : null,
+            } as any,
           })
         );
       }
@@ -871,6 +964,11 @@ export default function LogMatchScreen() {
       }
 
       await Promise.all(promises);
+
+      // Only newly saved ducks trigger audio, never form edits or viewing old innings.
+      if (isDuck(hasBatting, battingForm.runs, battingForm.howOut)) {
+        void playDuckSound();
+      }
 
       // Refetch all queries and compute newly earned badges
       await Promise.all([
@@ -932,6 +1030,7 @@ export default function LogMatchScreen() {
       setMatchForm(defaultMatch);
       setBattingForm(defaultBatting);
       setBowlingForm(defaultBowling);
+      setWicketMap([]);
       setFieldingForm(defaultFielding);
       setCustomDismissals([]);
       setCustomHowOutInput("");
@@ -1034,7 +1133,7 @@ export default function LogMatchScreen() {
         {/* ── In-page back button (NativeTabs / iOS only — header doesn't support headerLeft there) */}
         {isLiquidGlassAvailable() && (
           <TouchableOpacity
-            onPress={() => router.navigate("/(tabs)/")}
+            onPress={() => router.navigate("/(tabs)")}
             style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 4 }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -1308,7 +1407,7 @@ export default function LogMatchScreen() {
           </Field>
 
           <Field label={t("log.wagonWheel")}>
-            <WagonWheel shots={wheelShots} onShotsChange={setWheelShots} />
+            <WagonWheel shots={wheelShots} onShotsChange={setWheelShots} battingHand={battingHand} />
           </Field>
         </SectionCard>
 
@@ -1410,6 +1509,9 @@ export default function LogMatchScreen() {
             value={bowlingForm.wouldHaveReferred}
             onValueChange={(v) => updateBowling("wouldHaveReferred", v)}
           />
+          <Field label="Wicket map">
+            <BowlingWicketMap wickets={wicketMap} onChange={updateWicketMap} />
+          </Field>
         </SectionCard>
 
         {/* ── Fielding ── */}

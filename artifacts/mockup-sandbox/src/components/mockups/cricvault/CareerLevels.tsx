@@ -27,7 +27,7 @@ export function CareerLevels() {
     { name: "Hall of Fame",   emoji: "🏆", min: 2000, max: null, color: "#b45309", bg: "#fffbeb", ring: "#fbbf24", desc: "Greatest bowler of all time" },
   ];
 
-  const LevelRow = ({ level, rangeLabel }: { level: typeof battingLevels[0], rangeLabel: string }) => (
+  const LevelRow = ({ level, rangeLabel }: { level: Pick<typeof battingLevels[number], "name" | "emoji" | "color" | "bg" | "ring" | "desc">, rangeLabel: string }) => (
     <div style={{
       display: "flex",
       alignItems: "center",

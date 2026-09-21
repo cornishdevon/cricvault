@@ -24,9 +24,17 @@ export const ListMatchesResponseItem = zod.object({
   "date": zod.string(),
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
-  "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "matchType": zod.string(),
   "playingFor": zod.string().nullish(),
-  "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
+  "result": zod.string().nullish(),
+  "playerOfTheMatch": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "pitchType": zod.string().nullish(),
+  "weatherConditions": zod.string().nullish(),
+  "tossWinner": zod.string().nullish(),
+  "tossDecision": zod.string().nullish(),
+  "series": zod.string().nullish(),
+  "isPractice": zod.boolean(),
   "createdAt": zod.string()
 })
 export const ListMatchesResponse = zod.array(ListMatchesResponseItem)
@@ -39,9 +47,17 @@ export const CreateMatchBody = zod.object({
   "date": zod.string(),
   "opponent": zod.string(),
   "venue": zod.string().optional(),
-  "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "matchType": zod.string(),
   "playingFor": zod.string().optional(),
-  "result": zod.enum(['Win', 'Loss', 'Draw', 'No Result']).optional()
+  "result": zod.string().optional(),
+  "playerOfTheMatch": zod.boolean().optional(),
+  "notes": zod.string().optional(),
+  "pitchType": zod.string().optional(),
+  "weatherConditions": zod.string().optional(),
+  "tossWinner": zod.string().optional(),
+  "tossDecision": zod.string().optional(),
+  "series": zod.string().optional(),
+  "isPractice": zod.boolean().optional()
 })
 
 
@@ -57,9 +73,17 @@ export const GetMatchResponse = zod.object({
   "date": zod.string(),
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
-  "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "matchType": zod.string(),
   "playingFor": zod.string().nullish(),
-  "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
+  "result": zod.string().nullish(),
+  "playerOfTheMatch": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "pitchType": zod.string().nullish(),
+  "weatherConditions": zod.string().nullish(),
+  "tossWinner": zod.string().nullish(),
+  "tossDecision": zod.string().nullish(),
+  "series": zod.string().nullish(),
+  "isPractice": zod.boolean(),
   "createdAt": zod.string()
 })
 
@@ -75,9 +99,17 @@ export const UpdateMatchBody = zod.object({
   "date": zod.string().optional(),
   "opponent": zod.string().optional(),
   "venue": zod.string().optional(),
-  "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']).optional(),
+  "matchType": zod.string().optional(),
   "playingFor": zod.string().optional(),
-  "result": zod.enum(['Win', 'Loss', 'Draw', 'No Result']).optional()
+  "result": zod.string().optional(),
+  "playerOfTheMatch": zod.boolean().optional(),
+  "notes": zod.string().optional(),
+  "pitchType": zod.string().optional(),
+  "weatherConditions": zod.string().optional(),
+  "tossWinner": zod.string().optional(),
+  "tossDecision": zod.string().optional(),
+  "series": zod.string().optional(),
+  "isPractice": zod.boolean().optional()
 })
 
 export const UpdateMatchResponse = zod.object({
@@ -85,9 +117,17 @@ export const UpdateMatchResponse = zod.object({
   "date": zod.string(),
   "opponent": zod.string(),
   "venue": zod.string().nullish(),
-  "matchType": zod.enum(['T20', 'ODI', 'Test', 'Club', 'Friendly', 'Other']),
+  "matchType": zod.string(),
   "playingFor": zod.string().nullish(),
-  "result": zod.union([zod.literal('Win'),zod.literal('Loss'),zod.literal('Draw'),zod.literal('No Result'),zod.literal(null)]).nullish(),
+  "result": zod.string().nullish(),
+  "playerOfTheMatch": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "pitchType": zod.string().nullish(),
+  "weatherConditions": zod.string().nullish(),
+  "tossWinner": zod.string().nullish(),
+  "tossDecision": zod.string().nullish(),
+  "series": zod.string().nullish(),
+  "isPractice": zod.boolean(),
   "createdAt": zod.string()
 })
 
@@ -124,10 +164,14 @@ export const GetBattingStatsResponse = zod.object({
   "sixes": zod.number(),
   "strikeRate": zod.number(),
   "battingPosition": zod.number().nullish(),
-  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish(),
+  "howOut": zod.string().nullish(),
+  "badUmpireDecision": zod.boolean().nullish(),
   "ballsToFifty": zod.number().min(getBattingStatsResponseBallsToFiftyMin).nullish(),
   "ballsToHundred": zod.number().min(getBattingStatsResponseBallsToHundredMin).nullish(),
-  "ballsToHundredFifty": zod.number().min(getBattingStatsResponseBallsToHundredFiftyMin).nullish()
+  "ballsToHundredFifty": zod.number().min(getBattingStatsResponseBallsToHundredFiftyMin).nullish(),
+  "oppositionBowler": zod.string().nullish(),
+  "caughtPosition": zod.string().nullish(),
+  "shotData": zod.string().nullish()
 })
 
 
@@ -161,10 +205,14 @@ export const CreateBattingStatsBody = zod.object({
   "fours": zod.number().min(createBattingStatsBodyFoursMin),
   "sixes": zod.number().min(createBattingStatsBodySixesMin),
   "battingPosition": zod.number().min(1).optional(),
-  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional(),
+  "howOut": zod.string().optional(),
+  "badUmpireDecision": zod.boolean().optional(),
   "ballsToFifty": zod.number().min(createBattingStatsBodyBallsToFiftyMin).optional(),
   "ballsToHundred": zod.number().min(createBattingStatsBodyBallsToHundredMin).optional(),
-  "ballsToHundredFifty": zod.number().min(createBattingStatsBodyBallsToHundredFiftyMin).optional()
+  "ballsToHundredFifty": zod.number().min(createBattingStatsBodyBallsToHundredFiftyMin).optional(),
+  "oppositionBowler": zod.string().optional(),
+  "caughtPosition": zod.string().optional(),
+  "shotData": zod.string().optional()
 })
 
 
@@ -198,10 +246,14 @@ export const UpdateBattingStatsBody = zod.object({
   "fours": zod.number().min(updateBattingStatsBodyFoursMin).optional(),
   "sixes": zod.number().min(updateBattingStatsBodySixesMin).optional(),
   "battingPosition": zod.number().min(1).optional(),
-  "howOut": zod.enum(['Bowled', 'Caught', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket', 'Not Out', 'Retired']).optional(),
+  "howOut": zod.string().optional(),
+  "badUmpireDecision": zod.boolean().optional(),
   "ballsToFifty": zod.number().min(updateBattingStatsBodyBallsToFiftyMin).optional(),
   "ballsToHundred": zod.number().min(updateBattingStatsBodyBallsToHundredMin).optional(),
-  "ballsToHundredFifty": zod.number().min(updateBattingStatsBodyBallsToHundredFiftyMin).optional()
+  "ballsToHundredFifty": zod.number().min(updateBattingStatsBodyBallsToHundredFiftyMin).optional(),
+  "oppositionBowler": zod.string().optional(),
+  "caughtPosition": zod.string().optional(),
+  "shotData": zod.string().optional()
 })
 
 export const updateBattingStatsResponseBallsToFiftyMin = 0;
@@ -221,10 +273,14 @@ export const UpdateBattingStatsResponse = zod.object({
   "sixes": zod.number(),
   "strikeRate": zod.number(),
   "battingPosition": zod.number().nullish(),
-  "howOut": zod.union([zod.literal('Bowled'),zod.literal('Caught'),zod.literal('LBW'),zod.literal('Run Out'),zod.literal('Stumped'),zod.literal('Hit Wicket'),zod.literal('Not Out'),zod.literal('Retired'),zod.literal(null)]).nullish(),
+  "howOut": zod.string().nullish(),
+  "badUmpireDecision": zod.boolean().nullish(),
   "ballsToFifty": zod.number().min(updateBattingStatsResponseBallsToFiftyMin).nullish(),
   "ballsToHundred": zod.number().min(updateBattingStatsResponseBallsToHundredMin).nullish(),
-  "ballsToHundredFifty": zod.number().min(updateBattingStatsResponseBallsToHundredFiftyMin).nullish()
+  "ballsToHundredFifty": zod.number().min(updateBattingStatsResponseBallsToHundredFiftyMin).nullish(),
+  "oppositionBowler": zod.string().nullish(),
+  "caughtPosition": zod.string().nullish(),
+  "shotData": zod.string().nullish()
 })
 
 
@@ -245,7 +301,11 @@ export const GetBowlingStatsResponse = zod.object({
   "economyRate": zod.number(),
   "noBalls": zod.number().optional(),
   "wides": zod.number().optional(),
-  "hatTrick": zod.boolean().optional()
+  "hatTrick": zod.boolean().optional(),
+  "bowledWickets": zod.number().min(0),
+  "lbwWickets": zod.number().min(0),
+  "wouldHaveReferred": zod.boolean().nullish(),
+  "wicketMap": zod.string().nullish()
 })
 
 
@@ -277,7 +337,11 @@ export const CreateBowlingStatsBody = zod.object({
   "wickets": zod.number().min(createBowlingStatsBodyWicketsMin),
   "noBalls": zod.number().min(createBowlingStatsBodyNoBallsMin).optional(),
   "wides": zod.number().min(createBowlingStatsBodyWidesMin).optional(),
-  "hatTrick": zod.boolean().optional()
+  "hatTrick": zod.boolean().optional(),
+  "bowledWickets": zod.number().min(0).optional(),
+  "lbwWickets": zod.number().min(0).optional(),
+  "wouldHaveReferred": zod.boolean().optional(),
+  "wicketMap": zod.string().nullish()
 })
 
 
@@ -309,7 +373,11 @@ export const UpdateBowlingStatsBody = zod.object({
   "wickets": zod.number().min(updateBowlingStatsBodyWicketsMin).optional(),
   "noBalls": zod.number().min(updateBowlingStatsBodyNoBallsMin).optional(),
   "wides": zod.number().min(updateBowlingStatsBodyWidesMin).optional(),
-  "hatTrick": zod.boolean().optional()
+  "hatTrick": zod.boolean().optional(),
+  "bowledWickets": zod.number().min(0).optional(),
+  "lbwWickets": zod.number().min(0).optional(),
+  "wouldHaveReferred": zod.boolean().optional(),
+  "wicketMap": zod.string().nullish()
 })
 
 export const UpdateBowlingStatsResponse = zod.object({
@@ -322,7 +390,11 @@ export const UpdateBowlingStatsResponse = zod.object({
   "economyRate": zod.number(),
   "noBalls": zod.number().optional(),
   "wides": zod.number().optional(),
-  "hatTrick": zod.boolean().optional()
+  "hatTrick": zod.boolean().optional(),
+  "bowledWickets": zod.number().min(0),
+  "lbwWickets": zod.number().min(0),
+  "wouldHaveReferred": zod.boolean().nullish(),
+  "wicketMap": zod.string().nullish()
 })
 
 
@@ -339,7 +411,8 @@ export const GetFieldingStatsResponse = zod.object({
   "catches": zod.number(),
   "droppedCatches": zod.number(),
   "runOuts": zod.number().optional(),
-  "stumpings": zod.number().optional()
+  "stumpings": zod.number().optional(),
+  "missedStumpings": zod.number().min(0)
 })
 
 
@@ -364,7 +437,8 @@ export const CreateFieldingStatsBody = zod.object({
   "catches": zod.number().min(createFieldingStatsBodyCatchesMin),
   "droppedCatches": zod.number().min(createFieldingStatsBodyDroppedCatchesMin),
   "runOuts": zod.number().min(createFieldingStatsBodyRunOutsMin).optional(),
-  "stumpings": zod.number().min(createFieldingStatsBodyStumpingsMin).optional()
+  "stumpings": zod.number().min(createFieldingStatsBodyStumpingsMin).optional(),
+  "missedStumpings": zod.number().min(0).optional()
 })
 
 
@@ -389,7 +463,8 @@ export const UpdateFieldingStatsBody = zod.object({
   "catches": zod.number().min(updateFieldingStatsBodyCatchesMin).optional(),
   "droppedCatches": zod.number().min(updateFieldingStatsBodyDroppedCatchesMin).optional(),
   "runOuts": zod.number().min(updateFieldingStatsBodyRunOutsMin).optional(),
-  "stumpings": zod.number().min(updateFieldingStatsBodyStumpingsMin).optional()
+  "stumpings": zod.number().min(updateFieldingStatsBodyStumpingsMin).optional(),
+  "missedStumpings": zod.number().min(0).optional()
 })
 
 export const UpdateFieldingStatsResponse = zod.object({
@@ -398,7 +473,8 @@ export const UpdateFieldingStatsResponse = zod.object({
   "catches": zod.number(),
   "droppedCatches": zod.number(),
   "runOuts": zod.number().optional(),
-  "stumpings": zod.number().optional()
+  "stumpings": zod.number().optional(),
+  "missedStumpings": zod.number().min(0)
 })
 
 
@@ -580,6 +656,7 @@ export const GetPerMatchStatsResponseItem = zod.object({
   "ballsFaced": zod.number().nullish(),
   "strikeRate": zod.number().nullish(),
   "wickets": zod.number().nullish(),
+  "wicketMap": zod.string().nullish(),
   "runsConceded": zod.number().nullish(),
   "economyRate": zod.number().nullish(),
   "fours": zod.number().nullish(),

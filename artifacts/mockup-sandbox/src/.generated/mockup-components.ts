@@ -10,5 +10,8 @@ export const modules: ModuleMap = {
   "./components/mockups/palettes/Green.tsx": () => import("../components/mockups/palettes/Green.tsx"),
   "./components/mockups/palettes/Maroon.tsx": () => import("../components/mockups/palettes/Maroon.tsx"),
   "./components/mockups/palettes/Navy.tsx": () => import("../components/mockups/palettes/Navy.tsx"),
-  "./components/mockups/palettes/Tawny.tsx": () => import("../components/mockups/palettes/Tawny.tsx")
+  "./components/mockups/palettes/Tawny.tsx": () => import("../components/mockups/palettes/Tawny.tsx"),
+  "./components/mockups/wagon-wheel/Current.tsx": () => import("../components/mockups/wagon-wheel/Current.tsx"),
+  "./components/mockups/wagon-wheel/Dynamic.tsx": () => import("../components/mockups/wagon-wheel/Dynamic.tsx"),
+  "./components/mockups/wicket-info/Demo.tsx": () => import("../components/mockups/wicket-info/Demo.tsx")
 };
