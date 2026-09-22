@@ -3,7 +3,7 @@ import { useSignInWithApple } from "@clerk/expo/apple";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as AuthSession from "expo-auth-session";
 import { type Href, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -14,6 +14,11 @@ import {
 } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import {
+  authErrorMessage,
+  isAuthCancelled,
+  signInWithAppleFallback,
+} from "@/utils/appleSignIn";
 
 /**
  * "Sign in with Apple" (native, Apple-approved button) and
@@ -38,11 +43,19 @@ export function SocialAuthButtons() {
   const scheme = useColorScheme();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"apple" | "google" | null>(null);
+  const [browserFallback, setBrowserFallback] = useState<boolean>(false);
+  const inFlight = useRef(false);
+  type AuthResult = Awaited<ReturnType<typeof startSSOFlow>>;
+  type Navigate = NonNullable<Parameters<NonNullable<AuthResult["setActive"]>>[0]["navigate"]>;
 
-  const navigate = useCallback(
-    async ({ session, decorateUrl }: any) => {
+  const navigate = useCallback<Navigate>(
+    async ({ session, decorateUrl }) => {
       if (session?.currentTask) {
-        console.log(session.currentTask);
+        setError("Your account requires an additional verification step. Complete it on the CricVault website, then sign in again.");
+        return;
+      }
+      if (Platform.OS !== "web") {
+        router.replace("/(tabs)");
         return;
       }
       const url = decorateUrl("/");
@@ -50,20 +63,24 @@ export function SocialAuthButtons() {
         // @ts-ignore web only
         window.location.href = url;
       } else {
-        router.push(url as Href);
+        router.replace(url as Href);
       }
     },
     [router],
   );
 
   const finish = useCallback(
-    async (result: { createdSessionId: string | null; setActive?: any }) => {
+    async (result: Pick<AuthResult, "createdSessionId" | "setActive"> & {
+      authSessionResult?: AuthResult["authSessionResult"];
+    }) => {
       const { createdSessionId, setActive } = result;
+      if (result.authSessionResult?.type === "cancel" ||
+          result.authSessionResult?.type === "dismiss") return;
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId, navigate });
       } else {
         setError(
-          "Sign in didn't complete. Please try again, or use email and password.",
+          "Sign in didn't complete. Try signing in with your existing account on the CricVault website. You don't need to create another account.",
         );
       }
     },
@@ -71,24 +88,39 @@ export function SocialAuthButtons() {
   );
 
   const handleApple = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setError(null);
+    setBrowserFallback(false);
     setBusy("apple");
     try {
-      await finish(await startAppleAuthenticationFlow());
-    } catch (err: any) {
-      // User cancelled the native Apple sheet — not an error
-      if (err?.code === "ERR_REQUEST_CANCELED") return;
-      setError(
-        err?.errors?.[0]?.longMessage ??
-          err?.errors?.[0]?.message ??
-          "Apple sign in didn't complete. Please try again.",
+      const result = await signInWithAppleFallback<
+        Pick<AuthResult, "createdSessionId" | "setActive"> & {
+          authSessionResult?: AuthResult["authSessionResult"];
+        }
+      >(
+        () => startAppleAuthenticationFlow(),
+        () => startSSOFlow({
+          strategy: "oauth_apple",
+          redirectUrl: AuthSession.makeRedirectUri({ scheme: "cricvault" }),
+        }),
+        () => setBrowserFallback(true),
       );
+      await finish(result);
+    } catch (err: unknown) {
+      // User cancelled the native Apple sheet — not an error
+      if (isAuthCancelled(err)) return;
+      setError(authErrorMessage(err, "Apple sign in didn't complete. Please try again."));
     } finally {
+      inFlight.current = false;
       setBusy(null);
+      setBrowserFallback(false);
     }
-  }, [finish, startAppleAuthenticationFlow]);
+  }, [finish, startAppleAuthenticationFlow, startSSOFlow]);
 
   const handleGoogle = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setError(null);
     setBusy("google");
     try {
@@ -98,13 +130,11 @@ export function SocialAuthButtons() {
           redirectUrl: AuthSession.makeRedirectUri({ scheme: "cricvault" }),
         }),
       );
-    } catch (err: any) {
-      setError(
-        err?.errors?.[0]?.longMessage ??
-          err?.errors?.[0]?.message ??
-          "Google sign in didn't complete. Please try again.",
-      );
+    } catch (err: unknown) {
+      if (isAuthCancelled(err)) return;
+      setError(authErrorMessage(err, "Google sign in didn't complete. Please try again."));
     } finally {
+      inFlight.current = false;
       setBusy(null);
     }
   }, [finish, startSSOFlow]);
@@ -131,6 +161,12 @@ export function SocialAuthButtons() {
           style={s.appleButton}
           onPress={busy ? () => {} : handleApple}
         />
+      )}
+
+      {busy === "apple" && (
+        <Text style={s.dividerText} accessibilityLiveRegion="polite">
+          {browserFallback ? "Continuing securely with Apple in your browser…" : "Signing in with Apple…"}
+        </Text>
       )}
 
       <Pressable
